@@ -1851,10 +1851,11 @@ async function completeOrder(id) {
 }
 
 async function deleteOrder(id) {
-  if (!confirm('Delete this order?')) return;
-  await sb.from('orders').delete().eq('id',id);
-  showToast('Order deleted');
-  loadOrders(); loadHomeStats();
+  showConfirm('Delete this order?', async () => {
+    await sb.from('orders').delete().eq('id',id);
+    showToast('Order deleted');
+    loadOrders(); loadHomeStats();
+  });
 }
 
 function filterOrders(f,btn) {
@@ -1903,16 +1904,22 @@ async function saveInvItem() {
 
 async function adjustInvQty(id, currentQty, delta) {
   const newQty=Math.max(0,currentQty+delta);
-  if (newQty===0 && !confirm('Quantity is 0. Remove item?')) return;
-  if (newQty===0) { await sb.from('inventory').delete().eq('id',id); }
-  else { await sb.from('inventory').update({qty:newQty}).eq('id',id); }
+  if (newQty===0) {
+    showConfirm('Quantity is 0. Remove this item?', async () => {
+      await sb.from('inventory').delete().eq('id',id);
+      loadInventory(); loadHomeStats();
+    }, 'Remove');
+    return;
+  }
+  await sb.from('inventory').update({qty:newQty}).eq('id',id);
   loadInventory(); loadHomeStats();
 }
 
 async function deleteInvItem(id) {
-  if (!confirm('Remove this item?')) return;
-  await sb.from('inventory').delete().eq('id',id);
-  showToast('Removed'); loadInventory(); loadHomeStats();
+  showConfirm('Remove this inventory item?', async () => {
+    await sb.from('inventory').delete().eq('id',id);
+    showToast('Removed'); loadInventory(); loadHomeStats();
+  });
 }
 
 // ===== SALES =====
@@ -1953,9 +1960,10 @@ async function saveSale() {
 }
 
 async function deleteSale(id) {
-  if (!confirm('Delete this sale record?')) return;
-  await sb.from('sales').delete().eq('id',id);
-  showToast('Deleted'); loadSales();
+  showConfirm('Delete this sale record?', async () => {
+    await sb.from('sales').delete().eq('id',id);
+    showToast('Deleted'); loadSales();
+  });
 }
 
 // ===== MATERIALS =====
@@ -2057,9 +2065,10 @@ async function savePurchase() {
 }
 
 async function deletePurchase(id) {
-  if (!confirm('Delete this purchase?')) return;
-  await sb.from('purchases').delete().eq('id',id);
-  showToast('Deleted'); loadPurchases(); loadStock();
+  showConfirm('Delete this purchase record?', async () => {
+    await sb.from('purchases').delete().eq('id',id);
+    showToast('Deleted'); loadPurchases(); loadStock();
+  });
 }
 
 // ===== SCHEDULER =====
@@ -2146,15 +2155,17 @@ async function loadDayDetail() {
 }
 
 async function deleteSlot(id) {
-  if (!confirm('Remove this slot?')) return;
-  await sb.from('schedule_slots').delete().eq('id',id);
-  showToast('Slot removed'); loadDayDetail(); renderCalendar();
+  showConfirm('Remove this time slot?', async () => {
+    await sb.from('schedule_slots').delete().eq('id',id);
+    showToast('Slot removed'); loadDayDetail(); renderCalendar();
+  }, 'Remove');
 }
 
 async function deleteBooking(id) {
-  if (!confirm('Remove this booking?')) return;
-  await sb.from('schedule_bookings').delete().eq('id',id);
-  showToast('Booking removed'); loadDayDetail(); renderCalendar(); loadUpcoming();
+  showConfirm('Remove this booking?', async () => {
+    await sb.from('schedule_bookings').delete().eq('id',id);
+    showToast('Booking removed'); loadDayDetail(); renderCalendar(); loadUpcoming();
+  }, 'Remove');
 }
 
 function openSlotModal() { document.getElementById('slotModal').classList.add('open'); }
@@ -2251,9 +2262,10 @@ async function saveWindow() {
   showToast('Window added!','success'); closeModal('windowModal'); loadWindows();
 }
 async function deleteWindow(id) {
-  if (!confirm('Remove this window?')) return;
-  await sb.from('availability_windows').delete().eq('id',id);
-  showToast('Removed'); loadWindows();
+  showConfirm('Remove this availability window?', async () => {
+    await sb.from('availability_windows').delete().eq('id',id);
+    showToast('Removed'); loadWindows();
+  }, 'Remove');
 }
 
 function copyShareMsg() {
