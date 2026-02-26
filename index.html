@@ -1400,6 +1400,33 @@ body {
   </div>
 </div>
 
+<!-- Confirm modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:380px;text-align:center;">
+    <div style="font-size:36px;margin-bottom:8px">⚠️</div>
+    <p id="confirmMsg" style="font-size:15px;color:var(--text);margin-bottom:24px;line-height:1.5"></p>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeModal('confirmModal')">Cancel</button>
+      <button id="confirmOkBtn" class="modal-btn-primary" style="background:var(--red)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mark paid modal -->
+<div class="modal-overlay" id="markPaidModal">
+  <div class="modal" style="max-width:340px;text-align:center;">
+    <h2 style="margin-bottom:6px">Mark All Unpaid as Paid</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">Choose payment method for all unpaid active orders.</p>
+    <div style="display:flex;gap:10px">
+      <button class="modal-btn-primary" style="flex:1" onclick="markAllPaid('cash')">💵 Cash</button>
+      <button class="modal-btn-primary" style="flex:1;background:var(--ocean)" onclick="markAllPaid('venmo')">📱 Venmo</button>
+    </div>
+    <div style="margin-top:10px">
+      <button class="modal-btn-cancel" style="width:100%" onclick="closeModal('markPaidModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== SUPABASE INIT =====
 const { createClient } = supabase;
@@ -1435,6 +1462,13 @@ function showToast(msg, type='') {
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function showConfirm(message, onConfirm, okLabel='Delete') {
+  document.getElementById('confirmMsg').textContent = message;
+  const btn = document.getElementById('confirmOkBtn');
+  btn.textContent = okLabel;
+  btn.onclick = () => { closeModal('confirmModal'); onConfirm(); };
+  document.getElementById('confirmModal').classList.add('open');
+}
 
 function fmtTime(t) {
   if (!t) return '';
