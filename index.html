@@ -197,6 +197,45 @@ body {
   font-weight: 500;
 }
 
+/* ===== HOME STAT STRIPS ===== */
+.stat-strip {
+  background: white;
+  border: 2px solid var(--warm-gray);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 0;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.strip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 60px;
+  padding: 4px 8px;
+  border-right: 1px solid var(--warm-gray);
+}
+.strip-item:last-child { border-right: none; }
+.strip-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--navy);
+  line-height: 1.1;
+}
+.strip-val.low { color: var(--red); }
+.strip-val.money { color: var(--green); }
+.strip-val.warn { color: var(--orange); }
+.strip-lbl {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  text-align: center;
+  white-space: nowrap;
+}
+
 /* ===== SHARED APP STYLES ===== */
 .app-container { max-width: 960px; margin: 0 auto; padding: 28px 24px 60px; }
 
