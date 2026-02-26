@@ -1758,6 +1758,7 @@ function createOrderFromQuote() {
   const l = document.getElementById('dimL').value;
   const w = document.getElementById('dimW').value;
   const h = document.getElementById('dimH').value;
+  if (!l || !w || !h) { showToast('Please calculate a quote first', 'error'); return; }
   const size = `${l}×${w}×${h}`;
   const price = getQuotePrice();
   document.getElementById('orderModalTitle').textContent = 'New Order';
