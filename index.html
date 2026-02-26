@@ -1493,19 +1493,76 @@ function goTo(page) {
 // ===== HOME STATS =====
 async function loadHomeStats() {
   try {
-    const [ordRes, invRes, bookRes] = await Promise.all([
-      sb.from('orders').select('id,status'),
-      sb.from('inventory').select('qty'),
-      sb.from('schedule_bookings').select('booking_date').eq('booking_date', todayKey())
+    // Compute date range for "this week" (today through 6 days out)
+    const weekEnd = new Date(today);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    const weekEndKey = dateKey(weekEnd);
+
+    const [ordRes, invRes, stockRes, bookTodayRes, bookWeekRes, bookFutureRes] = await Promise.all([
+      sb.from('orders').select('id,status,price,payment'),
+      sb.from('inventory').select('qty,price'),
+      sb.from('stock').select('material,qty'),
+      sb.from('schedule_bookings').select('booking_date').eq('booking_date', todayKey()),
+      sb.from('schedule_bookings').select('booking_date').gte('booking_date', todayKey()).lte('booking_date', weekEndKey),
+      sb.from('schedule_bookings').select('booking_date').gt('booking_date', todayKey()).order('booking_date', { ascending: true }).limit(1)
     ]);
-    const active = (ordRes.data||[]).filter(o => o.status !== 'completed').length;
+
+    // ── Top 3 stats (unchanged) ──
+    const activeOrders = (ordRes.data||[]).filter(o => o.status !== 'completed');
+    const active = activeOrders.length;
     const ready = (invRes.data||[]).reduce((s,i) => s+(i.qty||0), 0);
-    const pickups = (bookRes.data||[]).length;
+    const pickups = (bookTodayRes.data||[]).length;
     document.getElementById('hs-active').textContent = active;
     document.getElementById('hs-ready').textContent = ready;
     document.getElementById('hs-pickups').textContent = pickups;
     if (active > 0) { document.getElementById('tile-orders-badge').textContent = active; document.getElementById('tile-orders-badge').style.display=''; }
     if (pickups > 0) { document.getElementById('tile-pickups-badge').textContent = pickups+' today'; document.getElementById('tile-pickups-badge').style.display=''; }
+
+    // ── Orders strip ──
+    const pending = activeOrders.filter(o => o.status === 'pending').length;
+    const building = activeOrders.filter(o => o.status === 'building').length;
+    const readyOrd = activeOrders.filter(o => o.status === 'ready').length;
+    const owed = activeOrders.filter(o => o.payment === 'unpaid').reduce((s,o) => s+(parseFloat(o.price)||0), 0);
+    document.getElementById('ss-pending').textContent = pending;
+    document.getElementById('ss-building').textContent = building;
+    document.getElementById('ss-ready-ord').textContent = readyOrd;
+    document.getElementById('ss-owed').textContent = '$'+owed.toFixed(0);
+
+    // ── Inventory strip ──
+    const invItems = invRes.data||[];
+    const totalStock = invItems.reduce((s,i) => s+(i.qty||0), 0);
+    const totalValue = invItems.reduce((s,i) => s+((i.qty||0)*(parseFloat(i.price)||0)), 0);
+    document.getElementById('ss-stock').textContent = totalStock;
+    document.getElementById('ss-inv-value').textContent = '$'+totalValue.toFixed(0);
+
+    // ── Materials strip ──
+    const stockMap = {};
+    (stockRes.data||[]).forEach(r => { stockMap[r.material] = r.qty||0; });
+    const pickets = stockMap['pickets']||0;
+    const twobytwo = stockMap['twobytwo']||0;
+    const twobyfour = stockMap['twobyfour']||0;
+    const elP = document.getElementById('ss-pickets');
+    const el22 = document.getElementById('ss-twobytwo');
+    const el24 = document.getElementById('ss-twobyfour');
+    elP.textContent = pickets;
+    el22.textContent = twobytwo;
+    el24.textContent = twobyfour;
+    elP.className = 'strip-val' + (pickets < 10 ? ' low' : '');
+    el22.className = 'strip-val' + (twobytwo < 5 ? ' low' : '');
+    el24.className = 'strip-val' + (twobyfour < 5 ? ' low' : '');
+
+    // ── Scheduler strip ──
+    const weekPickups = (bookWeekRes.data||[]).length;
+    const nextBooking = (bookFutureRes.data||[])[0];
+    let nextLabel = 'None';
+    if (nextBooking) {
+      const d = new Date(nextBooking.booking_date + 'T00:00:00');
+      nextLabel = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    }
+    document.getElementById('ss-today').textContent = pickups;
+    document.getElementById('ss-week').textContent = weekPickups;
+    document.getElementById('ss-next').textContent = nextLabel;
+
   } catch(e) { console.error(e); }
 }
 
