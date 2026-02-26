@@ -1003,6 +1003,7 @@ body {
         <button class="copy-btn" id="qCopyBtn" onclick="copyQuoteMsg()">Copy message</button>
       </div>
       <button style="width:100%;padding:12px;background:transparent;color:var(--text-muted);border:2px solid var(--warm-gray);border-radius:10px;font-size:14px;cursor:pointer;margin-top:4px" onclick="resetQuote()">← New quote</button>
+      <button class="btn-primary" style="width:100%;padding:13px;margin-top:8px;font-size:15px;justify-content:center" onclick="createOrderFromQuote()">📋 Create Order from This Quote</button>
     </div>
   </div>
 </div>
@@ -1751,6 +1752,24 @@ function copyQuoteMsg() {
     b.textContent='✓ Copied!'; b.classList.add('copied');
     setTimeout(()=>{b.textContent='Copy message';b.classList.remove('copied');},2000);
   });
+}
+
+function createOrderFromQuote() {
+  const l = document.getElementById('dimL').value;
+  const w = document.getElementById('dimW').value;
+  const h = document.getElementById('dimH').value;
+  const size = `${l}×${w}×${h}`;
+  const price = getQuotePrice();
+  document.getElementById('orderModalTitle').textContent = 'New Order';
+  document.getElementById('editOrderId').value = '';
+  ['oName','oContact','oNotes'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('oPickup').value = '';
+  document.getElementById('oSize').value = size;
+  document.getElementById('oStyle').value = currentStyle;
+  document.getElementById('oPrice').value = price;
+  document.getElementById('oPayment').value = 'unpaid';
+  document.getElementById('oStatus').value = 'pending';
+  document.getElementById('orderModal').classList.add('open');
 }
 
 function resetQuote() {
