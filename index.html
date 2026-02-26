@@ -857,32 +857,62 @@ body {
     </div>
 
     <div class="app-grid">
-      <div class="app-tile" onclick="goTo('quote')">
-        <span class="tile-icon">🪵</span>
-        <div class="tile-name">Quote Calculator</div>
-        <div class="tile-desc">Price any size planter instantly</div>
+      <div>
+        <div class="app-tile" onclick="goTo('quote')">
+          <span class="tile-icon">🪵</span>
+          <div class="tile-name">Quote Calculator</div>
+          <div class="tile-desc">Price any size planter instantly</div>
+        </div>
       </div>
-      <div class="app-tile" onclick="goTo('orders')">
-        <span class="tile-icon">📋</span>
-        <div class="tile-name">Orders</div>
-        <div class="tile-desc">Track active & completed orders</div>
-        <span class="tile-badge" id="tile-orders-badge" style="display:none"></span>
+      <div>
+        <div class="app-tile" onclick="goTo('orders')">
+          <span class="tile-icon">📋</span>
+          <div class="tile-name">Orders</div>
+          <div class="tile-desc">Track active & completed orders</div>
+          <span class="tile-badge" id="tile-orders-badge" style="display:none"></span>
+        </div>
+        <div class="stat-strip" id="strip-orders">
+          <div class="strip-item"><div class="strip-val" id="ss-pending">—</div><div class="strip-lbl">Pending</div></div>
+          <div class="strip-item"><div class="strip-val" id="ss-building">—</div><div class="strip-lbl">Building</div></div>
+          <div class="strip-item"><div class="strip-val" id="ss-ready-ord">—</div><div class="strip-lbl">Ready</div></div>
+          <div class="strip-item"><div class="strip-val money" id="ss-owed">—</div><div class="strip-lbl">Owed</div></div>
+        </div>
       </div>
-      <div class="app-tile" onclick="goTo('inventory')">
-        <span class="tile-icon">📦</span>
-        <div class="tile-name">Inventory</div>
-        <div class="tile-desc">Ready-to-sell planters & sales history</div>
+      <div>
+        <div class="app-tile" onclick="goTo('inventory')">
+          <span class="tile-icon">📦</span>
+          <div class="tile-name">Inventory</div>
+          <div class="tile-desc">Ready-to-sell planters & sales history</div>
+        </div>
+        <div class="stat-strip" id="strip-inventory">
+          <div class="strip-item"><div class="strip-val" id="ss-stock">—</div><div class="strip-lbl">In Stock</div></div>
+          <div class="strip-item"><div class="strip-val money" id="ss-inv-value">—</div><div class="strip-lbl">Value</div></div>
+        </div>
       </div>
-      <div class="app-tile" onclick="goTo('materials')">
-        <span class="tile-icon">🛒</span>
-        <div class="tile-name">Materials</div>
-        <div class="tile-desc">Wood stock & Lowes purchases</div>
+      <div>
+        <div class="app-tile" onclick="goTo('materials')">
+          <span class="tile-icon">🛒</span>
+          <div class="tile-name">Materials</div>
+          <div class="tile-desc">Wood stock & Lowes purchases</div>
+        </div>
+        <div class="stat-strip" id="strip-materials">
+          <div class="strip-item"><div class="strip-val" id="ss-pickets">—</div><div class="strip-lbl">Pickets</div></div>
+          <div class="strip-item"><div class="strip-val" id="ss-twobytwo">—</div><div class="strip-lbl">2×2s</div></div>
+          <div class="strip-item"><div class="strip-val" id="ss-twobyfour">—</div><div class="strip-lbl">2×4s</div></div>
+        </div>
       </div>
-      <div class="app-tile" onclick="goTo('scheduler')" style="grid-column: span 2;">
-        <span class="tile-icon">📅</span>
-        <div class="tile-name">Pickup Scheduler</div>
-        <div class="tile-desc">Calendar, bookings & availability</div>
-        <span class="tile-badge" id="tile-pickups-badge" style="display:none"></span>
+      <div style="grid-column: span 2;">
+        <div class="app-tile" onclick="goTo('scheduler')">
+          <span class="tile-icon">📅</span>
+          <div class="tile-name">Pickup Scheduler</div>
+          <div class="tile-desc">Calendar, bookings & availability</div>
+          <span class="tile-badge" id="tile-pickups-badge" style="display:none"></span>
+        </div>
+        <div class="stat-strip" id="strip-scheduler">
+          <div class="strip-item"><div class="strip-val" id="ss-today">—</div><div class="strip-lbl">Today</div></div>
+          <div class="strip-item"><div class="strip-val" id="ss-week">—</div><div class="strip-lbl">This Week</div></div>
+          <div class="strip-item" style="flex:2; align-items:flex-start"><div class="strip-val" id="ss-next" style="font-size:14px">—</div><div class="strip-lbl">Next Pickup</div></div>
+        </div>
       </div>
     </div>
   </div>
