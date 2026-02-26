@@ -1466,7 +1466,13 @@ function showConfirm(message, onConfirm, okLabel='Delete') {
   document.getElementById('confirmMsg').textContent = message;
   const btn = document.getElementById('confirmOkBtn');
   btn.textContent = okLabel;
-  btn.onclick = () => { closeModal('confirmModal'); onConfirm(); };
+  btn.onclick = () => {
+    closeModal('confirmModal');
+    Promise.resolve(onConfirm()).catch(err => {
+      console.error('Confirm action failed:', err);
+      showToast('Something went wrong', 'error');
+    });
+  };
   document.getElementById('confirmModal').classList.add('open');
 }
 
