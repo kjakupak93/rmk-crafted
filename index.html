@@ -1024,7 +1024,10 @@ body {
       </div>
       <div class="section-header">
         <h2>Active Orders</h2>
-        <button class="btn-primary" onclick="openOrderModal()">+ New Order</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="markPaidBtn" class="btn-secondary" style="display:none" onclick="openMarkPaidModal()">Mark all paid</button>
+          <button class="btn-primary" onclick="openOrderModal()">+ New Order</button>
+        </div>
       </div>
       <div class="filter-bar">
         <button class="filter-btn active" onclick="filterOrders('all',this)">All</button>
@@ -1797,6 +1800,8 @@ async function loadOrders() {
   document.getElementById('os-building').textContent=active.filter(o=>o.status==='building').length;
   document.getElementById('os-ready').textContent=active.filter(o=>o.status==='ready').length;
   document.getElementById('os-value').textContent='$'+active.reduce((s,o)=>s+(o.price||0),0).toFixed(0);
+  const unpaidCount = active.filter(o => o.payment === 'unpaid').length;
+  document.getElementById('markPaidBtn').style.display = unpaidCount > 0 ? '' : 'none';
   let filtered = active;
   if (orderFilter!=='all') filtered=active.filter(o=>o.status===orderFilter);
   document.getElementById('activeOrdersList').innerHTML = filtered.length ? filtered.map(orderCardHTML).join('') : emptyState('📋','No active orders.');
@@ -1882,6 +1887,21 @@ async function deleteOrder(id) {
     showToast('Order deleted');
     loadOrders(); loadHomeStats();
   });
+}
+
+function openMarkPaidModal() {
+  document.getElementById('markPaidModal').classList.add('open');
+}
+
+async function markAllPaid(method) {
+  closeModal('markPaidModal');
+  const { error } = await sb.from('orders')
+    .update({ payment: method })
+    .eq('payment', 'unpaid')
+    .neq('status', 'completed');
+  if (error) { showToast('Error updating orders', 'error'); return; }
+  showToast(`All unpaid orders marked as ${method}!`, 'success');
+  loadOrders(); loadHomeStats();
 }
 
 function filterOrders(f,btn) {
