@@ -401,6 +401,7 @@ body {
 .order-card.s-pending { border-left: 4px solid var(--orange); }
 .order-card.s-building { border-left: 4px solid var(--ocean); }
 .order-card.s-ready { border-left: 4px solid var(--green); }
+.order-card.s-overdue { border-left: 4px solid var(--red); }
 .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
 .card-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--navy); }
 .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
@@ -1814,10 +1815,14 @@ function orderCardHTML(o) {
   const pc={cash:'badge-cash',venmo:'badge-venmo',unpaid:'badge-unpaid'}[o.payment]||'badge-unpaid';
   const pl={cash:'Cash',venmo:'Venmo',unpaid:'Unpaid'}[o.payment]||'';
   const pickup=o.pickup_date?`📅 ${o.pickup_date}`:'';
-  return `<div class="order-card s-${o.status}">
+  const isOverdue = o.status!=='completed' && o.pickup_date && o.pickup_date < todayKey();
+  const overdueClass = isOverdue ? ' s-overdue' : '';
+  const overdueBadge = isOverdue ? `<span class="badge" style="background:#fde8e8;color:var(--red)">Overdue</span>` : '';
+  return `<div class="order-card s-${o.status}${overdueClass}">
     <div class="card-top">
       <div><div class="card-title">${o.name}</div><div class="card-subtitle">${o.size||''}" — ${o.style||'Standard'}${o.contact?' · '+o.contact:''}</div></div>
       <div class="card-actions">
+        ${overdueBadge}
         <span class="badge ${bc}">${bl}</span>
         <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
         ${o.status!=='completed'?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
