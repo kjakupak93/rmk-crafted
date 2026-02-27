@@ -1664,7 +1664,7 @@ function toggleStdTable() {
 function buildStdTable() {
   const tbody = document.getElementById('stdTbody');
   tbody.innerHTML = STANDARD_SIZES.map(s => {
-    const est = estPickets(s.l,s.w,s.h);
+    const est = s.pickets || estPickets(s.l,s.w,s.h);
     const mat = (est*UNIT_COSTS.pickets).toFixed(2);
     return `<tr onclick="useStdSize(${s.l},${s.w},${s.h},${s.price})">
       <td style="font-family:'DM Mono',monospace">${s.l}×${s.w}×${s.h}"</td>
@@ -1685,7 +1685,8 @@ function useStdSize(l,w,h,price) {
   document.getElementById('dimL').value=l;
   document.getElementById('dimW').value=w;
   document.getElementById('dimH').value=h;
-  document.getElementById('qPickets').value=estPickets(l,w,h);
+  const _s=STANDARD_SIZES.find(s=>s.l===l&&s.w===w&&s.h===h);
+  document.getElementById('qPickets').value=(_s&&_s.pickets)?_s.pickets:estPickets(l,w,h);
   document.getElementById('qOverride').value=price;
   onDimChange();
   document.getElementById('stdTableWrap').classList.remove('show');
