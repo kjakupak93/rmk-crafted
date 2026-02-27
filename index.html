@@ -1858,9 +1858,13 @@ function orderCardHTML(o) {
   const isOverdue = o.status!=='completed' && o.pickup_date && o.pickup_date < todayKey();
   const overdueClass = isOverdue ? ' s-overdue' : '';
   const overdueBadge = isOverdue ? `<span class="badge badge-overdue">Overdue</span>` : '';
+  const subtitleItems = o.items && o.items.length
+    ? o.items.map(it => `${it.qty}× ${it.size}" — ${it.style}`).join('<br>')
+    : `${o.size||''}" — ${o.style||'Standard'}`;
+  const contactSuffix = o.contact ? ` · ${o.contact}` : '';
   return `<div class="order-card s-${o.status}${overdueClass}">
     <div class="card-top">
-      <div><div class="card-title">${o.name}</div><div class="card-subtitle">${o.size||''}" — ${o.style||'Standard'}${o.contact?' · '+o.contact:''}</div></div>
+      <div><div class="card-title">${o.name}</div><div class="card-subtitle">${subtitleItems}${contactSuffix}</div></div>
       <div class="card-actions">
         ${overdueBadge}
         <span class="badge ${bc}">${bl}</span>
