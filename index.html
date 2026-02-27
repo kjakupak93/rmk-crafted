@@ -1859,7 +1859,7 @@ function orderCardHTML(o) {
   const overdueClass = isOverdue ? ' s-overdue' : '';
   const overdueBadge = isOverdue ? `<span class="badge badge-overdue">Overdue</span>` : '';
   const subtitleItems = o.items && o.items.length
-    ? o.items.map(it => `${it.qty}× ${it.size}" — ${it.style}`).join('<br>')
+    ? o.items.map(it => `${it.qty||1}× ${it.size||''}" — ${it.style||'Standard'}`).join('<br>')
     : `${o.size||''}" — ${o.style||'Standard'}`;
   const contactSuffix = o.contact ? ` · ${o.contact}` : '';
   return `<div class="order-card s-${o.status}${overdueClass}">
