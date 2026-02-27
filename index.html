@@ -880,6 +880,7 @@ body {
           <div class="strip-item"><div class="strip-val" id="ss-building">—</div><div class="strip-lbl">Building</div></div>
           <div class="strip-item"><div class="strip-val" id="ss-ready-ord">—</div><div class="strip-lbl">Ready</div></div>
           <div class="strip-item"><div class="strip-val money" id="ss-owed">—</div><div class="strip-lbl">Owed</div></div>
+          <div class="strip-item"><div class="strip-val" id="ss-overdue">—</div><div class="strip-lbl">Overdue</div></div>
         </div>
       </div>
       <div>
@@ -1547,7 +1548,7 @@ async function loadHomeStats() {
     const weekEndKey = dateKey(weekEnd);
 
     const [ordRes, invRes, stockRes, bookTodayRes, bookWeekRes, bookFutureRes] = await Promise.all([
-      sb.from('orders').select('id,status,price,payment'),
+      sb.from('orders').select('id,status,price,payment,pickup_date'),
       sb.from('inventory').select('qty,price'),
       sb.from('stock').select('material,qty'),
       sb.from('schedule_bookings').select('booking_date').eq('booking_date', todayKey()),
@@ -1571,10 +1572,14 @@ async function loadHomeStats() {
     const building = activeOrders.filter(o => o.status === 'building').length;
     const readyOrd = activeOrders.filter(o => o.status === 'ready').length;
     const owed = activeOrders.filter(o => o.payment === 'unpaid').reduce((s,o) => s+(parseFloat(o.price)||0), 0);
+    const overdue = activeOrders.filter(o => o.pickup_date && o.pickup_date < todayKey()).length;
     document.getElementById('ss-pending').textContent = pending;
     document.getElementById('ss-building').textContent = building;
     document.getElementById('ss-ready-ord').textContent = readyOrd;
     document.getElementById('ss-owed').textContent = '$'+owed.toFixed(0);
+    const elOD = document.getElementById('ss-overdue');
+    elOD.textContent = overdue;
+    elOD.className = 'strip-val' + (overdue > 0 ? ' low' : '');
 
     // ── Inventory strip ──
     const invItems = invRes.data||[];
