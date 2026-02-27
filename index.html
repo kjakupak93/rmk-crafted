@@ -1984,6 +1984,60 @@ function copyListing() {
   }).catch(() => showToast('Could not copy — please copy manually', 'error'));
 }
 
+function addOrderItem(size='', style='Standard', qty=1, price='') {
+  const container = document.getElementById('oItemsContainer');
+  const row = document.createElement('div');
+  row.className = 'order-item-row';
+  row.innerHTML = `
+    <input class="form-control item-size" type="text" placeholder="36×16×16" value="${size}" style="flex:2;min-width:0" oninput="updateOrderTotal()">
+    <select class="form-control item-style" style="flex:1;min-width:0" onchange="updateOrderTotal()">
+      <option${style==='Standard'?' selected':''}>Standard</option>
+      <option${style==='Vertical'?' selected':''}>Vertical</option>
+    </select>
+    <input class="form-control item-qty" type="number" min="1" value="${qty}" placeholder="1" style="flex:0 0 54px" oninput="updateOrderTotal()">
+    <input class="form-control item-price" type="number" min="0" value="${price}" placeholder="$" style="flex:0 0 72px" oninput="updateOrderTotal()">
+    <button type="button" class="icon-btn" onclick="removeOrderItem(this)" title="Remove item">🗑️</button>`;
+  container.appendChild(row);
+  updateRemoveButtons();
+  updateOrderTotal();
+}
+
+function removeOrderItem(btn) {
+  const container = document.getElementById('oItemsContainer');
+  if (container.children.length <= 1) return;
+  btn.closest('.order-item-row').remove();
+  updateRemoveButtons();
+  updateOrderTotal();
+}
+
+function updateRemoveButtons() {
+  const rows = document.querySelectorAll('#oItemsContainer .order-item-row');
+  rows.forEach(row => {
+    row.querySelector('.icon-btn').style.visibility = rows.length > 1 ? '' : 'hidden';
+  });
+}
+
+function updateOrderTotal() {
+  const rows = document.querySelectorAll('#oItemsContainer .order-item-row');
+  let total = 0;
+  rows.forEach(row => {
+    const qty = parseInt(row.querySelector('.item-qty').value) || 1;
+    const price = parseFloat(row.querySelector('.item-price').value) || 0;
+    total += qty * price;
+  });
+  document.getElementById('oItemsTotal').textContent = '$' + total.toFixed(0);
+}
+
+function getOrderItems() {
+  const rows = document.querySelectorAll('#oItemsContainer .order-item-row');
+  return Array.from(rows).map(row => ({
+    size: row.querySelector('.item-size').value.trim(),
+    style: row.querySelector('.item-style').value,
+    qty: parseInt(row.querySelector('.item-qty').value) || 1,
+    price: parseFloat(row.querySelector('.item-price').value) || 0
+  }));
+}
+
 function filterOrders(f,btn) {
   orderFilter=f;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
