@@ -1722,8 +1722,8 @@ function getQuotePrice() {
   const ppp = parseFloat(document.getElementById('qPPP').value)||10;
   let price = p*ppp;
   if (currentStyle==='Vertical') {
-    const t22=(parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||4.50);
-    const t24=(parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||5.50);
+    const t22=(parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
+    const t24=(parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
     price += (t22+t24)*2.5;
   }
   return Math.round(price/5)*5;
@@ -1733,8 +1733,8 @@ function getQuoteMatCost() {
   const p = parseInt(document.getElementById('qPickets').value)||0;
   let mat = p*UNIT_COSTS.pickets;
   if (currentStyle==='Vertical') {
-    mat += (parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||4.50);
-    mat += (parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||5.50);
+    mat += (parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
+    mat += (parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
   }
   return mat;
 }
@@ -1763,8 +1763,8 @@ function calculateQuote() {
   if (currentStyle==='Vertical') {
     const t22q=parseInt(document.getElementById('q22').value)||0;
     const t24q=parseInt(document.getElementById('q24').value)||0;
-    const t22c=parseFloat(document.getElementById('q22c').value)||4.50;
-    const t24c=parseFloat(document.getElementById('q24c').value)||5.50;
+    const t22c=parseFloat(document.getElementById('q22c').value)||3.23;
+    const t24c=parseFloat(document.getElementById('q24c').value)||4.17;
     if (t22q) brows+=`<div class="brow"><span class="blbl">2×2s (${t22q} × $${t22c})</span><span class="bval">$${(t22q*t22c).toFixed(2)}</span></div>`;
     if (t24q) brows+=`<div class="brow"><span class="blbl">2×4s (${t24q} × $${t24c})</span><span class="bval">$${(t24q*t24c).toFixed(2)}</span></div>`;
   }
@@ -2232,19 +2232,19 @@ function openPurchaseModal() {
 }
 
 function updatePurchEst() {
-  const p=(parseInt(document.getElementById('pPickets').value)||0)*(parseFloat(document.getElementById('pPP').value)||3.65);
-  const t22=(parseInt(document.getElementById('p22').value)||0)*(parseFloat(document.getElementById('p22p').value)||4.50);
-  const t24=(parseInt(document.getElementById('p24').value)||0)*(parseFloat(document.getElementById('p24p').value)||5.50);
+  const p=(parseInt(document.getElementById('pPickets').value)||0)*(parseFloat(document.getElementById('pPP').value)||3.66);
+  const t22=(parseInt(document.getElementById('p22').value)||0)*(parseFloat(document.getElementById('p22p').value)||3.23);
+  const t24=(parseInt(document.getElementById('p24').value)||0)*(parseFloat(document.getElementById('p24p').value)||4.17);
   document.getElementById('purchEst').textContent='$'+(p+t22+t24).toFixed(2);
 }
 
 async function savePurchase() {
   const pickets=parseInt(document.getElementById('pPickets').value)||0;
-  const pp=parseFloat(document.getElementById('pPP').value)||3.65;
+  const pp=parseFloat(document.getElementById('pPP').value)||3.66;
   const t22=parseInt(document.getElementById('p22').value)||0;
-  const t22p=parseFloat(document.getElementById('p22p').value)||4.50;
+  const t22p=parseFloat(document.getElementById('p22p').value)||3.23;
   const t24=parseInt(document.getElementById('p24').value)||0;
-  const t24p=parseFloat(document.getElementById('p24p').value)||5.50;
+  const t24p=parseFloat(document.getElementById('p24p').value)||4.17;
   if (!pickets&&!t22&&!t24) {showToast('Enter at least one material','error');return;}
   const total=pickets*pp+t22*t22p+t24*t24p;
   const payload={purchase_date:document.getElementById('pDate').value,store:document.getElementById('pStore').value,pickets,picket_price:pp,twobytwo:t22,twobytwo_price:t22p,twobyfour:t24,twobyfour_price:t24p,total,notes:document.getElementById('pNotes').value};
