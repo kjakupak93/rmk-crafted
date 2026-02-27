@@ -1232,14 +1232,13 @@ body {
       <div class="form-group"><label>Customer Name</label><input class="form-control" type="text" id="oName" placeholder="Jane Smith"></div>
       <div class="form-group"><label>Contact / FB Handle</label><input class="form-control" type="text" id="oContact" placeholder="@janesmith"></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Size (e.g. 48×16×16)</label><input class="form-control" type="text" id="oSize" placeholder="48×16×16"></div>
-      <div class="form-group"><label>Style</label><select class="form-control" id="oStyle"><option>Standard</option><option>Vertical</option></select></div>
+    <div class="form-group">
+      <label>Items <span style="font-size:11px;color:var(--text-muted);font-weight:400">(Size · Style · Qty · Price)</span></label>
+      <div id="oItemsContainer" class="order-items"></div>
+      <button type="button" class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-top:2px" onclick="addOrderItem()">+ Add Item</button>
+      <div class="order-items-total">Total: <strong id="oItemsTotal">$0</strong></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Price ($)</label><input class="form-control" type="number" id="oPrice" placeholder="85"></div>
-      <div class="form-group"><label>Payment</label><select class="form-control" id="oPayment"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select></div>
-    </div>
+    <div class="form-group"><label>Payment</label><select class="form-control" id="oPayment"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select></div>
     <div class="form-row">
       <div class="form-group"><label>Status</label><select class="form-control" id="oStatus"><option value="pending">Pending</option><option value="building">Building</option><option value="ready">Ready</option></select></div>
       <div class="form-group"><label>Pickup Date</label><input class="form-control" type="date" id="oPickup"></div>
