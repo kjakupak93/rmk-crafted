@@ -1436,6 +1436,21 @@ body {
   </div>
 </div>
 
+<!-- Listing modal -->
+<div class="modal-overlay" id="listingModal">
+  <div class="modal" style="max-width:480px">
+    <h2 style="margin-bottom:4px">Facebook Marketplace Listing</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Copy and paste into your Facebook Marketplace listing.</p>
+    <div class="quote-out" style="margin-bottom:12px">
+      <div class="quote-text" id="listingText"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="copy-btn" id="listingCopyBtn" onclick="copyListing()" style="flex:1;padding:10px;font-size:13px">Copy listing</button>
+      <button class="modal-btn-cancel" onclick="closeModal('listingModal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== SUPABASE INIT =====
 const { createClient } = supabase;
