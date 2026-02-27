@@ -1810,11 +1810,10 @@ function createOrderFromQuote() {
   document.getElementById('editOrderId').value = '';
   ['oName','oContact','oNotes'].forEach(f => document.getElementById(f).value = '');
   document.getElementById('oPickup').value = '';
-  document.getElementById('oSize').value = size;
-  document.getElementById('oStyle').value = currentStyle;
-  document.getElementById('oPrice').value = price;
   document.getElementById('oPayment').value = 'unpaid';
   document.getElementById('oStatus').value = 'pending';
+  document.getElementById('oItemsContainer').innerHTML = '';
+  addOrderItem(size, currentStyle, 1, price);
   document.getElementById('orderModal').classList.add('open');
 }
 
@@ -1882,12 +1881,12 @@ function orderCardHTML(o) {
 function openOrderModal() {
   document.getElementById('orderModalTitle').textContent='New Order';
   document.getElementById('editOrderId').value='';
-  ['oName','oContact','oSize','oNotes'].forEach(f=>document.getElementById(f).value='');
-  document.getElementById('oPrice').value='';
+  ['oName','oContact','oNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('oPickup').value='';
-  document.getElementById('oStyle').value='Standard';
   document.getElementById('oPayment').value='unpaid';
   document.getElementById('oStatus').value='pending';
+  document.getElementById('oItemsContainer').innerHTML='';
+  addOrderItem();
   document.getElementById('orderModal').classList.add('open');
 }
 
@@ -1898,20 +1897,23 @@ async function editOrder(id) {
   document.getElementById('editOrderId').value=id;
   document.getElementById('oName').value=data.name||'';
   document.getElementById('oContact').value=data.contact||'';
-  document.getElementById('oSize').value=data.size||'';
-  document.getElementById('oStyle').value=data.style||'Standard';
-  document.getElementById('oPrice').value=data.price||'';
   document.getElementById('oPayment').value=data.payment||'unpaid';
   document.getElementById('oStatus').value=data.status||'pending';
   document.getElementById('oPickup').value=data.pickup_date||'';
   document.getElementById('oNotes').value=data.notes||'';
+  document.getElementById('oItemsContainer').innerHTML='';
+  const items = data.items && data.items.length ? data.items : [{size:data.size||'',style:data.style||'Standard',qty:1,price:data.price||0}];
+  items.forEach(item => addOrderItem(item.size, item.style||'Standard', item.qty||1, item.price||0));
   document.getElementById('orderModal').classList.add('open');
 }
 
 async function saveOrder() {
   const id=document.getElementById('editOrderId').value;
-  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:document.getElementById('oSize').value,style:document.getElementById('oStyle').value,price:parseFloat(document.getElementById('oPrice').value)||0,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,notes:document.getElementById('oNotes').value};
-  if (!payload.name||!payload.size) {showToast('Name and size required','error');return;}
+  const items=getOrderItems();
+  if (!document.getElementById('oName').value) {showToast('Customer name required','error');return;}
+  if (!items.length||!items[0].size) {showToast('At least one item with a size is required','error');return;}
+  const total=items.reduce((s,i)=>s+(i.qty*i.price),0);
+  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:items[0].size,style:items[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,notes:document.getElementById('oNotes').value};
   const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
   if (error) {showToast('Error saving order','error');console.error(error);return;}
   showToast(id?'Order updated!':'Order added!','success');
