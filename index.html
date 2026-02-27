@@ -1009,6 +1009,7 @@ body {
       </div>
       <button style="width:100%;padding:12px;background:transparent;color:var(--text-muted);border:2px solid var(--warm-gray);border-radius:10px;font-size:14px;cursor:pointer;margin-top:4px" onclick="resetQuote()">← New quote</button>
       <button class="btn-primary" style="width:100%;padding:13px;margin-top:8px;font-size:15px;justify-content:center" onclick="createOrderFromQuote()">📋 Create Order from This Quote</button>
+      <button class="btn-secondary" style="width:100%;padding:13px;margin-top:8px;font-size:15px;justify-content:center" onclick="openListingFromQuote()">📣 Post to Marketplace</button>
     </div>
   </div>
 </div>
@@ -1781,6 +1782,16 @@ function copyQuoteMsg() {
   });
 }
 
+function openListingFromQuote() {
+  const l = document.getElementById('dimL').value;
+  const w = document.getElementById('dimW').value;
+  const h = document.getElementById('dimH').value;
+  if (!l || !w || !h) { showToast('Please calculate a quote first', 'error'); return; }
+  const size = `${l}×${w}×${h}`;
+  const price = getQuotePrice();
+  openListingModal(size, currentStyle, price);
+}
+
 function createOrderFromQuote() {
   const l = document.getElementById('dimL').value;
   const w = document.getElementById('dimW').value;
@@ -1932,6 +1943,40 @@ async function markAllPaid(method) {
   loadOrders(); loadHomeStats();
 }
 
+function openListingModal(size, style, price) {
+  const parts = size.split('×');
+  const l = parts[0]||'?', w = parts[1]||'?', h = parts[2]||'?';
+  const matLine = style==='Vertical'
+    ? '🌿 Material: Cedar + 2×2 & 2×4 frame — extra deep & sturdy'
+    : '🌿 Material: Natural cedar — durable & weather-resistant';
+  const text = `🪵 Cedar Planter Box — ${size}"
+
+Handcrafted cedar planter box, perfect for your garden or patio!
+
+📐 Size: ${l}" L × ${w}" W × ${h}" H
+💵 Price: $${price}
+${matLine}
+
+Payment: Cash or Venmo (@RMKCrafted)
+Pickup only — Oceanside, CA
+
+Message me to claim yours! 🌿`;
+  document.getElementById('listingText').textContent = text;
+  const btn = document.getElementById('listingCopyBtn');
+  btn.textContent = 'Copy listing';
+  btn.classList.remove('copied');
+  document.getElementById('listingModal').classList.add('open');
+}
+
+function copyListing() {
+  navigator.clipboard.writeText(document.getElementById('listingText').textContent).then(() => {
+    const btn = document.getElementById('listingCopyBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy listing'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
 function filterOrders(f,btn) {
   orderFilter=f;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
@@ -1955,7 +2000,10 @@ async function loadInventory() {
     </div>
     <div style="font-size:11px;color:var(--text-muted)">in stock</div>
     ${item.notes?`<div style="font-size:12px;color:var(--text-muted)">${item.notes}</div>`:''}
-    <button class="icon-btn" onclick="deleteInvItem('${item.id}')">🗑️</button>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="icon-btn" style="flex:1;width:auto;padding:5px 8px;font-size:11px" onclick="openListingModal('${item.size}','${item.style||'Standard'}',${item.price})">📣 List</button>
+      <button class="icon-btn" onclick="deleteInvItem('${item.id}')">🗑️</button>
+    </div>
   </div>`).join('');
 }
 
