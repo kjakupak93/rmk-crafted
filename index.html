@@ -1474,10 +1474,10 @@ const sb = createClient(
 
 // ===== STATE =====
 const STANDARD_SIZES = [
-  {l:16,w:16,h:16,price:30},{l:36,w:12,h:16,price:55},{l:36,w:16,h:16,price:60},
-  {l:36,w:16,h:27,price:70},{l:36,w:24,h:16,price:100},{l:48,w:12,h:16,price:75},
-  {l:48,w:12,h:27,price:80},{l:48,w:16,h:16,price:85},{l:48,w:16,h:27,price:90},
-  {l:48,w:24,h:16,price:110}
+  {l:16,w:16,h:16,price:30},{l:36,w:12,h:16,price:55},{l:36,w:16,h:16,price:60,pickets:6},
+  {l:36,w:16,h:27,price:70,pickets:7},{l:36,w:24,h:16,price:100,pickets:10},{l:48,w:12,h:16,price:75,pickets:7},
+  {l:48,w:12,h:27,price:80,pickets:7},{l:48,w:16,h:16,price:85,pickets:8},{l:48,w:16,h:27,price:90,pickets:9},
+  {l:48,w:24,h:16,price:110,pickets:11}
 ];
 const UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17};
 let currentPage = 'home';
