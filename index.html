@@ -1974,7 +1974,7 @@ function copyListing() {
     btn.textContent = '✓ Copied!';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'Copy listing'; btn.classList.remove('copied'); }, 2000);
-  });
+  }).catch(() => showToast('Could not copy — please copy manually', 'error'));
 }
 
 function filterOrders(f,btn) {
@@ -2001,7 +2001,7 @@ async function loadInventory() {
     <div style="font-size:11px;color:var(--text-muted)">in stock</div>
     ${item.notes?`<div style="font-size:12px;color:var(--text-muted)">${item.notes}</div>`:''}
     <div style="display:flex;gap:6px;margin-top:4px">
-      <button class="icon-btn" style="flex:1;width:auto;padding:5px 8px;font-size:11px" onclick="openListingModal('${item.size}','${item.style||'Standard'}',${item.price})">📣 List</button>
+      <button class="icon-btn" style="flex:1;width:auto;padding:5px 8px;font-size:11px" data-size="${item.size}" data-style="${item.style||'Standard'}" data-price="${item.price}" onclick="openListingModal(this.dataset.size,this.dataset.style,this.dataset.price)">📣 List</button>
       <button class="icon-btn" onclick="deleteInvItem('${item.id}')">🗑️</button>
     </div>
   </div>`).join('');
