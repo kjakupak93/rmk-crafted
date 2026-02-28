@@ -11,7 +11,7 @@ A single-page web app (`index.html`) that serves as an all-in-one business dashb
 
 ## Supabase Config
 - **Project URL**: `https://mfsejmfmyuvhuclzuitc.supabase.co`
-- **Anon Key**: `sb_publishable_Hpy9CeMe5TgKgFbC2bLdHg_NT6uipTT`
+- **Anon Key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc2VqbWZteXV2aHVjbHp1aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTgzODksImV4cCI6MjA4NzYzNDM4OX0.Ve8dY-CvGqCMSWfifd6HvrDvmrJo4J00auhos8aezpY`
 - **Client**: Loaded via CDN `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2`
 - **Client variable**: `sb`
 
@@ -48,7 +48,7 @@ The app is a single HTML file with a multi-page navigation system (no URL routin
 - **Product**: Cedar planter boxes — Standard style (pickets only) and Vertical style (deeper/bigger, uses 2×2s and 2×4s for support)
 - **Sales channel**: Facebook Marketplace, pickup only
 - **Payment**: Cash or Venmo (@RMKCrafted business account)
-- **Materials**: Cedar pickets from Lowes (~$3.65 each incl. tax), 2×2s (~$4.50), 2×4s (~$5.50)
+- **Materials**: Cedar pickets from Lowes ($3.38 base + 8.25% tax = $3.66 each), 2×2s ($2.98 base = $3.23 each), 2×4s ($3.85 base = $4.17 each)
 - **Pricing formula**: ~$10 per picket used (e.g. 10 pickets = ~$100)
 
 ## Standard Planter Sizes & Prices
