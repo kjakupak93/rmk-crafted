@@ -1585,7 +1585,7 @@ async function loadHomeStats() {
     ]);
 
     // ── Top 3 stats (unchanged) ──
-    const activeOrders = (ordRes.data||[]).filter(o => o.status !== 'completed');
+    const activeOrders = (ordRes.data||[]).filter(o => !(o.status === 'completed' && o.payment !== 'unpaid'));
     const active = activeOrders.length;
     const ready = (invRes.data||[]).reduce((s,i) => s+(i.qty||0), 0);
     const pickups = (bookTodayRes.data||[]).length;
@@ -1841,8 +1841,8 @@ function showOrderTab(tab,btn) {
 async function loadOrders() {
   const { data, error } = await sb.from('orders').select('*').order('created_at',{ascending:false});
   if (error) { showToast('Error loading orders','error'); return; }
-  const active = (data||[]).filter(o=>o.status!=='completed');
-  const completed = (data||[]).filter(o=>o.status==='completed');
+  const active = (data||[]).filter(o=>!(o.status==='completed'&&o.payment!=='unpaid'));
+  const completed = (data||[]).filter(o=>o.status==='completed'&&o.payment!=='unpaid');
   document.getElementById('os-pending').textContent=active.filter(o=>o.status==='pending').length;
   document.getElementById('os-building').textContent=active.filter(o=>o.status==='building').length;
   document.getElementById('os-ready').textContent=active.filter(o=>o.status==='ready').length;
