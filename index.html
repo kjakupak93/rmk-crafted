@@ -1049,7 +1049,7 @@ body {
         <button class="filter-btn active" onclick="filterOrders('all',this)">All</button>
         <button class="filter-btn" onclick="filterOrders('pending',this)">Pending</button>
         <button class="filter-btn" onclick="filterOrders('building',this)">Building</button>
-        <button class="filter-btn" onclick="filterOrders('ready',this)">Ready</button>
+        <button class="filter-btn" onclick="filterOrders('ready',this)">Ready for Pickup</button>
       </div>
       <div id="activeOrdersList"></div>
     </div>
@@ -1245,7 +1245,7 @@ body {
     </div>
     <div class="form-group"><label>Payment</label><select class="form-control" id="oPayment"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select></div>
     <div class="form-row">
-      <div class="form-group"><label>Status</label><select class="form-control" id="oStatus"><option value="pending">Pending</option><option value="building">Building</option><option value="ready">Ready</option></select></div>
+      <div class="form-group"><label>Status</label><select class="form-control" id="oStatus"><option value="pending">Pending</option><option value="building">Building</option><option value="ready">Ready for Pickup</option><option value="completed">Completed</option></select></div>
       <div class="form-group"><label>Pickup Date</label><input class="form-control" type="date" id="oPickup"></div>
     </div>
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="oNotes" placeholder="Custom requests, etc."></div>
