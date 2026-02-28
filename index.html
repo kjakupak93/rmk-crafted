@@ -1483,6 +1483,7 @@ const UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17};
 let currentPage = 'home';
 let currentStyle = 'Standard';
 let matchedSize = null;
+let currentEditOrder = null;
 let orderFilter = 'all';
 let calYear, calMonth, selectedDate;
 const today = new Date();
@@ -1889,6 +1890,7 @@ function orderCardHTML(o) {
 }
 
 function openOrderModal() {
+  currentEditOrder = null;
   document.getElementById('orderModalTitle').textContent='New Order';
   document.getElementById('editOrderId').value='';
   ['oName','oContact','oNotes'].forEach(f=>document.getElementById(f).value='');
@@ -1903,6 +1905,7 @@ function openOrderModal() {
 async function editOrder(id) {
   const {data} = await sb.from('orders').select('*').eq('id',id).single();
   if (!data) return;
+  currentEditOrder = data;
   document.getElementById('orderModalTitle').textContent='Edit Order';
   document.getElementById('editOrderId').value=id;
   document.getElementById('oName').value=data.name||'';
@@ -1926,6 +1929,11 @@ async function saveOrder() {
   const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:items[0].size,style:items[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,notes:document.getElementById('oNotes').value};
   const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
   if (error) {showToast('Error saving order','error');console.error(error);return;}
+  const isNowCompletedPaid = payload.status==='completed' && payload.payment!=='unpaid';
+  const wasCompletedPaid = currentEditOrder && currentEditOrder.status==='completed' && currentEditOrder.payment!=='unpaid';
+  if (isNowCompletedPaid && !wasCompletedPaid) {
+    await sb.from('sales').insert({name:payload.name,size:payload.size||'',style:payload.style||'Standard',price:payload.price||0,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||''});
+  }
   showToast(id?'Order updated!':'Order added!','success');
   closeModal('orderModal'); loadOrders(); loadHomeStats();
 }
