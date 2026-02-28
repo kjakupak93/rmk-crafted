@@ -1857,7 +1857,7 @@ async function loadOrders() {
 
 function orderCardHTML(o) {
   const bc={pending:'badge-pending',building:'badge-building',ready:'badge-ready',completed:'badge-completed'}[o.status]||'';
-  const bl={pending:'Pending',building:'Building',ready:'Ready',completed:'Complete'}[o.status]||o.status;
+  const bl={pending:'Pending',building:'Building',ready:'Ready for Pickup',completed:'Completed'}[o.status]||o.status;
   const pc={cash:'badge-cash',venmo:'badge-venmo',unpaid:'badge-unpaid'}[o.payment]||'badge-unpaid';
   const pl={cash:'Cash',venmo:'Venmo',unpaid:'Unpaid'}[o.payment]||'';
   const pickup=o.pickup_date?`📅 ${o.pickup_date}`:'';
@@ -1875,7 +1875,7 @@ function orderCardHTML(o) {
         ${overdueBadge}
         <span class="badge ${bc}">${bl}</span>
         <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
-        ${o.status!=='completed'?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
+        ${!(o.status==='completed'&&o.payment!=='unpaid')?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
         <button class="icon-btn" title="Delete" onclick="deleteOrder('${o.id}')">🗑️</button>
       </div>
     </div>
@@ -1933,9 +1933,13 @@ async function saveOrder() {
 async function completeOrder(id) {
   const {data}=await sb.from('orders').select('*').eq('id',id).single();
   if (!data) return;
-  await sb.from('sales').insert({name:data.name,size:data.size,style:data.style,price:data.price,payment:data.payment==='unpaid'?'cash':data.payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes});
   await sb.from('orders').update({status:'completed'}).eq('id',id);
-  showToast('Order completed & moved to sales! 🎉','success');
+  if (data.payment!=='unpaid') {
+    await sb.from('sales').insert({name:data.name,size:data.size,style:data.style,price:data.price,payment:data.payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes});
+    showToast('Order completed & moved to sales! 🎉','success');
+  } else {
+    showToast('Marked as completed — set payment to move to Completed tab.','success');
+  }
   loadOrders(); loadHomeStats();
 }
 
