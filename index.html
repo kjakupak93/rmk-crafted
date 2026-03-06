@@ -831,6 +831,41 @@ body {
   .cal-day { min-height: 52px; padding: 5px; }
   .price-amount { font-size: 52px; }
 }
+
+.customer-booked-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #EBF5FF;
+  color: #1E4D6B;
+  border: 1px solid #7BADC8;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: "DM Mono", monospace;
+  padding: 2px 9px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+.share-booking-btn {
+  background: white;
+  border: 2px solid var(--ocean);
+  color: var(--ocean);
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.share-booking-btn:hover {
+  background: var(--cream);
+  border-color: var(--navy);
+  color: var(--navy);
+}
 </style>
 </head>
 <body>
@@ -1871,13 +1906,16 @@ function orderCardHTML(o) {
   const contactSuffix = o.contact ? ` · ${o.contact}` : '';
   return `<div class="order-card s-${o.status}${overdueClass}">
     <div class="card-top">
-      <div><div class="card-title">${o.name}</div><div class="card-subtitle">${subtitleItems}${contactSuffix}</div></div>
+      <div><div class="card-title">${o.name}</div><div class="card-subtitle">${subtitleItems}${contactSuffix}</div>
+      ${o.customer_booked ? '<span class="customer-booked-badge">📅 Self-booked</span>' : ''}
+    </div>
       <div class="card-actions">
         ${overdueBadge}
         <span class="badge ${bc}">${bl}</span>
         <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
         ${!(o.status==='completed'&&o.payment!=='unpaid')?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
         <button class="icon-btn" title="Delete" onclick="deleteOrder('${o.id}')">🗑️</button>
+        <button class="share-booking-btn" onclick="copyBookingLink('${o.id}', event)">🔗 Share booking link</button>
       </div>
     </div>
     <div class="card-meta">
@@ -2503,6 +2541,31 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 // ===== INIT =====
 buildStdTable();
 checkConnection();
+
+function formatTime(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const p = h >= 12 ? 'PM' : 'AM';
+  return h % 12 || 12 + ':' + String(m).padStart(2,'0') + ' ' + p;
+}
+
+function copyBookingLink(orderId, e) {
+  const base = window.location.origin + window.location.pathname.replace('index.html', '');
+  const url = base + 'schedule.html?order=' + orderId;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = e.currentTarget;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied!';
+    btn.style.background = 'var(--sand-pale)';
+    btn.style.borderColor = 'var(--sand)';
+    btn.style.color = 'var(--sand)';
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 2000);
+  });
+}
 </script>
 </body>
 </html>
