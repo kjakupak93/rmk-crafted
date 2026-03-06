@@ -2549,10 +2549,10 @@ function formatTime(hhmm) {
 }
 
 function copyBookingLink(orderId, e) {
+  const btn = e.currentTarget;
   const base = window.location.origin + window.location.pathname.replace('index.html', '');
   const url = base + 'schedule.html?order=' + orderId;
   navigator.clipboard.writeText(url).then(() => {
-    const btn = e.currentTarget;
     const orig = btn.innerHTML;
     btn.innerHTML = '✓ Copied!';
     btn.style.background = 'var(--sand-pale)';
