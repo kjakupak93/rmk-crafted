@@ -1929,7 +1929,7 @@ function orderCardHTML(o) {
   const bl={pending:'Pending',building:'Building',ready:'Ready for Pickup',completed:'Completed'}[o.status]||o.status;
   const pc={cash:'badge-cash',venmo:'badge-venmo',unpaid:'badge-unpaid'}[o.payment]||'badge-unpaid';
   const pl={cash:'Cash',venmo:'Venmo',unpaid:'Unpaid'}[o.payment]||'';
-  const pickup=o.pickup_date?`📅 ${o.pickup_date}`:'';
+  const pickup=o.pickup_date?`📅 ${o.pickup_date}${o.pickup_time?' @ '+formatTime(o.pickup_time):''}`:'';
   const isOverdue = o.status!=='completed' && o.pickup_date && o.pickup_date < todayKey();
   const overdueClass = isOverdue ? ' s-overdue' : '';
   const overdueBadge = isOverdue ? `<span class="badge badge-overdue">Overdue</span>` : '';
@@ -1984,6 +1984,7 @@ async function editOrder(id) {
   document.getElementById('oPayment').value=data.payment||'unpaid';
   document.getElementById('oStatus').value=data.status||'pending';
   document.getElementById('oPickup').value=data.pickup_date||'';
+  document.getElementById('oPickupTime').value=data.pickup_time||'';
   document.getElementById('oNotes').value=data.notes||'';
   document.getElementById('oItemsContainer').innerHTML='';
   const items = data.items && data.items.length ? data.items : [{size:data.size||'',style:data.style||'Standard',qty:1,price:data.price||0}];
@@ -1997,7 +1998,7 @@ async function saveOrder() {
   if (!document.getElementById('oName').value) {showToast('Customer name required','error');return;}
   if (!items.length||!items[0].size) {showToast('At least one item with a size is required','error');return;}
   const total=items.reduce((s,i)=>s+(i.qty*i.price),0);
-  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:items[0].size,style:items[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,notes:document.getElementById('oNotes').value};
+  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:items[0].size,style:items[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value};
   const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
   if (error) {showToast('Error saving order','error');console.error(error);return;}
   const isNowCompletedPaid = payload.status==='completed' && payload.payment!=='unpaid';
@@ -2005,8 +2006,46 @@ async function saveOrder() {
   if (isNowCompletedPaid && !wasCompletedPaid) {
     await sb.from('sales').insert({name:payload.name,size:payload.size||'',style:payload.style||'Standard',price:payload.price||0,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||''});
   }
+  // Sync pickup date+time → schedule_bookings and block off slot
+  const pickupDate = payload.pickup_date;
+  const pickupTime = payload.pickup_time;
+  if (pickupDate) {
+    // Get the saved order's ID (for new orders, fetch the latest one we just inserted)
+    let orderId = id;
+    if (!orderId) {
+      const {data: newOrder} = await sb.from('orders').select('id').eq('name', payload.name).order('created_at', {ascending:false}).limit(1).single();
+      orderId = newOrder?.id;
+    }
+    if (orderId) {
+      // Remove any existing booking for this order first (clean slate on update)
+      await sb.from('schedule_bookings').delete().eq('order_id', orderId);
+
+      // Insert fresh booking with current date+time
+      const bookingRow = {
+        order_id: orderId,
+        booking_date: pickupDate,
+        pickup_time: pickupTime || null,
+        name: payload.name,
+        contact: payload.contact || '',
+        size: payload.size || '',
+        amount: payload.price || 0,
+        payment: payload.payment || 'unpaid',
+        notes: payload.notes || ''
+      };
+      await sb.from('schedule_bookings').insert(bookingRow);
+
+      // If a matching open schedule_slot exists for this date+time, it's now occupied
+      // (The calendar reads bookings separately, so this is automatic —
+      //  but if the slot was open, we want to visually reflect it as booked)
+      // No slot deletion needed — the calendar shows booked dots when a booking exists on that date
+    }
+  }
   showToast(id?'Order updated!':'Order added!','success');
   closeModal('orderModal'); loadOrders(); loadHomeStats();
+  // Refresh scheduler calendar if it's open
+  if (document.getElementById('page-scheduler') && document.getElementById('page-scheduler').classList.contains('active')) {
+    renderCalendar(); loadUpcoming();
+  }
 }
 
 async function completeOrder(id) {
@@ -2576,9 +2615,11 @@ buildStdTable();
 checkConnection();
 
 function formatTime(hhmm) {
+  if (!hhmm) return '';
   const [h, m] = hhmm.split(':').map(Number);
   const p = h >= 12 ? 'PM' : 'AM';
-  return h % 12 || 12 + ':' + String(m).padStart(2,'0') + ' ' + p;
+  const hr = h % 12 || 12;
+  return hr + ':' + String(m).padStart(2,'0') + ' ' + p;
 }
 
 function copyBookingLink(orderId, e) {
