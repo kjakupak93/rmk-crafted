@@ -866,6 +866,40 @@ body {
   border-color: var(--navy);
   color: var(--navy);
 }
+
+/* ===== ADD-ONS ===== */
+.addon-section { margin-bottom: 20px; }
+.addon-section-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+.addon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.addon-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  border: 2px solid var(--warm-gray);
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+  font-size: 13px; font-weight: 500; color: var(--text);
+}
+.addon-chip:hover { border-color: var(--ocean); background: var(--cream); }
+.addon-chip.selected { border-color: var(--navy); background: var(--navy); color: white; }
+.addon-chip .chip-name { flex: 1; }
+.addon-chip .chip-price { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+.addon-chip.selected .chip-price { color: rgba(255,255,255,0.65); }
+.addon-chip .chip-check { font-size: 11px; opacity: 0; transition: opacity 0.1s; margin-left: -2px; }
+.addon-chip.selected .chip-check { opacity: 1; }
+.addon-subtotal {
+  background: var(--sand-pale);
+  border: 1px solid var(--sand-light);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  color: var(--navy);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.addon-subtotal .addon-sub-label { font-size: 11px; color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -1060,6 +1094,20 @@ body {
         </div>
       </div>
       <div class="input-group"><label>Override final price ($) — optional</label><input class="std-input" type="number" id="qOverride" placeholder="auto-calculated" min="0" step="5" oninput="updateQCalc()"></div>
+    </div>
+
+    <div class="addon-section">
+      <div class="addon-section-label">Optional Add-ons</div>
+      <div class="addon-grid" id="quoteAddonGrid">
+        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price" id="qap-sealant">+$10</span></div>
+        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price" id="qap-liner">+$8</span></div>
+        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price" id="qap-casters">+$15</span></div>
+        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price" id="qap-shelf">+$12</span></div>
+      </div>
+      <div class="addon-subtotal" id="quoteAddonSubtotal" style="display:none">
+        <span id="quoteAddonSubtotalLabel" class="addon-sub-label"></span>
+        <strong id="quoteAddonSubtotalAmt"></strong>
+      </div>
     </div>
 
     <button class="calc-btn" onclick="calculateQuote()">Calculate Quote →</button>
@@ -1311,6 +1359,15 @@ body {
       <button type="button" class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-top:2px" onclick="addOrderItem()">+ Add Item</button>
       <div class="order-items-total">Total: <strong id="oItemsTotal">$0</strong></div>
     </div>
+    <div class="form-group">
+      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
+      <div class="addon-grid" id="orderAddonGrid" style="margin-top:4px">
+        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price" id="oap-sealant">+$10</span></div>
+        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price" id="oap-liner">+$8</span></div>
+        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price" id="oap-casters">+$15</span></div>
+        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price" id="oap-shelf">+$12</span></div>
+      </div>
+    </div>
     <div class="form-group"><label>Payment</label><select class="form-control" id="oPayment"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select></div>
     <div class="form-row">
       <div class="form-group"><label>Status</label><select class="form-control" id="oStatus"><option value="pending">Pending</option><option value="building">Building</option><option value="ready">Ready for Pickup</option><option value="completed">Completed</option></select></div>
@@ -1340,6 +1397,15 @@ body {
       <div class="form-group"><label>Quantity</label><input class="form-control" type="number" id="iQty" placeholder="1" min="1"></div>
     </div>
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="iNotes" placeholder="Optional"></div>
+    <div class="form-group">
+      <label>Add-ons included <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
+      <div class="addon-grid" id="invAddonGrid" style="margin-top:4px">
+        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'inv')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price"></span></div>
+        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'inv')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price"></span></div>
+        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'inv')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price"></span></div>
+        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'inv')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price"></span></div>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('invModal')">Cancel</button>
       <button class="modal-btn-primary" onclick="saveInvItem()">Save</button>
@@ -1550,6 +1616,12 @@ const STANDARD_SIZES = [
   {l:48,w:24,h:16,price:110,pickets:11}
 ];
 const UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17};
+const ADDONS = [
+  {id:'sealant', label:'Sealant', base:10, scales:true},
+  {id:'liner', label:'Fabric Liner', base:8, scales:true},
+  {id:'casters', label:'Casters', base:15, scales:false},
+  {id:'shelf', label:'Bottom Shelf', base:12, scales:true}
+];
 let currentPage = 'home';
 let currentStyle = 'Standard';
 let matchedSize = null;
@@ -1778,6 +1850,7 @@ function onDimChange() {
     document.getElementById('sizeMatch').classList.remove('visible');
   }
   if (!document.getElementById('qPickets').value) document.getElementById('qPickets').value = estPickets(l,w,h);
+  updateQuoteAddonPrices();
 }
 
 function applyMatch() {
@@ -1788,6 +1861,28 @@ function applyMatch() {
 }
 
 function getQuotePrice() {
+  const ov = parseFloat(document.getElementById('qOverride').value);
+  let basePrice;
+  if (ov && !isNaN(ov)) {
+    basePrice = ov;
+  } else {
+    const p = parseInt(document.getElementById('qPickets').value)||0;
+    const ppp = parseFloat(document.getElementById('qPPP').value)||10;
+    let price = p*ppp;
+    if (currentStyle==='Vertical') {
+      const t22=(parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
+      const t24=(parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
+      price += (t22+t24)*2.5;
+    }
+    basePrice = Math.round(price/5)*5;
+  }
+  const l=parseInt(document.getElementById('dimL').value)||16;
+  const w=parseInt(document.getElementById('dimW').value)||16;
+  const h=parseInt(document.getElementById('dimH').value)||16;
+  const addonTotal = calcAddonTotal(getSelectedAddonIds('quoteAddonGrid'), l, w, h);
+  return basePrice + addonTotal;
+}
+function getQuoteBasePrice() {
   const ov = parseFloat(document.getElementById('qOverride').value);
   if (ov && !isNaN(ov)) return ov;
   const p = parseInt(document.getElementById('qPickets').value)||0;
@@ -1812,6 +1907,76 @@ function getQuoteMatCost() {
 }
 
 function updateQCalc() {}
+
+// ===== ADD-ONS =====
+function addonScaleFactor(l, w, h) {
+  const baseline = 2*(16+16)*16; // 1024 sq-in
+  return Math.max(1, (2*(l+w)*h) / baseline);
+}
+function addonPrice(id, l, w, h) {
+  const a = ADDONS.find(x=>x.id===id);
+  if (!a) return 0;
+  if (!a.scales) return a.base;
+  return Math.round(a.base * addonScaleFactor(l, w, h));
+}
+function getSelectedAddonIds(gridId) {
+  return Array.from(document.querySelectorAll('#'+gridId+' .addon-chip.selected')).map(el=>el.dataset.id);
+}
+function calcAddonTotal(ids, l, w, h) {
+  return ids.reduce((s,id)=>s+addonPrice(id,l,w,h), 0);
+}
+function parseSizeDims(sizeStr) {
+  const p = (sizeStr||'').split('×').map(x=>parseInt(x.trim()));
+  return (p.length===3&&p.every(x=>x>0)) ? {l:p[0],w:p[1],h:p[2]} : {l:16,w:16,h:16};
+}
+function resetAddonChips(gridId) {
+  document.querySelectorAll('#'+gridId+' .addon-chip').forEach(el=>el.classList.remove('selected'));
+}
+function getItemRows(o) {
+  if (!o.items) return [];
+  if (Array.isArray(o.items)) return o.items;
+  return o.items.rows || [];
+}
+function getItemAddons(o) {
+  if (!o.items||Array.isArray(o.items)) return [];
+  return o.items.add_ons || [];
+}
+function getItemAddonTotal(o) {
+  if (!o.items||Array.isArray(o.items)) return 0;
+  return o.items.add_on_total || 0;
+}
+function toggleAddon(el, context) {
+  el.classList.toggle('selected');
+  if (context==='quote') updateQuoteAddonPrices();
+  if (context==='order') updateOrderTotal();
+}
+function updateQuoteAddonPrices() {
+  const l=parseInt(document.getElementById('dimL').value)||16;
+  const w=parseInt(document.getElementById('dimW').value)||16;
+  const h=parseInt(document.getElementById('dimH').value)||16;
+  ADDONS.forEach(a => {
+    const priceEl = document.getElementById('qap-'+a.id);
+    if (priceEl) priceEl.textContent = '+$'+addonPrice(a.id,l,w,h);
+  });
+  const ids = getSelectedAddonIds('quoteAddonGrid');
+  const total = calcAddonTotal(ids, l, w, h);
+  const sub = document.getElementById('quoteAddonSubtotal');
+  if (ids.length) {
+    sub.style.display='';
+    document.getElementById('quoteAddonSubtotalLabel').textContent = ids.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?a.label:id;}).join(', ');
+    document.getElementById('quoteAddonSubtotalAmt').textContent = '+$'+total;
+  } else {
+    sub.style.display='none';
+  }
+}
+function updateOrderAddonPrices() {
+  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+  const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
+  ADDONS.forEach(a => {
+    const priceEl = document.getElementById('oap-'+a.id);
+    if (priceEl) priceEl.textContent = a.scales ? '+$'+addonPrice(a.id,dims.l,dims.w,dims.h) : '+$'+a.base;
+  });
+}
 
 function calculateQuote() {
   const l=parseInt(document.getElementById('dimL').value);
@@ -1840,13 +2005,24 @@ function calculateQuote() {
     if (t22q) brows+=`<div class="brow"><span class="blbl">2×2s (${t22q} × $${t22c})</span><span class="bval">$${(t22q*t22c).toFixed(2)}</span></div>`;
     if (t24q) brows+=`<div class="brow"><span class="blbl">2×4s (${t24q} × $${t24c})</span><span class="bval">$${(t24q*t24c).toFixed(2)}</span></div>`;
   }
+  const selectedAddonIds = getSelectedAddonIds('quoteAddonGrid');
+  const addonTotal = calcAddonTotal(selectedAddonIds, l, w, h);
+  const basePrice = getQuoteBasePrice();
+  if (selectedAddonIds.length) {
+    brows+=`<div class="brow" style="border-top:1px dashed var(--warm-gray);margin-top:4px"><span class="blbl">Base price</span><span class="bval">$${basePrice}</span></div>`;
+    selectedAddonIds.forEach(id=>{
+      const a=ADDONS.find(x=>x.id===id);
+      if (a) brows+=`<div class="brow"><span class="blbl">${a.label}</span><span class="bval">+$${addonPrice(id,l,w,h)}</span></div>`;
+    });
+  }
   brows+=`<div class="brow total-row"><span class="blbl">Quoted Price</span><span class="bval">$${price}</span></div>`;
   document.getElementById('qBreakdown').innerHTML=brows;
   const styleNote=currentStyle==='Vertical'?' (Vertical Style — great for deeper plantings!)':'';
+  const addonLine = selectedAddonIds.length ? '\n✨ Add-ons: '+selectedAddonIds.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?a.label:id;}).join(', ') : '';
   document.getElementById('qMsgText').textContent=`Hi! Here's your quote! 🪵
 
 📐 Size: ${l}" × ${w}" × ${h}"${styleNote}
-💵 Price: $${price}
+💵 Price: $${price}${addonLine}
 
 Built from cedar pickets — natural, durable, beautiful outdoors.
 
@@ -1883,6 +2059,7 @@ function createOrderFromQuote() {
   if (!l || !w || !h) { showToast('Please calculate a quote first', 'error'); return; }
   const size = `${l}×${w}×${h}`;
   const price = getQuotePrice();
+  const selectedAddons = getSelectedAddonIds('quoteAddonGrid');
   document.getElementById('orderModalTitle').textContent = 'New Order';
   document.getElementById('editOrderId').value = '';
   ['oName','oContact','oNotes'].forEach(f => document.getElementById(f).value = '');
@@ -1890,12 +2067,20 @@ function createOrderFromQuote() {
   document.getElementById('oPayment').value = 'unpaid';
   document.getElementById('oStatus').value = 'pending';
   document.getElementById('oItemsContainer').innerHTML = '';
-  addOrderItem(size, currentStyle, 1, price);
+  resetAddonChips('orderAddonGrid');
+  selectedAddons.forEach(id => {
+    const chip = document.querySelector('#orderAddonGrid [data-id="'+id+'"]');
+    if (chip) chip.classList.add('selected');
+  });
+  addOrderItem(size, currentStyle, 1, getQuoteBasePrice());
+  updateOrderAddonPrices();
   document.getElementById('orderModal').classList.add('open');
 }
 
 function resetQuote() {
   ['dimL','dimW','dimH','qPickets','qOverride','q22','q24'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  resetAddonChips('quoteAddonGrid');
+  document.getElementById('quoteAddonSubtotal').style.display='none';
   document.getElementById('qResults').classList.remove('show');
   document.getElementById('sizeMatch').classList.remove('visible');
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1935,10 +2120,15 @@ function orderCardHTML(o) {
   const isOverdue = o.status!=='completed' && o.pickup_date && o.pickup_date < todayKey();
   const overdueClass = isOverdue ? ' s-overdue' : '';
   const overdueBadge = isOverdue ? `<span class="badge badge-overdue">Overdue</span>` : '';
-  const subtitleItems = o.items && o.items.length
-    ? o.items.map(it => `${it.qty||1}× ${it.size||''}" — ${it.style||'Standard'}`).join('<br>')
+  const itemRows = getItemRows(o);
+  const subtitleItems = itemRows.length
+    ? itemRows.map(it => `${it.qty||1}× ${it.size||''}" — ${it.style||'Standard'}`).join('<br>')
     : `${o.size||''}" — ${o.style||'Standard'}`;
   const contactSuffix = o.contact ? ` · ${o.contact}` : '';
+  const addonIds = getItemAddons(o);
+  const addonBadges = addonIds.length
+    ? `<div class="meta-item" style="color:var(--ocean)">✨ ${addonIds.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?a.label:id;}).join(' · ')}</div>`
+    : '';
   return `<div class="order-card s-${o.status}${overdueClass}">
     <div class="card-top">
       <div><div class="card-title">${o.name}</div><div class="card-subtitle">${subtitleItems}${contactSuffix}</div>
@@ -1957,6 +2147,7 @@ function orderCardHTML(o) {
       <div class="meta-item"><strong>$${o.price||0}</strong></div>
       <div class="meta-item"><span class="badge ${pc}">${pl}</span></div>
       ${pickup?`<div class="meta-item">${pickup}</div>`:''}
+      ${addonBadges}
       ${o.notes?`<div class="meta-item">📝 ${o.notes}</div>`:''}
     </div>
   </div>`;
@@ -1971,7 +2162,9 @@ function openOrderModal() {
   document.getElementById('oPayment').value='unpaid';
   document.getElementById('oStatus').value='pending';
   document.getElementById('oItemsContainer').innerHTML='';
+  resetAddonChips('orderAddonGrid');
   addOrderItem();
+  updateOrderAddonPrices();
   document.getElementById('orderModal').classList.add('open');
 }
 
@@ -1989,18 +2182,32 @@ async function editOrder(id) {
   document.getElementById('oPickupTime').value=data.pickup_time||'';
   document.getElementById('oNotes').value=data.notes||'';
   document.getElementById('oItemsContainer').innerHTML='';
-  const items = data.items && data.items.length ? data.items : [{size:data.size||'',style:data.style||'Standard',qty:1,price:data.price||0}];
+  const itemRows = getItemRows(data);
+  const items = itemRows.length ? itemRows : [{size:data.size||'',style:data.style||'Standard',qty:1,price:data.price||0}];
   items.forEach(item => addOrderItem(item.size, item.style||'Standard', item.qty||1, item.price||0));
+  resetAddonChips('orderAddonGrid');
+  getItemAddons(data).forEach(aid => {
+    const chip = document.querySelector('#orderAddonGrid [data-id="'+aid+'"]');
+    if (chip) chip.classList.add('selected');
+  });
+  updateOrderAddonPrices();
   document.getElementById('orderModal').classList.add('open');
 }
 
 async function saveOrder() {
   const id=document.getElementById('editOrderId').value;
-  const items=getOrderItems();
+  const itemRows=getOrderItems();
   if (!document.getElementById('oName').value) {showToast('Customer name required','error');return;}
-  if (!items.length||!items[0].size) {showToast('At least one item with a size is required','error');return;}
-  const total=items.reduce((s,i)=>s+(i.qty*i.price),0);
-  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:items[0].size,style:items[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value};
+  if (!itemRows.length||!itemRows[0].size) {showToast('At least one item with a size is required','error');return;}
+  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+  const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
+  const selectedAddons = getSelectedAddonIds('orderAddonGrid');
+  const addonTotal = calcAddonTotal(selectedAddons, dims.l, dims.w, dims.h);
+  const baseTotal = itemRows.reduce((s,i)=>s+(i.qty*i.price),0);
+  const total = baseTotal + addonTotal;
+  const itemsPayload = {rows: itemRows, add_ons: selectedAddons, add_on_total: addonTotal};
+  const items = itemsPayload;
+  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:itemRows[0].size,style:itemRows[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value};
   const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
   if (error) {showToast('Error saving order','error');console.error(error);return;}
   const isNowCompletedPaid = payload.status==='completed' && payload.payment!=='unpaid';
@@ -2161,6 +2368,12 @@ function updateOrderTotal() {
     const price = parseFloat(row.querySelector('.item-price').value) || 0;
     total += qty * price;
   });
+  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+  const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
+  const selectedAddons = getSelectedAddonIds('orderAddonGrid');
+  const addonTotal = calcAddonTotal(selectedAddons, dims.l, dims.w, dims.h);
+  total += addonTotal;
+  updateOrderAddonPrices();
   document.getElementById('oItemsTotal').textContent = '$' + total.toFixed(0);
 }
 
@@ -2196,6 +2409,7 @@ async function loadInventory() {
       <button class="qty-btn" onclick="adjustInvQty('${item.id}',${item.qty},1)">+</button>
     </div>
     <div style="font-size:11px;color:var(--text-muted)">in stock</div>
+    ${item.add_ons&&item.add_ons.length?`<div style="font-size:11px;color:var(--ocean)">✨ ${item.add_ons.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?a.label:id;}).join(' · ')}</div>`:''}
     ${item.notes?`<div style="font-size:12px;color:var(--text-muted)">${item.notes}</div>`:''}
     <div style="display:flex;gap:6px;margin-top:4px">
       <button class="icon-btn" style="flex:1;width:auto;padding:5px 8px;font-size:11px" data-size="${item.size}" data-style="${item.style||'Standard'}" data-price="${item.price}" onclick="openListingModal(this.dataset.size,this.dataset.style,this.dataset.price)">📣 List</button>
@@ -2209,12 +2423,14 @@ function openInvModal() {
   ['iSize','iNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('iPrice').value='';
   document.getElementById('iQty').value=1;
+  resetAddonChips('invAddonGrid');
   document.getElementById('invModal').classList.add('open');
 }
 
 async function saveInvItem() {
   const id=document.getElementById('editInvId').value;
-  const payload={size:document.getElementById('iSize').value,style:document.getElementById('iStyle').value,price:parseFloat(document.getElementById('iPrice').value)||0,qty:parseInt(document.getElementById('iQty').value)||1,notes:document.getElementById('iNotes').value};
+  const addons = getSelectedAddonIds('invAddonGrid');
+  const payload={size:document.getElementById('iSize').value,style:document.getElementById('iStyle').value,price:parseFloat(document.getElementById('iPrice').value)||0,qty:parseInt(document.getElementById('iQty').value)||1,notes:document.getElementById('iNotes').value,add_ons:addons.length?addons:null};
   if (!payload.size) {showToast('Size required','error');return;}
   const {error}=await sb.from('inventory').insert(payload);
   if (error) {showToast('Error saving','error');return;}
