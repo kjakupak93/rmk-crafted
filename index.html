@@ -900,6 +900,39 @@ body {
   display: flex; justify-content: space-between; align-items: center;
 }
 .addon-subtotal .addon-sub-label { font-size: 11px; color: var(--text-muted); }
+.chip-price-input {
+  display: none;
+  width: 46px;
+  padding: 2px 5px;
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.18);
+  color: white;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.chip-price-input::-webkit-outer-spin-button, .chip-price-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.chip-price-input:focus { outline: none; border-color: rgba(255,255,255,0.8); }
+.addon-chip.selected .chip-price-static { display: none; }
+.addon-chip.selected .chip-price-input { display: block; }
+.addon-manage-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace;
+  padding: 0; text-decoration: underline; text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+.addon-manage-btn:hover { color: var(--ocean); }
+.addon-settings-row {
+  display: grid; grid-template-columns: 1fr 70px 60px;
+  gap: 8px; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--warm-gray);
+  font-size: 13px;
+}
+.addon-settings-row:last-child { border-bottom: none; }
+.addon-settings-row label { color: var(--text-muted); font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+.addon-settings-scales { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); justify-content: center; }
 </style>
 </head>
 <body>
@@ -1097,12 +1130,15 @@ body {
     </div>
 
     <div class="addon-section">
-      <div class="addon-section-label">Optional Add-ons</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="addon-section-label" style="margin-bottom:0">Optional Add-ons</div>
+        <button class="addon-manage-btn" onclick="openAddonSettings()">✏️ Manage add-ons</button>
+      </div>
       <div class="addon-grid" id="quoteAddonGrid">
-        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price" id="qap-sealant">+$10</span></div>
-        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price" id="qap-liner">+$8</span></div>
-        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price" id="qap-casters">+$15</span></div>
-        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price" id="qap-shelf">+$12</span></div>
+        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price-static" id="qap-sealant">+$10</span><input class="chip-price-input" type="number" min="0" value="10" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
+        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price-static" id="qap-liner">+$8</span><input class="chip-price-input" type="number" min="0" value="8" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
+        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price-static" id="qap-casters">+$15</span><input class="chip-price-input" type="number" min="0" value="15" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
+        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price-static" id="qap-shelf">+$12</span><input class="chip-price-input" type="number" min="0" value="12" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
       </div>
       <div class="addon-subtotal" id="quoteAddonSubtotal" style="display:none">
         <span id="quoteAddonSubtotalLabel" class="addon-sub-label"></span>
@@ -1360,12 +1396,12 @@ body {
       <div class="order-items-total">Total: <strong id="oItemsTotal">$0</strong></div>
     </div>
     <div class="form-group">
-      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
+      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional — click to select, edit price when selected)</span></label>
       <div class="addon-grid" id="orderAddonGrid" style="margin-top:4px">
-        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price" id="oap-sealant">+$10</span></div>
-        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price" id="oap-liner">+$8</span></div>
-        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price" id="oap-casters">+$15</span></div>
-        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price" id="oap-shelf">+$12</span></div>
+        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price-static" id="oap-sealant">+$10</span><input class="chip-price-input" type="number" min="0" value="10" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
+        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price-static" id="oap-liner">+$8</span><input class="chip-price-input" type="number" min="0" value="8" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
+        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price-static" id="oap-casters">+$15</span><input class="chip-price-input" type="number" min="0" value="15" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
+        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price-static" id="oap-shelf">+$12</span><input class="chip-price-input" type="number" min="0" value="12" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
       </div>
     </div>
     <div class="form-group"><label>Payment</label><select class="form-control" id="oPayment"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select></div>
@@ -1600,6 +1636,24 @@ body {
   </div>
 </div>
 
+<!-- Add-on Settings modal -->
+<div class="modal-overlay" id="addonSettingsModal">
+  <div class="modal" style="max-width:420px">
+    <h2>Manage Add-ons</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Edit default names and base prices. Scaled add-ons adjust automatically with box size.</p>
+    <div style="display:grid;grid-template-columns:1fr 70px 60px;gap:8px;margin-bottom:6px;padding-bottom:6px;border-bottom:2px solid var(--warm-gray)">
+      <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">Name</div>
+      <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">Base $</div>
+      <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);text-align:center">Scales</div>
+    </div>
+    <div id="addonSettingsRows"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeModal('addonSettingsModal')">Cancel</button>
+      <button class="modal-btn-primary" onclick="saveAddonSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== SUPABASE INIT =====
 const { createClient } = supabase;
@@ -1616,12 +1670,19 @@ const STANDARD_SIZES = [
   {l:48,w:24,h:16,price:110,pickets:11}
 ];
 const UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17};
-const ADDONS = [
+let ADDONS = [
   {id:'sealant', label:'Sealant', base:10, scales:true},
   {id:'liner', label:'Fabric Liner', base:8, scales:true},
   {id:'casters', label:'Casters', base:15, scales:false},
   {id:'shelf', label:'Bottom Shelf', base:12, scales:true}
 ];
+function loadAddonSettings() {
+  try {
+    const saved = localStorage.getItem('rmk_addons');
+    if (saved) ADDONS = JSON.parse(saved);
+  } catch(e) {}
+  syncAddonChipLabels();
+}
 let currentPage = 'home';
 let currentStyle = 'Standard';
 let matchedSize = null;
@@ -1876,10 +1937,7 @@ function getQuotePrice() {
     }
     basePrice = Math.round(price/5)*5;
   }
-  const l=parseInt(document.getElementById('dimL').value)||16;
-  const w=parseInt(document.getElementById('dimW').value)||16;
-  const h=parseInt(document.getElementById('dimH').value)||16;
-  const addonTotal = calcAddonTotal(getSelectedAddonIds('quoteAddonGrid'), l, w, h);
+  const addonTotal = getAddonTotalFromGrid('quoteAddonGrid');
   return basePrice + addonTotal;
 }
 function getQuoteBasePrice() {
@@ -1945,21 +2003,97 @@ function getItemAddonTotal(o) {
   if (!o.items||Array.isArray(o.items)) return 0;
   return o.items.add_on_total || 0;
 }
+function getAddonTotalFromGrid(gridId) {
+  let total = 0;
+  document.querySelectorAll('#'+gridId+' .addon-chip.selected').forEach(chip => {
+    total += parseFloat(chip.querySelector('.chip-price-input').value) || 0;
+  });
+  return total;
+}
+function syncAddonChipLabels() {
+  // Update chip label text for all grids when ADDONS changes
+  ['quoteAddonGrid','orderAddonGrid','invAddonGrid'].forEach(gridId => {
+    ADDONS.forEach(a => {
+      const chip = document.querySelector('#'+gridId+' [data-id="'+a.id+'"]');
+      if (!chip) return;
+      const nameEl = chip.querySelector('.chip-name');
+      if (nameEl) {
+        const icon = nameEl.textContent.match(/^\S+\s/)?.[0] || '';
+        nameEl.textContent = icon + a.label;
+      }
+    });
+  });
+}
 function toggleAddon(el, context) {
+  const wasSelected = el.classList.contains('selected');
   el.classList.toggle('selected');
+  const input = el.querySelector('.chip-price-input');
+  if (!wasSelected && input) {
+    // Just selected — set the input to the default calculated price
+    const id = el.dataset.id;
+    const a = ADDONS.find(x=>x.id===id);
+    if (a) {
+      let price = a.base;
+      if (a.scales) {
+        if (context==='quote') {
+          const l=parseInt(document.getElementById('dimL').value)||16;
+          const w=parseInt(document.getElementById('dimW').value)||16;
+          const h=parseInt(document.getElementById('dimH').value)||16;
+          price = addonPrice(id, l, w, h);
+        } else if (context==='order') {
+          const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+          const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
+          price = addonPrice(id, dims.l, dims.w, dims.h);
+        }
+      }
+      input.value = price;
+    }
+    setTimeout(() => input.focus(), 0);
+  }
   if (context==='quote') updateQuoteAddonPrices();
   if (context==='order') updateOrderTotal();
+}
+function onChipPriceInput(input, context) {
+  if (context==='quote') updateQuoteAddonPrices();
+  if (context==='order') updateOrderTotal();
+}
+function openAddonSettings() {
+  const rows = document.getElementById('addonSettingsRows');
+  rows.innerHTML = ADDONS.map((a,i) => `
+    <div class="addon-settings-row">
+      <input class="form-control" type="text" value="${a.label}" id="as-label-${i}" style="font-size:13px;padding:7px 10px">
+      <input class="form-control" type="number" min="0" value="${a.base}" id="as-base-${i}" style="font-size:13px;padding:7px 10px;font-family:'DM Mono',monospace">
+      <div class="addon-settings-scales">
+        <input type="checkbox" id="as-scales-${i}" ${a.scales?'checked':''} style="width:16px;height:16px;cursor:pointer">
+        <label for="as-scales-${i}" style="font-size:11px;cursor:pointer">size</label>
+      </div>
+    </div>`).join('');
+  document.getElementById('addonSettingsModal').classList.add('open');
+}
+function saveAddonSettings() {
+  ADDONS = ADDONS.map((a,i) => ({
+    id: a.id,
+    label: document.getElementById('as-label-'+i).value.trim() || a.label,
+    base: parseFloat(document.getElementById('as-base-'+i).value) || a.base,
+    scales: document.getElementById('as-scales-'+i).checked
+  }));
+  localStorage.setItem('rmk_addons', JSON.stringify(ADDONS));
+  closeModal('addonSettingsModal');
+  syncAddonChipLabels();
+  updateQuoteAddonPrices();
+  updateOrderAddonPrices();
+  showToast('Add-on settings saved!', 'success');
 }
 function updateQuoteAddonPrices() {
   const l=parseInt(document.getElementById('dimL').value)||16;
   const w=parseInt(document.getElementById('dimW').value)||16;
   const h=parseInt(document.getElementById('dimH').value)||16;
   ADDONS.forEach(a => {
-    const priceEl = document.getElementById('qap-'+a.id);
-    if (priceEl) priceEl.textContent = '+$'+addonPrice(a.id,l,w,h);
+    const staticEl = document.getElementById('qap-'+a.id);
+    if (staticEl) staticEl.textContent = '+$'+addonPrice(a.id,l,w,h);
   });
   const ids = getSelectedAddonIds('quoteAddonGrid');
-  const total = calcAddonTotal(ids, l, w, h);
+  const total = getAddonTotalFromGrid('quoteAddonGrid');
   const sub = document.getElementById('quoteAddonSubtotal');
   if (ids.length) {
     sub.style.display='';
@@ -2006,13 +2140,15 @@ function calculateQuote() {
     if (t24q) brows+=`<div class="brow"><span class="blbl">2×4s (${t24q} × $${t24c})</span><span class="bval">$${(t24q*t24c).toFixed(2)}</span></div>`;
   }
   const selectedAddonIds = getSelectedAddonIds('quoteAddonGrid');
-  const addonTotal = calcAddonTotal(selectedAddonIds, l, w, h);
+  const addonTotal = getAddonTotalFromGrid('quoteAddonGrid');
   const basePrice = getQuoteBasePrice();
   if (selectedAddonIds.length) {
     brows+=`<div class="brow" style="border-top:1px dashed var(--warm-gray);margin-top:4px"><span class="blbl">Base price</span><span class="bval">$${basePrice}</span></div>`;
     selectedAddonIds.forEach(id=>{
       const a=ADDONS.find(x=>x.id===id);
-      if (a) brows+=`<div class="brow"><span class="blbl">${a.label}</span><span class="bval">+$${addonPrice(id,l,w,h)}</span></div>`;
+      const chip = document.querySelector('#quoteAddonGrid [data-id="'+id+'"]');
+      const chipVal = chip ? parseFloat(chip.querySelector('.chip-price-input').value)||0 : 0;
+      if (a) brows+=`<div class="brow"><span class="blbl">${a.label}</span><span class="bval">+$${chipVal}</span></div>`;
     });
   }
   brows+=`<div class="brow total-row"><span class="blbl">Quoted Price</span><span class="bval">$${price}</span></div>`;
@@ -2186,9 +2322,21 @@ async function editOrder(id) {
   const items = itemRows.length ? itemRows : [{size:data.size||'',style:data.style||'Standard',qty:1,price:data.price||0}];
   items.forEach(item => addOrderItem(item.size, item.style||'Standard', item.qty||1, item.price||0));
   resetAddonChips('orderAddonGrid');
-  getItemAddons(data).forEach(aid => {
+  const savedAddonTotal = getItemAddonTotal(data);
+  const savedAddonIds = getItemAddons(data);
+  savedAddonIds.forEach((aid, idx) => {
     const chip = document.querySelector('#orderAddonGrid [data-id="'+aid+'"]');
-    if (chip) chip.classList.add('selected');
+    if (!chip) return;
+    chip.classList.add('selected');
+    // Restore saved price: split evenly if we don't have per-addon breakdown, else use saved total
+    const input = chip.querySelector('.chip-price-input');
+    if (input && savedAddonTotal) {
+      // Try to use the stored add_on_total divided by count, or calculated default
+      const a = ADDONS.find(x=>x.id===aid);
+      const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+      const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
+      input.value = a ? addonPrice(aid, dims.l, dims.w, dims.h) : 0;
+    }
   });
   updateOrderAddonPrices();
   document.getElementById('orderModal').classList.add('open');
@@ -2199,10 +2347,8 @@ async function saveOrder() {
   const itemRows=getOrderItems();
   if (!document.getElementById('oName').value) {showToast('Customer name required','error');return;}
   if (!itemRows.length||!itemRows[0].size) {showToast('At least one item with a size is required','error');return;}
-  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
-  const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
   const selectedAddons = getSelectedAddonIds('orderAddonGrid');
-  const addonTotal = calcAddonTotal(selectedAddons, dims.l, dims.w, dims.h);
+  const addonTotal = getAddonTotalFromGrid('orderAddonGrid');
   const baseTotal = itemRows.reduce((s,i)=>s+(i.qty*i.price),0);
   const total = baseTotal + addonTotal;
   const itemsPayload = {rows: itemRows, add_ons: selectedAddons, add_on_total: addonTotal};
@@ -2368,10 +2514,7 @@ function updateOrderTotal() {
     const price = parseFloat(row.querySelector('.item-price').value) || 0;
     total += qty * price;
   });
-  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
-  const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
-  const selectedAddons = getSelectedAddonIds('orderAddonGrid');
-  const addonTotal = calcAddonTotal(selectedAddons, dims.l, dims.w, dims.h);
+  const addonTotal = getAddonTotalFromGrid('orderAddonGrid');
   total += addonTotal;
   updateOrderAddonPrices();
   document.getElementById('oItemsTotal').textContent = '$' + total.toFixed(0);
@@ -2830,6 +2973,7 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 
 // ===== INIT =====
 buildStdTable();
+loadAddonSettings();
 checkConnection();
 
 function formatTime(hhmm) {
