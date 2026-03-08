@@ -965,48 +965,85 @@ body {
 
 /* ===== DARK MODE ===== */
 [data-theme="dark"] {
-  --cream: #0F1923;
+  --cream: #0E1A24;
   --navy: #7BADC8;
   --navy-dark: #9FCDE0;
   --ocean: #9FCDE0;
   --ocean-light: #B8D9EC;
-  --text: #E8F4FC;
+  --text: #D8EEF8;
   --text-muted: #7BADC8;
-  --warm-gray: #2A3F50;
-  --warm-white: #1A2E3A;
-  --sand: #C9A55A;
-  --sand-light: #A8834A;
-  --sand-pale: #2A2215;
+  --warm-gray: #2C4255;
+  --warm-white: #162534;
+  --sand: #D4A84B;
+  --sand-light: #B08A3A;
+  --sand-pale: #1E2A1A;
+  --green: #4BA87A;
+  --orange: #E8924A;
+  --red: #D95C50;
 }
-[data-theme="dark"] body { background: var(--cream); }
-[data-theme="dark"] .app-header { background: #0D1820; }
-[data-theme="dark"] .conn-bar { background: #1A2E3A; border-color: #2A3F50; }
-[data-theme="dark"] .home-hero { background: linear-gradient(135deg, #0D1820 0%, #152233 100%); }
-[data-theme="dark"] white, [data-theme="dark"] .card,
-[data-theme="dark"] .order-card, [data-theme="dark"] .inv-card,
-[data-theme="dark"] .stock-card, [data-theme="dark"] .app-tile,
-[data-theme="dark"] .modal, [data-theme="dark"] .day-detail,
-[data-theme="dark"] .slot-card, [data-theme="dark"] .pickup-card { background: #1A2E3A !important; border-color: #2A3F50 !important; }
-[data-theme="dark"] .data-table td { border-color: #2A3F50; }
-[data-theme="dark"] .data-table tr:hover td { background: #152233; }
-[data-theme="dark"] .data-table th { background: #0D1820; }
-[data-theme="dark"] .form-control, [data-theme="dark"] .std-input, [data-theme="dark"] .dim-input {
-  background: #1A2E3A; color: var(--text); border-color: #2A3F50;
+/* Page & header */
+[data-theme="dark"] body { background: var(--cream); color: var(--text); }
+[data-theme="dark"] .app-header { background: #091420; box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+[data-theme="dark"] .conn-bar { background: #162534; border-color: #2C4255; }
+[data-theme="dark"] .home-hero { background: linear-gradient(135deg, #091420 0%, #122035 100%); }
+/* All white-background cards/surfaces */
+[data-theme="dark"] .card, [data-theme="dark"] .order-card, [data-theme="dark"] .inv-card,
+[data-theme="dark"] .app-tile, [data-theme="dark"] .slot-card, [data-theme="dark"] .pickup-card,
+[data-theme="dark"] .home-stat, [data-theme="dark"] .stat-strip, [data-theme="dark"] .summary-card,
+[data-theme="dark"] .stat-card, [data-theme="dark"] .breakdown-card, [data-theme="dark"] .stock-card,
+[data-theme="dark"] .build-calc, [data-theme="dark"] .rev-card, [data-theme="dark"] .day-detail,
+[data-theme="dark"] .table-wrap, [data-theme="dark"] .std-table-wrap, [data-theme="dark"] .picket-section,
+[data-theme="dark"] .activity-item, [data-theme="dark"] .tabs, [data-theme="dark"] .icon-btn,
+[data-theme="dark"] .modal-overlay .modal { background: #162534 !important; border-color: #2C4255 !important; color: var(--text); }
+/* Modal overlay */
+[data-theme="dark"] .modal-overlay { background: rgba(0,0,0,0.7); }
+/* Inputs & selects */
+[data-theme="dark"] .form-control, [data-theme="dark"] .std-input, [data-theme="dark"] .dim-input,
+[data-theme="dark"] select.form-control, [data-theme="dark"] textarea.form-control {
+  background: #0E1A24; color: var(--text); border-color: #2C4255;
 }
-[data-theme="dark"] .tabs { background: #1A2E3A; border-color: #2A3F50; }
-[data-theme="dark"] .filter-btn { background: #1A2E3A; border-color: #2A3F50; color: var(--text-muted); }
-[data-theme="dark"] .filter-btn.active { background: #9FCDE0; border-color: #9FCDE0; color: #0D1820; }
-[data-theme="dark"] .low-stock-banner { background: #2A1F00; border-color: #7A5800; color: #F5C842; }
-[data-theme="dark"] .activity-item { background: #1A2E3A; border-color: #2A3F50; }
-[data-theme="dark"] .icon-btn { background: #1A2E3A; border-color: #2A3F50; }
-[data-theme="dark"] .table-wrap { background: #1A2E3A; border-color: #2A3F50; }
-[data-theme="dark"] .summary-card { background: #1A2E3A; border-color: #2A3F50; }
-[data-theme="dark"] .home-stat, [data-theme="dark"] .stat-strip { background: #1A2E3A; border-color: #2A3F50; }
-[data-theme="dark"] .calc-result { background: #152233; }
-[data-theme="dark"] .btn-secondary { background: #1A2E3A; border-color: #9FCDE0; color: #9FCDE0; }
-[data-theme="dark"] .btn-secondary:hover { background: #152233; }
-[data-theme="dark"] .sales-filter-btn { background: #1A2E3A; border-color: #2A3F50; color: var(--text-muted); }
-[data-theme="dark"] .sales-filter-btn.active { background: #9FCDE0; border-color: #9FCDE0; color: #0D1820; }
+[data-theme="dark"] .form-control:focus, [data-theme="dark"] .std-input:focus { border-color: #7BADC8; outline: none; }
+/* Tables */
+[data-theme="dark"] .data-table { color: var(--text); }
+[data-theme="dark"] .data-table th { background: #0E1A24; color: var(--text-muted); border-color: #2C4255; }
+[data-theme="dark"] .data-table td { border-color: #2C4255; color: var(--text); }
+[data-theme="dark"] .data-table tr:hover td { background: #1E3347; }
+/* Filter & tab buttons */
+[data-theme="dark"] .filter-btn { background: #162534; border-color: #2C4255; color: var(--text-muted); }
+[data-theme="dark"] .filter-btn.active { background: #7BADC8; border-color: #7BADC8; color: #091420; }
+[data-theme="dark"] .sales-filter-btn { background: #162534; border-color: #2C4255; color: var(--text-muted); }
+[data-theme="dark"] .sales-filter-btn.active { background: #7BADC8; border-color: #7BADC8; color: #091420; }
+/* Buttons */
+[data-theme="dark"] .btn-secondary { background: #162534; border-color: #7BADC8; color: #7BADC8; }
+[data-theme="dark"] .btn-secondary:hover { background: #1E3347; }
+[data-theme="dark"] .modal-btn-cancel { background: #162534; border-color: #2C4255; color: var(--text-muted); }
+[data-theme="dark"] .modal-btn-cancel:hover { background: #1E3347; }
+[data-theme="dark"] .cal-nav-btn { background: #162534; border-color: #2C4255; color: var(--text); }
+[data-theme="dark"] .cal-nav-btn:hover { background: #1E3347; }
+[data-theme="dark"] .share-booking-btn { background: #162534; border-color: #2C4255; color: var(--text); }
+[data-theme="dark"] .share-booking-btn:hover { background: #1E3347; }
+/* Calendar days */
+[data-theme="dark"] .cal-day { background: #162534; border-color: #2C4255; color: var(--text); }
+[data-theme="dark"] .cal-day.other-month { background: #0E1A24; color: var(--text-muted); }
+[data-theme="dark"] .cal-day.today { border-color: #7BADC8; }
+[data-theme="dark"] .cal-day.selected { background: #1E3347; border-color: #7BADC8; }
+[data-theme="dark"] .cal-day.has-slots { background: #1A2F42; }
+/* Add-on chips */
+[data-theme="dark"] .addon-chip { background: #162534; border-color: #2C4255; color: var(--text); }
+[data-theme="dark"] .addon-chip:hover { border-color: #7BADC8; background: #1E3347; }
+[data-theme="dark"] .addon-chip.selected { border-color: #7BADC8; background: #1E3347; color: #D8EEF8; }
+[data-theme="dark"] .addon-chip .chip-price { color: var(--text-muted); }
+[data-theme="dark"] .addon-subtotal { background: #1A2215; border-color: #3A4A20; color: var(--sand); }
+/* Misc */
+[data-theme="dark"] .low-stock-banner { background: #1F1800; border-color: #6A4A00; color: #F5C842; }
+[data-theme="dark"] .calc-result { background: #1E3347; border-color: #2C4255; }
+[data-theme="dark"] .hero-earnings { color: rgba(200,230,248,0.7); }
+[data-theme="dark"] .app-tile { color: var(--text); }
+[data-theme="dark"] .app-tile:hover { background: #1E3347 !important; }
+[data-theme="dark"] .picket-bar-fill { background: #7BADC8; }
+[data-theme="dark"] .page-header { border-color: #2C4255; }
+[data-theme="dark"] .section-label { color: var(--text-muted); }
+[data-theme="dark"] .modal h3, [data-theme="dark"] .modal label { color: var(--text); }
 
 /* ===== DARK MODE TOGGLE ===== */
 #dark-toggle {
@@ -1953,8 +1990,12 @@ let ADDONS = [
 function loadAddonSettings() {
   try {
     const saved = localStorage.getItem('rmk_addons');
-    if (saved) ADDONS = JSON.parse(saved);
-  } catch(e) {}
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) ADDONS = parsed;
+      else localStorage.removeItem('rmk_addons'); // clear corrupt data
+    }
+  } catch(e) { localStorage.removeItem('rmk_addons'); }
   syncAddonChipLabels();
 }
 let currentPage = 'home';
