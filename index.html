@@ -1550,7 +1550,7 @@ body {
       </div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Date</th><th>Size</th><th>Style</th><th>Buyer</th><th>Price</th><th>Payment</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Size</th><th>Style</th><th>Buyer</th><th>Price</th><th>Payment</th><th>Notes</th><th></th></tr></thead>
           <tbody id="salesBody"></tbody>
         </table>
       </div>
@@ -3021,7 +3021,7 @@ function renderSalesTable() {
   document.getElementById('rv-count').textContent=data.length;
   document.getElementById('rv-avg').textContent='$'+avg.toFixed(0);
   const tbody=document.getElementById('salesBody');
-  if (!data.length) {tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text-muted)">No sales in this period.</td></tr>';return;}
+  if (!data.length) {tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-muted)">No sales in this period.</td></tr>';return;}
   tbody.innerHTML=data.map(s=>`<tr>
     <td>${s.sale_date||''}</td>
     <td style="font-family:'DM Mono',monospace">${s.size||''}"</td>
@@ -3029,6 +3029,7 @@ function renderSalesTable() {
     <td>${s.name||'—'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500">$${s.price}</td>
     <td><span class="badge badge-${(s.payment||'').toLowerCase()}">${s.payment||''}</span></td>
+    <td style="color:var(--text-muted);font-size:12px">${s.notes||''}</td>
     <td><button type="button" class="icon-btn" onclick="deleteSale('${s.id}')">🗑️</button></td>
   </tr>`).join('');
 }
