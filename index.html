@@ -867,6 +867,170 @@ body {
   color: var(--navy);
 }
 
+/* ===== HERO EARNINGS ===== */
+.hero-earnings {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  margin-top: 10px;
+  position: relative;
+}
+.hero-earnings span { color: rgba(255,255,255,0.85); font-weight: 500; }
+
+/* ===== LOW-STOCK BANNER ===== */
+.low-stock-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FEF3CD;
+  border: 1.5px solid #F5C842;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #7A5800;
+  gap: 10px;
+}
+.low-stock-banner button {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  color: #7A5800;
+  opacity: 0.6;
+  flex-shrink: 0;
+  padding: 2px 4px;
+}
+.low-stock-banner button:hover { opacity: 1; }
+
+/* ===== ACTIVITY FEED ===== */
+.activity-feed { margin-bottom: 18px; }
+.activity-feed-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: white;
+  border: 1.5px solid var(--warm-gray);
+  border-radius: 9px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+.activity-icon { font-size: 15px; flex-shrink: 0; }
+.activity-text { flex: 1; min-width: 0; }
+.activity-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; font-family: 'DM Mono', monospace; }
+.activity-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; font-family: 'DM Mono', monospace; }
+
+/* ===== ADVANCE STATUS BUTTON ===== */
+.advance-btn {
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: none;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.advance-btn-pending { background: #FEF3E2; color: var(--orange); border: 1.5px solid var(--orange); }
+.advance-btn-pending:hover { background: var(--orange); color: white; }
+.advance-btn-building { background: #E3EEF5; color: var(--ocean); border: 1.5px solid var(--ocean); }
+.advance-btn-building:hover { background: var(--ocean); color: white; }
+
+/* ===== SALES FILTER TABS ===== */
+.sales-filter-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.sales-filter-btn {
+  padding: 5px 12px;
+  border: 1.5px solid var(--warm-gray);
+  border-radius: 16px;
+  background: white;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text-muted);
+}
+.sales-filter-btn:hover { border-color: var(--ocean); color: var(--navy); }
+.sales-filter-btn.active { border-color: var(--navy); background: var(--navy); color: white; }
+
+/* ===== DARK MODE ===== */
+[data-theme="dark"] {
+  --cream: #0F1923;
+  --navy: #7BADC8;
+  --navy-dark: #9FCDE0;
+  --ocean: #9FCDE0;
+  --ocean-light: #B8D9EC;
+  --text: #E8F4FC;
+  --text-muted: #7BADC8;
+  --warm-gray: #2A3F50;
+  --warm-white: #1A2E3A;
+  --sand: #C9A55A;
+  --sand-light: #A8834A;
+  --sand-pale: #2A2215;
+}
+[data-theme="dark"] body { background: var(--cream); }
+[data-theme="dark"] .app-header { background: #0D1820; }
+[data-theme="dark"] .conn-bar { background: #1A2E3A; border-color: #2A3F50; }
+[data-theme="dark"] .home-hero { background: linear-gradient(135deg, #0D1820 0%, #152233 100%); }
+[data-theme="dark"] white, [data-theme="dark"] .card,
+[data-theme="dark"] .order-card, [data-theme="dark"] .inv-card,
+[data-theme="dark"] .stock-card, [data-theme="dark"] .app-tile,
+[data-theme="dark"] .modal, [data-theme="dark"] .day-detail,
+[data-theme="dark"] .slot-card, [data-theme="dark"] .pickup-card { background: #1A2E3A !important; border-color: #2A3F50 !important; }
+[data-theme="dark"] .data-table td { border-color: #2A3F50; }
+[data-theme="dark"] .data-table tr:hover td { background: #152233; }
+[data-theme="dark"] .data-table th { background: #0D1820; }
+[data-theme="dark"] .form-control, [data-theme="dark"] .std-input, [data-theme="dark"] .dim-input {
+  background: #1A2E3A; color: var(--text); border-color: #2A3F50;
+}
+[data-theme="dark"] .tabs { background: #1A2E3A; border-color: #2A3F50; }
+[data-theme="dark"] .filter-btn { background: #1A2E3A; border-color: #2A3F50; color: var(--text-muted); }
+[data-theme="dark"] .filter-btn.active { background: #9FCDE0; border-color: #9FCDE0; color: #0D1820; }
+[data-theme="dark"] .low-stock-banner { background: #2A1F00; border-color: #7A5800; color: #F5C842; }
+[data-theme="dark"] .activity-item { background: #1A2E3A; border-color: #2A3F50; }
+[data-theme="dark"] .icon-btn { background: #1A2E3A; border-color: #2A3F50; }
+[data-theme="dark"] .table-wrap { background: #1A2E3A; border-color: #2A3F50; }
+[data-theme="dark"] .summary-card { background: #1A2E3A; border-color: #2A3F50; }
+[data-theme="dark"] .home-stat, [data-theme="dark"] .stat-strip { background: #1A2E3A; border-color: #2A3F50; }
+[data-theme="dark"] .calc-result { background: #152233; }
+[data-theme="dark"] .btn-secondary { background: #1A2E3A; border-color: #9FCDE0; color: #9FCDE0; }
+[data-theme="dark"] .btn-secondary:hover { background: #152233; }
+[data-theme="dark"] .sales-filter-btn { background: #1A2E3A; border-color: #2A3F50; color: var(--text-muted); }
+[data-theme="dark"] .sales-filter-btn.active { background: #9FCDE0; border-color: #9FCDE0; color: #0D1820; }
+
+/* ===== DARK MODE TOGGLE ===== */
+#dark-toggle {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+#dark-toggle:hover { background: rgba(255,255,255,0.2); }
+
+/* ===== ORDER HIGHLIGHT ===== */
+@keyframes orderHighlight {
+  0% { box-shadow: 0 0 0 0 rgba(74,134,168,0.7); }
+  50% { box-shadow: 0 0 0 8px rgba(74,134,168,0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(74,134,168,0); }
+}
+.order-highlight { animation: orderHighlight 1.5s ease; border-color: var(--ocean) !important; }
+
 /* ===== ADD-ONS ===== */
 .addon-section { margin-bottom: 20px; }
 .addon-section-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
@@ -1042,6 +1206,7 @@ body {
     <p id="header-subtitle">Business Dashboard</p>
   </div>
   <button class="header-back-btn" id="backBtn" onclick="goHome()">← Home</button>
+  <button id="dark-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
 </header>
 
 <!-- CONNECTION STATUS -->
@@ -1066,7 +1231,17 @@ body {
         <span class="hero-pill hp-green"><span id="hp-owed">—</span> owed</span>
         <span class="hero-pill hp-ocean"><span id="hp-pickups">—</span> today</span>
       </div>
+      <div class="hero-earnings">This Month: <span id="hp-month-rev">—</span> · YTD: <span id="hp-ytd-rev">—</span></div>
     </div>
+
+    <!-- Low-stock alert -->
+    <div id="low-stock-alert" style="display:none" class="low-stock-banner">
+      <span>⚠️ <span id="low-stock-msg">Low stock</span>. Restock before building.</span>
+      <button onclick="this.closest('.low-stock-banner').style.display='none'" title="Dismiss">✕</button>
+    </div>
+
+    <!-- Activity feed -->
+    <div id="home-activity"></div>
 
     <div class="app-grid">
       <!-- Quote -->
@@ -1281,6 +1456,7 @@ body {
         <h2>Active Orders</h2>
         <div style="display:flex;gap:8px;align-items:center">
           <button id="markPaidBtn" class="btn-secondary" style="display:none" onclick="openMarkPaidModal()">Mark all paid</button>
+          <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="exportOrdersCSV()">⬇️ CSV</button>
           <button class="btn-primary" onclick="openOrderModal()">+ New Order</button>
         </div>
       </div>
@@ -1289,6 +1465,7 @@ body {
         <button class="filter-btn" onclick="filterOrders('pending',this)">Pending</button>
         <button class="filter-btn" onclick="filterOrders('building',this)">Building</button>
         <button class="filter-btn" onclick="filterOrders('ready',this)">Ready for Pickup</button>
+        <button class="filter-btn" onclick="filterOrders('overdue',this)">Overdue <span id="overdue-tab-count" style="display:none;background:var(--red);color:white;border-radius:8px;padding:0 5px;font-size:10px;margin-left:2px"></span></button>
       </div>
       <div id="activeOrdersList"></div>
     </div>
@@ -1324,7 +1501,15 @@ body {
       </div>
       <div class="section-header">
         <h2>Sales History</h2>
-        <button class="btn-primary" onclick="openSaleModal()">+ Log Sale</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="exportSalesCSV()">⬇️ CSV</button>
+          <button class="btn-primary" onclick="openSaleModal()">+ Log Sale</button>
+        </div>
+      </div>
+      <div class="sales-filter-tabs">
+        <button class="sales-filter-btn" onclick="setSalesFilter('week',this)">This Week</button>
+        <button class="sales-filter-btn" onclick="setSalesFilter('month',this)">This Month</button>
+        <button class="sales-filter-btn active" onclick="setSalesFilter('all',this)">All Time</button>
       </div>
       <div class="table-wrap">
         <table class="data-table">
@@ -1594,7 +1779,8 @@ body {
 <!-- Slot modal -->
 <div class="modal-overlay" id="slotModal">
   <div class="modal">
-    <h2>Add Open Time Slot</h2>
+    <h2 id="slotModalTitle">Add Open Time Slot</h2>
+    <input type="hidden" id="editSlotId">
     <div class="form-row">
       <div class="form-group"><label>Start Time</label><input class="form-control" type="time" id="slotStart" value="10:00"></div>
       <div class="form-group"><label>End Time</label><input class="form-control" type="time" id="slotEnd" value="12:00"></div>
@@ -1602,7 +1788,7 @@ body {
     <div class="form-group"><label>Notes (optional)</label><input class="form-control" type="text" id="slotNotes" placeholder="e.g. in driveway"></div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('slotModal')">Cancel</button>
-      <button class="modal-btn-primary" onclick="saveSlot()">Add Slot</button>
+      <button class="modal-btn-primary" id="slotModalSaveBtn" onclick="saveSlot()">Add Slot</button>
     </div>
   </div>
 </div>
@@ -1610,7 +1796,8 @@ body {
 <!-- Booking modal -->
 <div class="modal-overlay" id="bookingModal">
   <div class="modal">
-    <h2>Book a Pickup</h2>
+    <h2 id="bookingModalTitle">Book a Pickup</h2>
+    <input type="hidden" id="editBookingId">
     <div class="form-row">
       <div class="form-group"><label>Buyer Name</label><input class="form-control" type="text" id="bkName" placeholder="Jane Smith"></div>
       <div class="form-group"><label>Contact</label><input class="form-control" type="text" id="bkContact" placeholder="@janesmith"></div>
@@ -1626,7 +1813,7 @@ body {
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="bkNotes" placeholder="Optional"></div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('bookingModal')">Cancel</button>
-      <button class="modal-btn-primary" onclick="saveBooking()">Book Pickup</button>
+      <button class="modal-btn-primary" id="bookingModalSaveBtn" onclick="saveBooking()">Book Pickup</button>
     </div>
   </div>
 </div>
@@ -1828,6 +2015,7 @@ async function checkConnection() {
     document.getElementById('connDot').className = 'conn-dot connected';
     document.getElementById('connText').textContent = 'Connected to Supabase';
     loadHomeStats();
+    loadRecentActivity();
   } catch(e) {
     document.getElementById('connDot').className = 'conn-dot error';
     document.getElementById('connText').textContent = 'Connection error — check Supabase';
@@ -1851,6 +2039,7 @@ function goHome() {
   currentPage = 'home';
   setHomeGreeting();
   loadHomeStats();
+  loadRecentActivity();
 }
 
 function goTo(page) {
@@ -1875,13 +2064,14 @@ async function loadHomeStats() {
     weekEnd.setDate(weekEnd.getDate() + 6);
     const weekEndKey = dateKey(weekEnd);
 
-    const [ordRes, invRes, stockRes, bookTodayRes, bookWeekRes, bookFutureRes] = await Promise.all([
+    const [ordRes, invRes, stockRes, bookTodayRes, bookWeekRes, bookFutureRes, salesRes] = await Promise.all([
       sb.from('orders').select('id,status,price,payment,pickup_date'),
       sb.from('inventory').select('qty,price'),
       sb.from('stock').select('material,qty'),
       sb.from('schedule_bookings').select('booking_date').eq('booking_date', todayKey()),
       sb.from('schedule_bookings').select('booking_date').gte('booking_date', todayKey()).lte('booking_date', weekEndKey),
-      sb.from('schedule_bookings').select('booking_date').gt('booking_date', todayKey()).order('booking_date', { ascending: true }).limit(1)
+      sb.from('schedule_bookings').select('booking_date').gt('booking_date', todayKey()).order('booking_date', { ascending: true }).limit(1),
+      sb.from('sales').select('price,sale_date')
     ]);
 
     // ── Top 3 stats (unchanged) ──
@@ -1944,6 +2134,57 @@ async function loadHomeStats() {
     document.getElementById('ss-week').textContent = weekPickups;
     document.getElementById('ss-next').textContent = nextLabel;
 
+    // ── Earnings summary ──
+    const nowY = today.getFullYear();
+    const nowM = today.getMonth();
+    const salesAll = salesRes.data||[];
+    const monthRev = salesAll.filter(s=>{if(!s.sale_date)return false;const d=new Date(s.sale_date+'T00:00:00');return d.getFullYear()===nowY&&d.getMonth()===nowM;}).reduce((s,x)=>s+(x.price||0),0);
+    const ytdRev = salesAll.filter(s=>{if(!s.sale_date)return false;return new Date(s.sale_date+'T00:00:00').getFullYear()===nowY;}).reduce((s,x)=>s+(x.price||0),0);
+    document.getElementById('hp-month-rev').textContent = '$'+monthRev.toFixed(0);
+    document.getElementById('hp-ytd-rev').textContent = '$'+ytdRev.toFixed(0);
+
+    // ── Low-stock alert ──
+    const lowParts = [];
+    if (pickets < 10) lowParts.push(pickets+' pickets');
+    if (twobytwo < 5) lowParts.push(twobytwo+' 2×2s');
+    if (twobyfour < 5) lowParts.push(twobyfour+' 2×4s');
+    const alertEl = document.getElementById('low-stock-alert');
+    if (lowParts.length) {
+      document.getElementById('low-stock-msg').textContent = 'Low stock — '+lowParts.join(' · ');
+      alertEl.style.display = '';
+    } else {
+      alertEl.style.display = 'none';
+    }
+
+  } catch(e) { console.error(e); }
+}
+
+// ===== RECENT ACTIVITY FEED =====
+async function loadRecentActivity() {
+  try {
+    const tk = todayKey();
+    const [ordRes, bookRes] = await Promise.all([
+      sb.from('orders').select('id,name,size,style,created_at').order('created_at',{ascending:false}).limit(3),
+      sb.from('schedule_bookings').select('id,name,booking_date,pickup_time').gte('booking_date',tk).order('booking_date').order('pickup_time').limit(3)
+    ]);
+    const events = [];
+    (ordRes.data||[]).forEach(o=>{
+      events.push({type:'order', name:o.name, sub:(o.size?o.size+'"':'')+' '+(o.style||''), ts:new Date(o.created_at), icon:'📋'});
+    });
+    (bookRes.data||[]).forEach(b=>{
+      const isToday = b.booking_date === tk;
+      const [y,m,d] = b.booking_date.split('-');
+      const label = isToday ? 'Pickup today' : 'Pickup '+MONTH_SHORT[parseInt(m)-1]+' '+parseInt(d);
+      events.push({type:'booking', name:b.name, sub:label+(b.pickup_time?' '+fmtTime(b.pickup_time):''), ts:new Date(b.booking_date+'T'+(b.pickup_time||'00:00')+':00'), icon:'📅'});
+    });
+    events.sort((a,b)=>b.ts-a.ts);
+    const top4 = events.slice(0,4);
+    const feed = document.getElementById('home-activity');
+    if (!top4.length) { feed.innerHTML=''; return; }
+    function timeAgo(d){const diff=Math.floor((Date.now()-d)/1000);if(diff<60)return'just now';if(diff<3600)return Math.floor(diff/60)+'m ago';if(diff<86400)return Math.floor(diff/3600)+'h ago';return Math.floor(diff/86400)+'d ago';}
+    feed.innerHTML = `<div class="activity-feed"><div class="activity-feed-title">Recent Activity</div>`+
+      top4.map(e=>`<div class="activity-item"><span class="activity-icon">${e.icon}</span><div class="activity-text"><div>${e.name}</div><div class="activity-sub">${e.sub}</div></div><span class="activity-time">${timeAgo(e.ts)}</span></div>`).join('')+
+      `</div>`;
   } catch(e) { console.error(e); }
 }
 
@@ -2326,19 +2567,26 @@ function showOrderTab(tab,btn) {
   btn.classList.add('active');
 }
 
+let allOrders = [];
 async function loadOrders() {
   const { data, error } = await sb.from('orders').select('*').order('created_at',{ascending:false});
   if (error) { showToast('Error loading orders','error'); return; }
-  const active = (data||[]).filter(o=>!(o.status==='completed'&&o.payment!=='unpaid'));
-  const completed = (data||[]).filter(o=>o.status==='completed'&&o.payment!=='unpaid');
+  allOrders = data||[];
+  const active = allOrders.filter(o=>!(o.status==='completed'&&o.payment!=='unpaid'));
+  const completed = allOrders.filter(o=>o.status==='completed'&&o.payment!=='unpaid');
   document.getElementById('os-pending').textContent=active.filter(o=>o.status==='pending').length;
   document.getElementById('os-building').textContent=active.filter(o=>o.status==='building').length;
   document.getElementById('os-ready').textContent=active.filter(o=>o.status==='ready').length;
   document.getElementById('os-value').textContent='$'+active.reduce((s,o)=>s+(o.price||0),0).toFixed(0);
   const unpaidCount = active.filter(o => o.payment === 'unpaid').length;
   document.getElementById('markPaidBtn').style.display = unpaidCount > 0 ? '' : 'none';
+  // Overdue count badge
+  const overdueCount = active.filter(o => o.status!=='completed' && o.pickup_date && o.pickup_date < todayKey()).length;
+  const otc = document.getElementById('overdue-tab-count');
+  if (otc) { otc.textContent = overdueCount; otc.style.display = overdueCount > 0 ? '' : 'none'; }
   let filtered = active;
-  if (orderFilter!=='all') filtered=active.filter(o=>o.status===orderFilter);
+  if (orderFilter==='overdue') filtered=active.filter(o=>o.status!=='completed'&&o.pickup_date&&o.pickup_date<todayKey());
+  else if (orderFilter!=='all') filtered=active.filter(o=>o.status===orderFilter);
   document.getElementById('activeOrdersList').innerHTML = filtered.length ? filtered.map(orderCardHTML).join('') : emptyState('📋','No active orders.');
   document.getElementById('completedOrdersList').innerHTML = completed.length ? completed.map(orderCardHTML).join('') : emptyState('✅','No completed orders yet.');
 }
@@ -2369,6 +2617,8 @@ function orderCardHTML(o) {
       <div class="card-actions">
         ${overdueBadge}
         <span class="badge ${bc}">${bl}</span>
+        ${o.status==='pending'?`<button class="advance-btn advance-btn-pending" onclick="advanceOrderStatus('${o.id}','pending')">→ Building</button>`:''}
+        ${o.status==='building'?`<button class="advance-btn advance-btn-building" onclick="advanceOrderStatus('${o.id}','building')">→ Ready</button>`:''}
         <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
         ${!(o.status==='completed'&&o.payment!=='unpaid')?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
         <button class="icon-btn" title="Delete" onclick="deleteOrder('${o.id}')">🗑️</button>
@@ -2633,6 +2883,14 @@ function filterOrders(f,btn) {
   loadOrders();
 }
 
+async function advanceOrderStatus(id, currentStatus) {
+  const next = {pending:'building', building:'ready'}[currentStatus];
+  if (!next) return;
+  await sb.from('orders').update({status:next}).eq('id',id);
+  showToast('Status updated to '+next,'success');
+  loadOrders(); loadHomeStats();
+}
+
 // ===== INVENTORY =====
 async function loadInventory() {
   const {data,error}=await sb.from('inventory').select('*').order('created_at',{ascending:false});
@@ -2697,16 +2955,32 @@ async function deleteInvItem(id) {
 }
 
 // ===== SALES =====
-async function loadSales() {
-  const {data,error}=await sb.from('sales').select('*').order('sale_date',{ascending:false});
-  if (error) return;
-  const total=(data||[]).reduce((s,x)=>s+(x.price||0),0);
-  const avg=data&&data.length?total/data.length:0;
+let allSales = [];
+let salesFilter = 'all';
+
+function setSalesFilter(period, btn) {
+  salesFilter = period;
+  document.querySelectorAll('.sales-filter-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderSalesTable();
+}
+
+function renderSalesTable() {
+  const now = new Date();
+  let data = allSales;
+  if (salesFilter === 'month') {
+    data = allSales.filter(s=>{if(!s.sale_date)return false;const d=new Date(s.sale_date+'T00:00:00');return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();});
+  } else if (salesFilter === 'week') {
+    const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
+    data = allSales.filter(s=>{if(!s.sale_date)return false;return new Date(s.sale_date+'T00:00:00')>=weekAgo;});
+  }
+  const total=data.reduce((s,x)=>s+(x.price||0),0);
+  const avg=data.length?total/data.length:0;
   document.getElementById('rv-total').textContent='$'+total.toFixed(0);
-  document.getElementById('rv-count').textContent=(data||[]).length;
+  document.getElementById('rv-count').textContent=data.length;
   document.getElementById('rv-avg').textContent='$'+avg.toFixed(0);
   const tbody=document.getElementById('salesBody');
-  if (!data||!data.length) {tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text-muted)">No sales logged yet.</td></tr>';return;}
+  if (!data.length) {tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text-muted)">No sales in this period.</td></tr>';return;}
   tbody.innerHTML=data.map(s=>`<tr>
     <td>${s.sale_date||''}</td>
     <td style="font-family:'DM Mono',monospace">${s.size||''}"</td>
@@ -2716,6 +2990,13 @@ async function loadSales() {
     <td><span class="badge badge-${s.payment}">${s.payment}</span></td>
     <td><button class="icon-btn" onclick="deleteSale('${s.id}')">🗑️</button></td>
   </tr>`).join('');
+}
+
+async function loadSales() {
+  const {data,error}=await sb.from('sales').select('*').order('sale_date',{ascending:false});
+  if (error) return;
+  allSales = data||[];
+  renderSalesTable();
 }
 
 function openSaleModal() {
@@ -2912,6 +3193,7 @@ async function loadDayDetail() {
       <div class="slot-time">${fmtTime(s.start_time)} – ${fmtTime(s.end_time)}</div>
       <div class="slot-info">Open${s.notes?' · '+s.notes:''}</div>
       <span class="slot-badge open">Open</span>
+      <button class="icon-btn" title="Edit" onclick="editSlot('${s.id}')">✏️</button>
       <button class="icon-btn" onclick="deleteSlot('${s.id}')">🗑️</button>
     </div>`;
   });
@@ -2921,6 +3203,7 @@ async function loadDayDetail() {
       <div class="slot-time">${fmtTime(b.pickup_time)}</div>
       <div class="slot-info"><div class="slot-buyer">${b.name}${b.contact?' ('+b.contact+')':''}</div><div class="slot-details">${b.size?b.size+'"':''} ${b.amount?'$'+b.amount:''} ${pi} ${b.notes?'· '+b.notes:''}</div></div>
       <span class="slot-badge booked">Booked</span>
+      <button class="icon-btn" title="Edit" onclick="editBooking('${b.id}')">✏️</button>
       <button class="icon-btn" onclick="deleteBooking('${b.id}')">🗑️</button>
     </div>`;
   });
@@ -2942,25 +3225,80 @@ async function deleteBooking(id) {
   }, 'Remove');
 }
 
-function openSlotModal() { document.getElementById('slotModal').classList.add('open'); }
+function openSlotModal() {
+  document.getElementById('editSlotId').value='';
+  document.getElementById('slotModalTitle').textContent='Add Open Time Slot';
+  document.getElementById('slotModalSaveBtn').textContent='Add Slot';
+  document.getElementById('slotStart').value='10:00';
+  document.getElementById('slotEnd').value='12:00';
+  document.getElementById('slotNotes').value='';
+  document.getElementById('slotModal').classList.add('open');
+}
+
+async function editSlot(id) {
+  const {data}=await sb.from('schedule_slots').select('*').eq('id',id).single();
+  if (!data) return;
+  document.getElementById('editSlotId').value=id;
+  document.getElementById('slotModalTitle').textContent='Edit Time Slot';
+  document.getElementById('slotModalSaveBtn').textContent='Save Changes';
+  document.getElementById('slotStart').value=data.start_time||'10:00';
+  document.getElementById('slotEnd').value=data.end_time||'12:00';
+  document.getElementById('slotNotes').value=data.notes||'';
+  document.getElementById('slotModal').classList.add('open');
+}
+
 async function saveSlot() {
   if (!selectedDate) return;
   const payload={slot_date:selectedDate,start_time:document.getElementById('slotStart').value,end_time:document.getElementById('slotEnd').value,notes:document.getElementById('slotNotes').value};
-  await sb.from('schedule_slots').insert(payload);
-  showToast('Slot added!','success'); closeModal('slotModal'); loadDayDetail(); renderCalendar();
+  const editId=document.getElementById('editSlotId').value;
+  if (editId) {
+    await sb.from('schedule_slots').update(payload).eq('id',editId);
+    showToast('Slot updated!','success');
+  } else {
+    await sb.from('schedule_slots').insert(payload);
+    showToast('Slot added!','success');
+  }
+  closeModal('slotModal'); loadDayDetail(); renderCalendar();
 }
 
 function openBookingModal() {
+  document.getElementById('editBookingId').value='';
+  document.getElementById('bookingModalTitle').textContent='Book a Pickup';
+  document.getElementById('bookingModalSaveBtn').textContent='Book Pickup';
   ['bkName','bkContact','bkSize','bkNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('bkAmount').value='';
   document.getElementById('bookingModal').classList.add('open');
 }
+
+async function editBooking(id) {
+  const {data}=await sb.from('schedule_bookings').select('*').eq('id',id).single();
+  if (!data) return;
+  document.getElementById('editBookingId').value=id;
+  document.getElementById('bookingModalTitle').textContent='Edit Booking';
+  document.getElementById('bookingModalSaveBtn').textContent='Save Changes';
+  document.getElementById('bkName').value=data.name||'';
+  document.getElementById('bkContact').value=data.contact||'';
+  document.getElementById('bkTime').value=data.pickup_time||'10:00';
+  document.getElementById('bkSize').value=data.size||'';
+  document.getElementById('bkAmount').value=data.amount||'';
+  document.getElementById('bkPayment').value=data.payment||'cash';
+  document.getElementById('bkNotes').value=data.notes||'';
+  document.getElementById('bookingModal').classList.add('open');
+}
+
 async function saveBooking() {
   if (!selectedDate) return;
   const payload={booking_date:selectedDate,name:document.getElementById('bkName').value,contact:document.getElementById('bkContact').value,pickup_time:document.getElementById('bkTime').value,size:document.getElementById('bkSize').value,amount:parseFloat(document.getElementById('bkAmount').value)||0,payment:document.getElementById('bkPayment').value,notes:document.getElementById('bkNotes').value};
   if (!payload.name) {showToast('Buyer name required','error');return;}
-  await sb.from('schedule_bookings').insert(payload);
-  showToast('Pickup booked!','success'); closeModal('bookingModal'); loadDayDetail(); renderCalendar(); loadUpcoming();
+  const editId=document.getElementById('editBookingId').value;
+  if (editId) {
+    await sb.from('schedule_bookings').update(payload).eq('id',editId);
+    showToast('Booking updated!','success');
+  } else {
+    await sb.from('schedule_bookings').insert(payload);
+    showToast('Pickup booked!','success');
+  }
+  closeModal('bookingModal'); loadDayDetail(); renderCalendar(); loadUpcoming();
 }
 
 function openQuickBookModal() {
@@ -2993,8 +3331,12 @@ function showSchedTab(tab,btn) {
 async function loadUpcoming() {
   const tk=todayKey();
   const weekEnd=new Date(today);weekEnd.setDate(today.getDate()+7);
-  const {data}=await sb.from('schedule_bookings').select('*').gte('booking_date',tk).order('booking_date').order('pickup_time');
-  const upcoming=data||[];
+  const [{data:bookData},{data:ordData}]=await Promise.all([
+    sb.from('schedule_bookings').select('*').gte('booking_date',tk).order('booking_date').order('pickup_time'),
+    sb.from('orders').select('id,name,customer_name,status').not('status','eq','completed')
+  ]);
+  const upcoming=bookData||[];
+  const activeOrds=ordData||[];
   const todayCount=upcoming.filter(u=>u.booking_date===tk).length;
   const weekCount=upcoming.filter(u=>{const [y,m,d]=u.booking_date.split('-');return new Date(y,m-1,d)<=weekEnd;}).length;
   document.getElementById('up-today').textContent=todayCount;
@@ -3006,10 +3348,12 @@ async function loadUpcoming() {
     const [y,m,d]=u.booking_date.split('-');
     const isToday=u.booking_date===tk;
     const pi={cash:'💵',venmo:'💙',tbd:'❓'}[u.payment]||'';
+    const matchedOrder=activeOrds.find(o=>(o.customer_name||o.name||'').toLowerCase().trim()===(u.name||'').toLowerCase().trim());
+    const orderLink=matchedOrder?`<button style="font-size:11px;padding:3px 8px;background:var(--cream);border:1px solid var(--ocean);color:var(--ocean);border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace" onclick="goToOrder('${matchedOrder.id}')">📋 Order</button>`:'';
     return `<div class="pickup-card${isToday?' today-card':''}">
       <div class="date-badge"><div class="month">${MONTH_SHORT[parseInt(m)-1]}</div><div class="day">${parseInt(d)}</div></div>
       <div class="pickup-body">
-        <div class="pickup-buyer">${u.name}${isToday?' <span style="background:var(--sand);color:white;font-size:10px;padding:2px 6px;border-radius:4px;font-family:DM Mono,monospace">TODAY</span>':''}</div>
+        <div class="pickup-buyer" style="display:flex;align-items:center;gap:6px">${u.name}${isToday?' <span style="background:var(--sand);color:white;font-size:10px;padding:2px 6px;border-radius:4px;font-family:DM Mono,monospace">TODAY</span>':''} ${orderLink}</div>
         <div class="pickup-meta">${u.size?'<span>'+u.size+'"</span>':''} ${u.amount?'<span>$'+u.amount+' '+pi+'</span>':''} ${u.notes?'<span>'+u.notes+'</span>':''}</div>
       </div>
       <div class="pickup-time">${fmtTime(u.pickup_time)}</div>
@@ -3050,6 +3394,66 @@ function copyShareMsg() {
   });
 }
 
+// ===== CSV EXPORT =====
+function downloadCSV(filename, csvStr) {
+  const blob = new Blob([csvStr], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+function csvEscape(v) { const s=String(v||''); return s.includes(',')|| s.includes('"')||s.includes('\n') ? '"'+s.replace(/"/g,'""')+'"' : s; }
+function exportOrdersCSV() {
+  const rows = [['Name','Contact','Size','Style','Price','Status','Payment','Pickup Date','Add-ons']];
+  allOrders.forEach(o=>{
+    const itemRows = getItemRows(o);
+    const sizeSummary = itemRows.length ? itemRows.map(it=>`${it.qty||1}x${it.size||''}`).join('; ') : (o.size||'');
+    const styleSummary = itemRows.length ? itemRows.map(it=>it.style||'Standard').join('; ') : (o.style||'');
+    const addons = getItemAddons(o).join('; ');
+    rows.push([o.name||'',o.contact||'',sizeSummary,styleSummary,o.price||0,o.status||'',o.payment||'',o.pickup_date||'',addons]);
+  });
+  downloadCSV('rmk-orders.csv', rows.map(r=>r.map(csvEscape).join(',')).join('\n'));
+  showToast('Orders exported!','success');
+}
+function exportSalesCSV() {
+  const rows = [['Date','Buyer','Size','Style','Price','Payment','Notes']];
+  allSales.forEach(s=>{
+    rows.push([s.sale_date||'',s.name||'',s.size||'',s.style||'',s.price||0,s.payment||'',s.notes||'']);
+  });
+  downloadCSV('rmk-sales.csv', rows.map(r=>r.map(csvEscape).join(',')).join('\n'));
+  showToast('Sales exported!','success');
+}
+
+// ===== DARK MODE =====
+function applyDarkMode(on) {
+  document.documentElement.dataset.theme = on ? 'dark' : '';
+  document.getElementById('dark-toggle').textContent = on ? '☀️' : '🌙';
+}
+function toggleDarkMode() {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  applyDarkMode(!isDark);
+  localStorage.setItem('rmk_theme', !isDark ? 'dark' : '');
+}
+
+// ===== GO TO ORDER (from upcoming) =====
+function goToOrder(id) {
+  goTo('orders');
+  setTimeout(()=>{
+    const card = document.querySelector(`.order-card`);
+    // Find card by id — we match via edit button
+    const allCards = document.querySelectorAll('.order-card');
+    allCards.forEach(c => {
+      const btn = c.querySelector('button[onclick*="editOrder"]');
+      if (btn && btn.getAttribute('onclick').includes("'"+id+"'")) {
+        c.classList.add('order-highlight');
+        c.scrollIntoView({behavior:'smooth', block:'center'});
+        setTimeout(()=>c.classList.remove('order-highlight'), 2000);
+      }
+    });
+  }, 600);
+}
+
 // ===== SHARED HELPERS =====
 function showInvTab(tab,btn) {
   document.querySelectorAll('#page-inventory .tab-panel').forEach(p=>p.classList.remove('active'));
@@ -3071,6 +3475,8 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 buildStdTable();
 loadAddonSettings();
 setHomeGreeting();
+// Apply saved dark mode preference
+if (localStorage.getItem('rmk_theme') === 'dark') applyDarkMode(true);
 checkConnection();
 
 function formatTime(hhmm) {
