@@ -900,6 +900,70 @@ body {
   display: flex; justify-content: space-between; align-items: center;
 }
 .addon-subtotal .addon-sub-label { font-size: 11px; color: var(--text-muted); }
+
+/* ===== HOME HERO ===== */
+.home-hero {
+  margin-bottom: 28px;
+  padding: 24px 20px 22px;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.home-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255,255,255,0.018) 12px, rgba(255,255,255,0.018) 13px);
+}
+.home-hero::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--sand), var(--ocean-light), var(--sand));
+}
+.home-hero-greeting {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px; font-weight: 700; color: white;
+  margin-bottom: 3px; position: relative;
+}
+.home-hero-date {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: rgba(255,255,255,0.45); margin-bottom: 18px; position: relative;
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+.home-hero-pills { display: flex; gap: 8px; flex-wrap: wrap; position: relative; }
+.hero-pill {
+  padding: 5px 13px; border-radius: 20px;
+  font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.hero-pill.hp-orange { background: rgba(212,120,42,0.28); color: #F4A261; border-color: rgba(212,120,42,0.45); }
+.hero-pill.hp-green  { background: rgba(58,125,92,0.28);  color: #7ECBA1; border-color: rgba(58,125,92,0.45); }
+.hero-pill.hp-ocean  { background: rgba(74,134,168,0.28); color: #9FCDE0; border-color: rgba(74,134,168,0.45); }
+
+/* ===== TILE COLOR VARIANTS ===== */
+.app-tile { border-left: 4px solid var(--warm-gray); }
+.app-tile--quote  { border-left: 4px solid var(--sand); }
+.app-tile--orders { border-left: 4px solid var(--orange); }
+.app-tile--inv    { border-left: 4px solid var(--green); }
+.app-tile--mats   { border-left: 4px solid var(--ocean); }
+.app-tile--sched  { border-left: 4px solid var(--navy-dark); }
+.app-tile--quote:hover  { border-left-color: var(--sand); }
+.app-tile--orders:hover { border-left-color: var(--orange); }
+.app-tile--inv:hover    { border-left-color: var(--green); }
+.app-tile--mats:hover   { border-left-color: var(--ocean); }
+.app-tile--sched:hover  { border-left-color: var(--navy-dark); }
+
+/* Tile head row (tag + badge) */
+.tile-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.tile-tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+
+/* Mini stats inside tiles */
+.tile-mini-stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--warm-gray); }
+.tms-chip { font-size: 11px; color: var(--text-muted); display: inline-flex; align-items: baseline; gap: 3px; white-space: nowrap; }
+.tms-val { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--navy); }
+.tms-val.low   { color: var(--red); }
+.tms-val.money { color: var(--green); }
 .chip-price-input {
   display: none;
   width: 46px;
@@ -991,75 +1055,98 @@ body {
 
 <!-- ===== HOME PAGE ===== -->
 <div class="page active" id="page-home">
-  <div id="page-home-inner" style="padding:32px 24px 60px; max-width:600px; margin:0 auto;">
-    <div style="text-align:center; margin-bottom:28px;">
-      <h2 style="font-family:'Playfair Display',serif; font-size:26px; color:var(--navy); margin-bottom:6px;">Welcome back 👋</h2>
-      <p style="font-size:14px; color:var(--text-muted);">What would you like to work on today?</p>
-    </div>
+  <div id="page-home-inner" style="padding:24px 20px 60px; max-width:600px; margin:0 auto;">
 
-    <div class="home-stats" id="homeStats">
-      <div class="home-stat"><div class="val" id="hs-active">—</div><div class="lbl">Active Orders</div></div>
-      <div class="home-stat"><div class="val" id="hs-ready">—</div><div class="lbl">Ready to Sell</div></div>
-      <div class="home-stat"><div class="val" id="hs-pickups">—</div><div class="lbl">Pickups Today</div></div>
+    <!-- Hero banner -->
+    <div class="home-hero">
+      <div class="home-hero-greeting" id="home-greeting">Good morning, RMK</div>
+      <div class="home-hero-date" id="home-date"></div>
+      <div class="home-hero-pills">
+        <span class="hero-pill hp-orange"><span id="hp-active">—</span> active orders</span>
+        <span class="hero-pill hp-green"><span id="hp-owed">—</span> owed</span>
+        <span class="hero-pill hp-ocean"><span id="hp-pickups">—</span> today</span>
+      </div>
     </div>
 
     <div class="app-grid">
+      <!-- Quote -->
       <div>
-        <div class="app-tile" onclick="goTo('quote')">
-          <span class="tile-icon">🪵</span>
-          <div class="tile-name">Quote Calculator</div>
+        <div class="app-tile app-tile--quote" onclick="goTo('quote')">
+          <div class="tile-head">
+            <span class="tile-tag">Calculator</span>
+            <span class="tile-icon" style="font-size:20px">🪵</span>
+          </div>
+          <div class="tile-name">Quote</div>
           <div class="tile-desc">Price any size planter instantly</div>
         </div>
       </div>
+
+      <!-- Orders -->
       <div>
-        <div class="app-tile" onclick="goTo('orders')">
-          <span class="tile-icon">📋</span>
-          <div class="tile-name">Orders</div>
-          <div class="tile-desc">Track active & completed orders</div>
-          <span class="tile-badge" id="tile-orders-badge" style="display:none"></span>
-        </div>
-        <div class="stat-strip" id="strip-orders">
-          <div class="strip-item"><div class="strip-val" id="ss-pending">—</div><div class="strip-lbl">Pending</div></div>
-          <div class="strip-item"><div class="strip-val" id="ss-building">—</div><div class="strip-lbl">Building</div></div>
-          <div class="strip-item"><div class="strip-val" id="ss-ready-ord">—</div><div class="strip-lbl">Ready</div></div>
-          <div class="strip-item"><div class="strip-val money" id="ss-owed">—</div><div class="strip-lbl">Owed</div></div>
-          <div class="strip-item"><div class="strip-val" id="ss-overdue">—</div><div class="strip-lbl">Overdue</div></div>
+        <div class="app-tile app-tile--orders" onclick="goTo('orders')">
+          <div class="tile-head">
+            <span class="tile-tag">Tracking</span>
+            <span class="tile-icon" style="font-size:20px">📋</span>
+          </div>
+          <div class="tile-name">Orders <span class="tile-badge" id="tile-orders-badge" style="display:none"></span></div>
+          <div class="tile-desc">Active & completed orders</div>
+          <div class="tile-mini-stats">
+            <span class="tms-chip"><span class="tms-val" id="ss-pending">—</span> pending</span>
+            <span class="tms-chip"><span class="tms-val" id="ss-building">—</span> building</span>
+            <span class="tms-chip"><span class="tms-val" id="ss-ready-ord">—</span> ready</span>
+            <span class="tms-chip"><span class="tms-val money" id="ss-owed">—</span> owed</span>
+            <span class="tms-chip"><span class="tms-val" id="ss-overdue">—</span> overdue</span>
+          </div>
         </div>
       </div>
+
+      <!-- Inventory -->
       <div>
-        <div class="app-tile" onclick="goTo('inventory')">
-          <span class="tile-icon">📦</span>
+        <div class="app-tile app-tile--inv" onclick="goTo('inventory')">
+          <div class="tile-head">
+            <span class="tile-tag">Stock</span>
+            <span class="tile-icon" style="font-size:20px">📦</span>
+          </div>
           <div class="tile-name">Inventory</div>
-          <div class="tile-desc">Ready-to-sell planters & sales history</div>
-        </div>
-        <div class="stat-strip" id="strip-inventory">
-          <div class="strip-item"><div class="strip-val" id="ss-stock">—</div><div class="strip-lbl">In Stock</div></div>
-          <div class="strip-item"><div class="strip-val money" id="ss-inv-value">—</div><div class="strip-lbl">Value</div></div>
+          <div class="tile-desc">Ready-to-sell planters</div>
+          <div class="tile-mini-stats">
+            <span class="tms-chip"><span class="tms-val" id="ss-stock">—</span> in stock</span>
+            <span class="tms-chip"><span class="tms-val money" id="ss-inv-value">—</span> value</span>
+          </div>
         </div>
       </div>
+
+      <!-- Materials -->
       <div>
-        <div class="app-tile" onclick="goTo('materials')">
-          <span class="tile-icon">🛒</span>
+        <div class="app-tile app-tile--mats" onclick="goTo('materials')">
+          <div class="tile-head">
+            <span class="tile-tag">Supply</span>
+            <span class="tile-icon" style="font-size:20px">🛒</span>
+          </div>
           <div class="tile-name">Materials</div>
-          <div class="tile-desc">Wood stock & Lowes purchases</div>
-        </div>
-        <div class="stat-strip" id="strip-materials">
-          <div class="strip-item"><div class="strip-val" id="ss-pickets">—</div><div class="strip-lbl">Pickets</div></div>
-          <div class="strip-item"><div class="strip-val" id="ss-twobytwo">—</div><div class="strip-lbl">2×2s</div></div>
-          <div class="strip-item"><div class="strip-val" id="ss-twobyfour">—</div><div class="strip-lbl">2×4s</div></div>
+          <div class="tile-desc">Wood stock & purchases</div>
+          <div class="tile-mini-stats">
+            <span class="tms-chip"><span class="tms-val" id="ss-pickets">—</span> pickets</span>
+            <span class="tms-chip"><span class="tms-val" id="ss-twobytwo">—</span> 2×2s</span>
+            <span class="tms-chip"><span class="tms-val" id="ss-twobyfour">—</span> 2×4s</span>
+          </div>
         </div>
       </div>
+
+      <!-- Scheduler (full width) -->
       <div style="grid-column: span 2;">
-        <div class="app-tile" onclick="goTo('scheduler')">
-          <span class="tile-icon">📅</span>
-          <div class="tile-name">Pickup Scheduler</div>
-          <div class="tile-desc">Calendar, bookings & availability</div>
-          <span class="tile-badge" id="tile-pickups-badge" style="display:none"></span>
-        </div>
-        <div class="stat-strip" id="strip-scheduler">
-          <div class="strip-item"><div class="strip-val" id="ss-today">—</div><div class="strip-lbl">Today</div></div>
-          <div class="strip-item"><div class="strip-val" id="ss-week">—</div><div class="strip-lbl">This Week</div></div>
-          <div class="strip-item" style="flex:2; align-items:flex-start"><div class="strip-val" id="ss-next" style="font-size:14px">—</div><div class="strip-lbl">Next Pickup</div></div>
+        <div class="app-tile app-tile--sched" onclick="goTo('scheduler')">
+          <div class="tile-head">
+            <span class="tile-tag">Calendar</span>
+            <span class="tile-icon" style="font-size:20px">📅</span>
+          </div>
+          <div class="tile-name">Pickup Scheduler <span class="tile-badge" id="tile-pickups-badge" style="display:none"></span></div>
+          <div class="tile-desc">Bookings & availability windows</div>
+          <div class="tile-mini-stats">
+            <span class="tms-chip"><span class="tms-val" id="ss-today">—</span> today</span>
+            <span class="tms-chip"><span class="tms-val" id="ss-week">—</span> this week</span>
+            <span class="tms-chip" style="flex:1"><span class="tms-val" id="ss-next" style="font-size:13px">—</span> next pickup</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1748,12 +1835,21 @@ async function checkConnection() {
 }
 
 // ===== NAVIGATION =====
+function setHomeGreeting() {
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Good morning, RMK 🌿' : h < 17 ? 'Good afternoon, RMK 🌲' : 'Good evening, RMK 🌙';
+  const dateStr = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }).toUpperCase();
+  document.getElementById('home-greeting').textContent = greet;
+  document.getElementById('home-date').textContent = dateStr;
+}
+
 function goHome() {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-home').classList.add('active');
   document.getElementById('backBtn').classList.remove('visible');
   document.getElementById('header-subtitle').textContent = 'Business Dashboard';
   currentPage = 'home';
+  setHomeGreeting();
   loadHomeStats();
 }
 
@@ -1793,9 +1889,9 @@ async function loadHomeStats() {
     const active = activeOrders.length;
     const ready = (invRes.data||[]).reduce((s,i) => s+(i.qty||0), 0);
     const pickups = (bookTodayRes.data||[]).length;
-    document.getElementById('hs-active').textContent = active;
-    document.getElementById('hs-ready').textContent = ready;
-    document.getElementById('hs-pickups').textContent = pickups;
+    document.getElementById('hp-active').textContent = active;
+    document.getElementById('hp-owed').textContent = '$'+(activeOrders.filter(o=>o.payment==='unpaid').reduce((s,o)=>s+(parseFloat(o.price)||0),0)).toFixed(0);
+    document.getElementById('hp-pickups').textContent = pickups;
     if (active > 0) { document.getElementById('tile-orders-badge').textContent = active; document.getElementById('tile-orders-badge').style.display=''; }
     if (pickups > 0) { document.getElementById('tile-pickups-badge').textContent = pickups+' today'; document.getElementById('tile-pickups-badge').style.display=''; }
 
@@ -1811,7 +1907,7 @@ async function loadHomeStats() {
     document.getElementById('ss-owed').textContent = '$'+owed.toFixed(0);
     const elOD = document.getElementById('ss-overdue');
     elOD.textContent = overdue;
-    elOD.className = 'strip-val' + (overdue > 0 ? ' low' : '');
+    elOD.className = 'tms-val' + (overdue > 0 ? ' low' : '');
 
     // ── Inventory strip ──
     const invItems = invRes.data||[];
@@ -1832,9 +1928,9 @@ async function loadHomeStats() {
     elP.textContent = pickets;
     el22.textContent = twobytwo;
     el24.textContent = twobyfour;
-    elP.className = 'strip-val' + (pickets < 10 ? ' low' : '');
-    el22.className = 'strip-val' + (twobytwo < 5 ? ' low' : '');
-    el24.className = 'strip-val' + (twobyfour < 5 ? ' low' : '');
+    elP.className = 'tms-val' + (pickets < 10 ? ' low' : '');
+    el22.className = 'tms-val' + (twobytwo < 5 ? ' low' : '');
+    el24.className = 'tms-val' + (twobyfour < 5 ? ' low' : '');
 
     // ── Scheduler strip ──
     const weekPickups = (bookWeekRes.data||[]).length;
@@ -2974,6 +3070,7 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 // ===== INIT =====
 buildStdTable();
 loadAddonSettings();
+setHomeGreeting();
 checkConnection();
 
 function formatTime(hhmm) {
