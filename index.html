@@ -3056,11 +3056,10 @@ async function saveSale() {
 }
 
 async function deleteSale(id) {
-  showConfirm('Delete this sale record?', async () => {
-    const {error} = await sb.from('sales').delete().eq('id',id);
-    if (error) { showToast('Error: '+error.message,'error'); return; }
-    showToast('Deleted','success'); loadSales();
-  });
+  if (!confirm('Delete this sale record?')) return;
+  const {error} = await sb.from('sales').delete().eq('id',id);
+  if (error) { showToast('Error: '+error.message,'error'); return; }
+  showToast('Deleted','success'); loadSales();
 }
 
 // ===== MATERIALS =====
