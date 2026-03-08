@@ -3028,8 +3028,8 @@ function renderSalesTable() {
     <td>${s.style||''}</td>
     <td>${s.name||'—'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500">$${s.price}</td>
-    <td><span class="badge badge-${s.payment}">${s.payment}</span></td>
-    <td><button class="icon-btn" onclick="deleteSale('${s.id}')">🗑️</button></td>
+    <td><span class="badge badge-${(s.payment||'').toLowerCase()}">${s.payment||''}</span></td>
+    <td><button type="button" class="icon-btn" onclick="deleteSale('${s.id}')">🗑️</button></td>
   </tr>`).join('');
 }
 
@@ -3057,8 +3057,9 @@ async function saveSale() {
 
 async function deleteSale(id) {
   showConfirm('Delete this sale record?', async () => {
-    await sb.from('sales').delete().eq('id',id);
-    showToast('Deleted'); loadSales();
+    const {error} = await sb.from('sales').delete().eq('id',id);
+    if (error) { showToast('Error: '+error.message,'error'); return; }
+    showToast('Deleted','success'); loadSales();
   });
 }
 
