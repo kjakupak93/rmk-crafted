@@ -1,0 +1,9 @@
+{
+  "name": "RMK Crafted",
+  "short_name": "RMK Crafted",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1E4D6B",
+  "theme_color": "#1E4D6B",
+  "icons": [{ "src": "icon.png", "sizes": "1024x1024", "type": "image/jpeg" }]
+}
