@@ -1234,7 +1234,7 @@ body {
 </style>
 </head>
 <body>
-<div id="pin-gate" style="display:none;position:fixed;inset:0;background:#1E4D6B;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+<div id="pin-gate" style="display:none;position:fixed;inset:0;background:#1E4D6B;z-index:99999;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
   <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z'/%3E%3C/svg%3E" style="width:48px;opacity:0.6;">
   <div style="font-family:'Playfair Display',serif;font-size:24px;color:white;font-weight:700;">RMK Crafted</div>
   <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;">Dashboard Access</div>
@@ -2479,7 +2479,10 @@ function openAddonSettings() {
         <label for="as-scales-${i}" style="font-size:11px;cursor:pointer">size</label>
       </div>
     </div>`).join('');
-  document.getElementById('addonSettingsModal').classList.add('open');
+  const modal = document.getElementById('addonSettingsModal');
+  modal._justOpened = true;
+  modal.classList.add('open');
+  setTimeout(() => { delete modal._justOpened; }, 350);
 }
 function saveAddonSettings() {
   ADDONS = ADDONS.map((a,i) => ({
@@ -3541,9 +3544,9 @@ function emptyState(icon,msg) {
   return `<div class="empty-state"><div class="eicon">${icon}</div><p>${msg}</p></div>`;
 }
 
-// Close modals on overlay click
+// Close modals on overlay click (guard against iOS ghost-click closing immediately)
 document.querySelectorAll('.modal-overlay').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+  o.addEventListener('click',e=>{if(e.target===o && !o._justOpened)o.classList.remove('open');});
 });
 
 // ===== INIT =====
