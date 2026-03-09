@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RMK Crafted — Business Dashboard</title>
+<meta name="theme-color" content="#1E4D6B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RMK Crafted">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
 <style>
@@ -830,6 +836,19 @@ body {
   .calendar-grid { gap: 3px; }
   .cal-day { min-height: 52px; padding: 5px; }
   .price-amount { font-size: 52px; }
+  /* iOS input zoom fix — font-size must be ≥16px to prevent Safari auto-zoom */
+  .form-control, .std-input, .dim-input, select, textarea { font-size: 16px !important; }
+  /* Filter bar — horizontal scroll instead of wrapping */
+  .filter-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+  /* Reduce app container padding on mobile */
+  .app-container { padding: 20px 16px 60px; }
+  #page-home { padding: 24px 16px 60px; }
+  /* Reduce header horizontal padding */
+  .app-header { padding: 0 16px; }
+  /* Home stats — smaller font on mobile */
+  .home-stats { font-size: 12px; }
+  /* Larger touch targets for icon buttons */
+  .icon-btn { width: 40px; height: 40px; }
 }
 
 .customer-booked-badge {
