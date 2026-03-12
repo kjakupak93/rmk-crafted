@@ -3089,7 +3089,7 @@ function renderSalesTable() {
     <td><span class="badge badge-${(s.payment||'').toLowerCase()}">${s.payment||''}</span></td>
     <td style="color:var(--text-muted);font-size:12px">${s.notes||''}</td>
     <td style="display:flex;gap:4px">
-      <button type="button" class="icon-btn" onclick="editSale(${s.id})">✏️</button>
+      <button type="button" class="icon-btn" onclick="editSale('${s.id}')">✏️</button>
       <button type="button" class="icon-btn" onclick="deleteSale('${s.id}')">🗑️</button>
     </td>
   </tr>`).join('');
