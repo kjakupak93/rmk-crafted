@@ -1591,73 +1591,84 @@ body {
 
 <!-- ===== MATERIALS ===== -->
 <div class="page" id="page-materials">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showMaterialsTab('stock',this)">📦 Stock</button>
+    <button class="tab-btn" onclick="showMaterialsTab('purchases',this)">🛒 Purchases</button>
+  </div>
   <div class="app-container">
-    <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Materials</h2>
-    <div class="section-label">Current Stock</div>
-    <div class="stock-grid">
-      <div class="stock-card">
-        <div class="stock-icon">🪵</div>
-        <div class="stock-name">Cedar Pickets</div>
-        <div class="stock-qty" id="sq-pickets">—</div>
-        <div class="stock-meta">on hand · $3.66 each</div>
-        <div class="qty-ctrl">
-          <button class="qty-btn" onclick="adjustStock('pickets',-1)">−</button>
-          <span class="qty-num" id="sd-pickets">0</span>
-          <button class="qty-btn" onclick="adjustStock('pickets',1)">+</button>
+    <div class="tab-panel active" id="mtab-stock">
+      <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Materials</h2>
+      <div class="section-label">Current Stock</div>
+      <div class="stock-grid">
+        <div class="stock-card">
+          <div class="stock-icon">🪵</div>
+          <div class="stock-name">Cedar Pickets</div>
+          <div class="stock-qty" id="sq-pickets">—</div>
+          <div class="stock-meta">on hand · $3.66 each</div>
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="adjustStock('pickets',-1)">−</button>
+            <span class="qty-num" id="sd-pickets">0</span>
+            <button class="qty-btn" onclick="adjustStock('pickets',1)">+</button>
+          </div>
+        </div>
+        <div class="stock-card">
+          <div class="stock-icon">📏</div>
+          <div class="stock-name">2×2 Lumber</div>
+          <div class="stock-qty" id="sq-twobytwo">—</div>
+          <div class="stock-meta">on hand · $3.23 each</div>
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="adjustStock('twobytwo',-1)">−</button>
+            <span class="qty-num" id="sd-twobytwo">0</span>
+            <button class="qty-btn" onclick="adjustStock('twobytwo',1)">+</button>
+          </div>
+        </div>
+        <div class="stock-card">
+          <div class="stock-icon">🔩</div>
+          <div class="stock-name">2×4 Lumber</div>
+          <div class="stock-qty" id="sq-twobyfour">—</div>
+          <div class="stock-meta">on hand · $4.17 each</div>
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="adjustStock('twobyfour',-1)">−</button>
+            <span class="qty-num" id="sd-twobyfour">0</span>
+            <button class="qty-btn" onclick="adjustStock('twobyfour',1)">+</button>
+          </div>
         </div>
       </div>
-      <div class="stock-card">
-        <div class="stock-icon">📏</div>
-        <div class="stock-name">2×2 Lumber</div>
-        <div class="stock-qty" id="sq-twobytwo">—</div>
-        <div class="stock-meta">on hand · $3.23 each</div>
-        <div class="qty-ctrl">
-          <button class="qty-btn" onclick="adjustStock('twobytwo',-1)">−</button>
-          <span class="qty-num" id="sd-twobytwo">0</span>
-          <button class="qty-btn" onclick="adjustStock('twobytwo',1)">+</button>
-        </div>
+
+      <div class="summary-bar">
+        <div class="sbar-item"><div class="sval" id="mb-spent">$0</div><div class="slbl">Total Spent</div></div>
+        <div class="sbar-item"><div class="sval" id="mb-stock">$0</div><div class="slbl">Stock Value</div></div>
+        <div class="sbar-item"><div class="sval" id="mb-trips">0</div><div class="slbl">Lowes Runs</div></div>
       </div>
-      <div class="stock-card">
-        <div class="stock-icon">🔩</div>
-        <div class="stock-name">2×4 Lumber</div>
-        <div class="stock-qty" id="sq-twobyfour">—</div>
-        <div class="stock-meta">on hand · $4.17 each</div>
-        <div class="qty-ctrl">
-          <button class="qty-btn" onclick="adjustStock('twobyfour',-1)">−</button>
-          <span class="qty-num" id="sd-twobyfour">0</span>
-          <button class="qty-btn" onclick="adjustStock('twobyfour',1)">+</button>
+
+      <div class="build-calc">
+        <h3>Build Cost Estimator</h3>
+        <p>Enter materials for a build to see your margin.</p>
+        <div class="calc-grid3">
+          <div class="input-group"><label>Cedar pickets</label><input class="std-input" type="number" id="bc-p" placeholder="0" min="0" oninput="updateBuildCalc()"></div>
+          <div class="input-group"><label>2×2 pieces</label><input class="std-input" type="number" id="bc-22" placeholder="0" min="0" oninput="updateBuildCalc()"></div>
+          <div class="input-group"><label>2×4 pieces</label><input class="std-input" type="number" id="bc-24" placeholder="0" min="0" oninput="updateBuildCalc()"></div>
+        </div>
+        <div class="input-group" style="margin-bottom:12px"><label>Sale / quoted price ($)</label><input class="std-input" type="number" id="bc-price" placeholder="85" min="0" oninput="updateBuildCalc()"></div>
+        <div class="calc-result">
+          <div class="cr-item"><div class="cr-val" id="bc-mat">$0</div><div class="cr-lbl">Material Cost</div></div>
+          <div class="cr-item"><div class="cr-val" id="bc-prof" style="color:var(--green)">$0</div><div class="cr-lbl">Profit</div></div>
+          <div class="cr-item"><div class="cr-val" id="bc-marg">—</div><div class="cr-lbl">Margin</div></div>
+          <div class="cr-item"><div class="cr-val" id="bc-mkup">—</div><div class="cr-lbl">Markup</div></div>
         </div>
       </div>
     </div>
 
-    <div class="summary-bar">
-      <div class="sbar-item"><div class="sval" id="mb-spent">$0</div><div class="slbl">Total Spent</div></div>
-      <div class="sbar-item"><div class="sval" id="mb-stock">$0</div><div class="slbl">Stock Value</div></div>
-      <div class="sbar-item"><div class="sval" id="mb-trips">0</div><div class="slbl">Lowes Runs</div></div>
-    </div>
-
-    <div class="build-calc">
-      <h3>Build Cost Estimator</h3>
-      <p>Enter materials for a build to see your margin.</p>
-      <div class="calc-grid3">
-        <div class="input-group"><label>Cedar pickets</label><input class="std-input" type="number" id="bc-p" placeholder="0" min="0" oninput="updateBuildCalc()"></div>
-        <div class="input-group"><label>2×2 pieces</label><input class="std-input" type="number" id="bc-22" placeholder="0" min="0" oninput="updateBuildCalc()"></div>
-        <div class="input-group"><label>2×4 pieces</label><input class="std-input" type="number" id="bc-24" placeholder="0" min="0" oninput="updateBuildCalc()"></div>
+    <div class="tab-panel" id="mtab-purchases">
+      <div class="section-header">
+        <h2>Lowes Purchase Log</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn-secondary" onclick="downloadPurchaseCSV()">↓ CSV</button>
+          <button class="btn-primary" onclick="openPurchaseModal()">+ Log Purchase</button>
+        </div>
       </div>
-      <div class="input-group" style="margin-bottom:12px"><label>Sale / quoted price ($)</label><input class="std-input" type="number" id="bc-price" placeholder="85" min="0" oninput="updateBuildCalc()"></div>
-      <div class="calc-result">
-        <div class="cr-item"><div class="cr-val" id="bc-mat">$0</div><div class="cr-lbl">Material Cost</div></div>
-        <div class="cr-item"><div class="cr-val" id="bc-prof" style="color:var(--green)">$0</div><div class="cr-lbl">Profit</div></div>
-        <div class="cr-item"><div class="cr-val" id="bc-marg">—</div><div class="cr-lbl">Margin</div></div>
-        <div class="cr-item"><div class="cr-val" id="bc-mkup">—</div><div class="cr-lbl">Markup</div></div>
-      </div>
+      <div id="purchaseList"></div>
     </div>
-
-    <div class="section-header">
-      <h2>Lowes Purchase Log</h2>
-      <button class="btn-primary" onclick="openPurchaseModal()">+ Log Purchase</button>
-    </div>
-    <div id="purchaseList"></div>
   </div>
 </div>
 
@@ -2131,7 +2142,7 @@ function goTo(page) {
   window.scrollTo(0,0);
   if (page==='orders') loadOrders();
   if (page==='inventory') { loadInventory(); loadSales(); }
-  if (page==='materials') { loadStock(); loadPurchases(); }
+  if (page==='materials') { loadStock(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
 }
 
@@ -3144,6 +3155,33 @@ function updateBuildCalc() {
   document.getElementById('bc-prof').style.color=profit>=0?'var(--green)':'var(--red)';
   document.getElementById('bc-marg').textContent=price?margin+'%':'—';
   document.getElementById('bc-mkup').textContent=mat?markup+'%':'—';
+}
+
+function showMaterialsTab(tab, btn) {
+  document.querySelectorAll('#page-materials .tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#page-materials .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mtab-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if (tab==='purchases') loadPurchases();
+}
+
+async function downloadPurchaseCSV() {
+  const {data}=await sb.from('purchases').select('*').order('purchase_date',{ascending:false});
+  if (!data||!data.length) {showToast('No purchases to export','error');return;}
+  const headers=['Date','Store','Pickets','Picket Price','2x2s','2x2 Price','2x4s','2x4 Price','Total','Notes'];
+  const rows=data.map(p=>[
+    p.purchase_date||'',p.store||'Lowes',
+    p.pickets||0,p.picket_price||'',
+    p.twobytwo||0,p.twobytwo_price||'',
+    p.twobyfour||0,p.twobyfour_price||'',
+    (p.total||0).toFixed(2),
+    '"'+(p.notes||'').replace(/"/g,"''")+'"'
+  ]);
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='rmk-purchases.csv';
+  a.click();
 }
 
 async function loadPurchases() {
