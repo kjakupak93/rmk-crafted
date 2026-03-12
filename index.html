@@ -1804,7 +1804,7 @@ body {
 <!-- Sale modal -->
 <div class="modal-overlay" id="saleModal">
   <div class="modal">
-    <h2>Log a Sale</h2>
+    <h2 id="saleModalTitle">Log a Sale</h2>
     <div class="form-row">
       <div class="form-group"><label>Buyer Name</label><input class="form-control" type="text" id="sName" placeholder="Jane Smith"></div>
       <div class="form-group"><label>Date Sold</label><input class="form-control" type="date" id="sDate"></div>
@@ -3088,7 +3088,10 @@ function renderSalesTable() {
     <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500">$${s.price}</td>
     <td><span class="badge badge-${(s.payment||'').toLowerCase()}">${s.payment||''}</span></td>
     <td style="color:var(--text-muted);font-size:12px">${s.notes||''}</td>
-    <td><button type="button" class="icon-btn" onclick="deleteSale('${s.id}')">🗑️</button></td>
+    <td style="display:flex;gap:4px">
+      <button type="button" class="icon-btn" onclick="editSale(${s.id})">✏️</button>
+      <button type="button" class="icon-btn" onclick="deleteSale('${s.id}')">🗑️</button>
+    </td>
   </tr>`).join('');
 }
 
@@ -3099,7 +3102,11 @@ async function loadSales() {
   renderSalesTable();
 }
 
+let editingSaleId = null;
+
 function openSaleModal() {
+  editingSaleId = null;
+  document.getElementById('saleModalTitle').textContent = 'Log a Sale';
   document.getElementById('sDate').value=new Date().toISOString().split('T')[0];
   ['sName','sSize','sNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('sPrice').value='';
@@ -3107,12 +3114,35 @@ function openSaleModal() {
   openModal('saleModal');
 }
 
+function editSale(id) {
+  const s = allSales.find(x=>x.id===id);
+  if (!s) return;
+  editingSaleId = id;
+  document.getElementById('saleModalTitle').textContent = 'Edit Sale';
+  document.getElementById('sName').value = s.name||'';
+  document.getElementById('sDate').value = s.sale_date||'';
+  document.getElementById('sSize').value = s.size||'';
+  document.getElementById('sQty').value = s.qty||1;
+  document.getElementById('sStyle').value = s.style||'Standard';
+  document.getElementById('sPrice').value = s.price||'';
+  document.getElementById('sPayment').value = s.payment||'cash';
+  document.getElementById('sNotes').value = s.notes||'';
+  openModal('saleModal');
+}
+
 async function saveSale() {
   const payload={name:document.getElementById('sName').value,size:document.getElementById('sSize').value,style:document.getElementById('sStyle').value,price:parseFloat(document.getElementById('sPrice').value)||0,qty:parseInt(document.getElementById('sQty').value)||1,payment:document.getElementById('sPayment').value,sale_date:document.getElementById('sDate').value,notes:document.getElementById('sNotes').value};
   if (!payload.size||!payload.price) {showToast('Size and price required','error');return;}
-  const {error}=await sb.from('sales').insert(payload);
-  if (error) {showToast('Error saving','error');return;}
-  showToast('Sale logged!','success'); closeModal('saleModal'); loadSales();
+  if (editingSaleId) {
+    const {error}=await sb.from('sales').update(payload).eq('id',editingSaleId);
+    if (error) {showToast('Error saving','error');return;}
+    showToast('Sale updated!','success');
+  } else {
+    const {error}=await sb.from('sales').insert(payload);
+    if (error) {showToast('Error saving','error');return;}
+    showToast('Sale logged!','success');
+  }
+  closeModal('saleModal'); loadSales();
 }
 
 async function deleteSale(id) {
