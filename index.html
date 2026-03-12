@@ -1246,11 +1246,9 @@ body {
 </div>
 <script>
   (function() {
-    const PIN = '1234'; // ← Change this to your PIN
-    if (sessionStorage.getItem('rmk_auth') !== 'true') {
-      document.getElementById('pin-gate').style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    }
+    // Always require PIN on every page load/refresh
+    document.getElementById('pin-gate').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
   })();
   function checkPin() {
     const PIN = '1234'; // ← Same PIN here
@@ -2051,6 +2049,12 @@ function showToast(msg, type='') {
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) {
+  const el = document.getElementById(id);
+  el._justOpened = true;
+  el.classList.add('open');
+  setTimeout(() => { delete el._justOpened; }, 350);
+}
 function showConfirm(message, onConfirm, okLabel='Delete') {
   document.getElementById('confirmMsg').textContent = message;
   const btn = document.getElementById('confirmOkBtn');
@@ -2062,7 +2066,7 @@ function showConfirm(message, onConfirm, okLabel='Delete') {
       showToast('Something went wrong', 'error');
     });
   };
-  document.getElementById('confirmModal').classList.add('open');
+  openModal('confirmModal');
 }
 
 function fmtTime(t) {
@@ -2479,10 +2483,7 @@ function openAddonSettings() {
         <label for="as-scales-${i}" style="font-size:11px;cursor:pointer">size</label>
       </div>
     </div>`).join('');
-  const modal = document.getElementById('addonSettingsModal');
-  modal._justOpened = true;
-  modal.classList.add('open');
-  setTimeout(() => { delete modal._justOpened; }, 350);
+  openModal('addonSettingsModal');
 }
 function saveAddonSettings() {
   ADDONS = ADDONS.map((a,i) => ({
@@ -2624,7 +2625,7 @@ function createOrderFromQuote() {
   });
   addOrderItem(size, currentStyle, 1, getQuoteBasePrice());
   updateOrderAddonPrices();
-  document.getElementById('orderModal').classList.add('open');
+  openModal('orderModal');
 }
 
 function resetQuote() {
@@ -2724,7 +2725,7 @@ function openOrderModal() {
   resetAddonChips('orderAddonGrid');
   addOrderItem();
   updateOrderAddonPrices();
-  document.getElementById('orderModal').classList.add('open');
+  openModal('orderModal');
 }
 
 async function editOrder(id) {
@@ -2762,7 +2763,7 @@ async function editOrder(id) {
     }
   });
   updateOrderAddonPrices();
-  document.getElementById('orderModal').classList.add('open');
+  openModal('orderModal');
 }
 
 async function saveOrder() {
@@ -2848,7 +2849,7 @@ async function deleteOrder(id) {
 }
 
 function openMarkPaidModal() {
-  document.getElementById('markPaidModal').classList.add('open');
+  openModal('markPaidModal');
 }
 
 async function markAllPaid(method) {
@@ -2884,7 +2885,7 @@ Message me to claim yours! 🌿`;
   const btn = document.getElementById('listingCopyBtn');
   btn.textContent = 'Copy listing';
   btn.classList.remove('copied');
-  document.getElementById('listingModal').classList.add('open');
+  openModal('listingModal');
 }
 
 function copyListing() {
@@ -2998,7 +2999,7 @@ function openInvModal() {
   document.getElementById('iPrice').value='';
   document.getElementById('iQty').value=1;
   resetAddonChips('invAddonGrid');
-  document.getElementById('invModal').classList.add('open');
+  openModal('invModal');
 }
 
 async function saveInvItem() {
@@ -3081,7 +3082,7 @@ function openSaleModal() {
   document.getElementById('sDate').value=new Date().toISOString().split('T')[0];
   ['sName','sSize','sNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('sPrice').value='';
-  document.getElementById('saleModal').classList.add('open');
+  openModal('saleModal');
 }
 
 async function saveSale() {
@@ -3167,7 +3168,7 @@ function openPurchaseModal() {
   ['pPickets','p22','p24','pNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('pStore').value='Lowes';
   updatePurchEst();
-  document.getElementById('purchaseModal').classList.add('open');
+  openModal('purchaseModal');
 }
 
 function updatePurchEst() {
@@ -3310,7 +3311,7 @@ function openSlotModal() {
   document.getElementById('slotStart').value='10:00';
   document.getElementById('slotEnd').value='12:00';
   document.getElementById('slotNotes').value='';
-  document.getElementById('slotModal').classList.add('open');
+  openModal('slotModal');
 }
 
 async function editSlot(id) {
@@ -3322,7 +3323,7 @@ async function editSlot(id) {
   document.getElementById('slotStart').value=data.start_time||'10:00';
   document.getElementById('slotEnd').value=data.end_time||'12:00';
   document.getElementById('slotNotes').value=data.notes||'';
-  document.getElementById('slotModal').classList.add('open');
+  openModal('slotModal');
 }
 
 async function saveSlot() {
@@ -3345,7 +3346,7 @@ function openBookingModal() {
   document.getElementById('bookingModalSaveBtn').textContent='Book Pickup';
   ['bkName','bkContact','bkSize','bkNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('bkAmount').value='';
-  document.getElementById('bookingModal').classList.add('open');
+  openModal('bookingModal');
 }
 
 async function editBooking(id) {
@@ -3361,7 +3362,7 @@ async function editBooking(id) {
   document.getElementById('bkAmount').value=data.amount||'';
   document.getElementById('bkPayment').value=data.payment||'cash';
   document.getElementById('bkNotes').value=data.notes||'';
-  document.getElementById('bookingModal').classList.add('open');
+  openModal('bookingModal');
 }
 
 async function saveBooking() {
@@ -3383,7 +3384,7 @@ function openQuickBookModal() {
   document.getElementById('qbDate').value=new Date().toISOString().split('T')[0];
   ['qbName','qbContact','qbSize','qbNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('qbAmount').value='';
-  document.getElementById('quickBookModal').classList.add('open');
+  openModal('quickBookModal');
 }
 async function saveQuickBook() {
   const dateVal=document.getElementById('qbDate').value;
@@ -3451,7 +3452,7 @@ async function loadWindows() {
   document.getElementById('shareMsgBox').textContent=`Hi! Thanks for your interest in RMK Crafted 🪵\n\nI do pickup only from Oceanside, CA.\nHere are my usual available times:\n${wStr}\n\nJust let me know what works and I'll confirm!\n\nPayment: Cash or Venmo (@RMKCrafted)\n\nLooking forward to it! 🌿`;
 }
 
-function openWindowModal() { document.getElementById('windowModal').classList.add('open'); }
+function openWindowModal() { openModal('windowModal'); }
 async function saveWindow() {
   const payload={days:document.getElementById('wDays').value,start_time:document.getElementById('wStart').value,end_time:document.getElementById('wEnd').value};
   await sb.from('availability_windows').insert(payload);
