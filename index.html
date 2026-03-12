@@ -1581,7 +1581,7 @@ body {
       </div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Date</th><th>Size</th><th>Style</th><th>Buyer</th><th>Price</th><th>Payment</th><th>Notes</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Size</th><th>Qty</th><th>Style</th><th>Buyer</th><th>Price</th><th>Payment</th><th>Notes</th><th></th></tr></thead>
           <tbody id="salesBody"></tbody>
         </table>
       </div>
@@ -1809,8 +1809,9 @@ body {
       <div class="form-group"><label>Buyer Name</label><input class="form-control" type="text" id="sName" placeholder="Jane Smith"></div>
       <div class="form-group"><label>Date Sold</label><input class="form-control" type="date" id="sDate"></div>
     </div>
+    <div class="form-group"><label>Size(s)</label><input class="form-control" type="text" id="sSize" placeholder='48×16×16 or 36×16×16 + 48×24×16'></div>
     <div class="form-row">
-      <div class="form-group"><label>Size</label><input class="form-control" type="text" id="sSize" placeholder="48×16×16"></div>
+      <div class="form-group"><label>Qty (planters)</label><input class="form-control" type="number" id="sQty" min="1" value="1"></div>
       <div class="form-group"><label>Style</label><select class="form-control" id="sStyle"><option>Standard</option><option>Vertical</option></select></div>
     </div>
     <div class="form-row">
@@ -2795,7 +2796,10 @@ async function saveOrder() {
   const isNowCompletedPaid = payload.status==='completed' && payload.payment!=='unpaid';
   const wasCompletedPaid = currentEditOrder && currentEditOrder.status==='completed' && currentEditOrder.payment!=='unpaid';
   if (isNowCompletedPaid && !wasCompletedPaid) {
-    await sb.from('sales').insert({name:payload.name,size:payload.size||'',style:payload.style||'Standard',price:payload.price||0,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||''});
+    const saleItemRows=payload.items?.rows||[];
+    const saleQty=saleItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
+    const saleSizeStr=saleItemRows.length>1?saleItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(payload.size||'');
+    await sb.from('sales').insert({name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||''});
   }
   // Sync pickup date+time → schedule_bookings and block off slot
   const pickupDate = payload.pickup_date;
@@ -2844,7 +2848,10 @@ async function completeOrder(id) {
   if (!data) return;
   await sb.from('orders').update({status:'completed'}).eq('id',id);
   if (data.payment!=='unpaid') {
-    await sb.from('sales').insert({name:data.name,size:data.size,style:data.style,price:data.price,payment:data.payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes});
+    const compItemRows=data.items?.rows||[];
+    const compQty=compItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
+    const compSizeStr=compItemRows.length>1?compItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(data.size||'');
+    await sb.from('sales').insert({name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:data.payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes});
     showToast('Order completed & moved to sales! 🎉','success');
   } else {
     showToast('Marked as completed — set payment to move to Completed tab.','success');
@@ -3065,15 +3072,17 @@ function renderSalesTable() {
     data = allSales.filter(s=>{if(!s.sale_date)return false;return new Date(s.sale_date+'T00:00:00')>=weekAgo;});
   }
   const total=data.reduce((s,x)=>s+(x.price||0),0);
+  const count=data.reduce((s,x)=>s+(x.qty||1),0);
   const avg=data.length?total/data.length:0;
   document.getElementById('rv-total').textContent='$'+total.toFixed(0);
-  document.getElementById('rv-count').textContent=data.length;
+  document.getElementById('rv-count').textContent=count;
   document.getElementById('rv-avg').textContent='$'+avg.toFixed(0);
   const tbody=document.getElementById('salesBody');
-  if (!data.length) {tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-muted)">No sales in this period.</td></tr>';return;}
+  if (!data.length) {tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted)">No sales in this period.</td></tr>';return;}
   tbody.innerHTML=data.map(s=>`<tr>
     <td>${s.sale_date||''}</td>
-    <td style="font-family:'DM Mono',monospace">${s.size||''}"</td>
+    <td style="font-family:'DM Mono',monospace">${s.size||''}</td>
+    <td style="font-family:'DM Mono',monospace;text-align:center">${s.qty||1}</td>
     <td>${s.style||''}</td>
     <td>${s.name||'—'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500">$${s.price}</td>
@@ -3094,11 +3103,12 @@ function openSaleModal() {
   document.getElementById('sDate').value=new Date().toISOString().split('T')[0];
   ['sName','sSize','sNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('sPrice').value='';
+  document.getElementById('sQty').value='1';
   openModal('saleModal');
 }
 
 async function saveSale() {
-  const payload={name:document.getElementById('sName').value,size:document.getElementById('sSize').value,style:document.getElementById('sStyle').value,price:parseFloat(document.getElementById('sPrice').value)||0,payment:document.getElementById('sPayment').value,sale_date:document.getElementById('sDate').value,notes:document.getElementById('sNotes').value};
+  const payload={name:document.getElementById('sName').value,size:document.getElementById('sSize').value,style:document.getElementById('sStyle').value,price:parseFloat(document.getElementById('sPrice').value)||0,qty:parseInt(document.getElementById('sQty').value)||1,payment:document.getElementById('sPayment').value,sale_date:document.getElementById('sDate').value,notes:document.getElementById('sNotes').value};
   if (!payload.size||!payload.price) {showToast('Size and price required','error');return;}
   const {error}=await sb.from('sales').insert(payload);
   if (error) {showToast('Error saving','error');return;}
@@ -3535,9 +3545,9 @@ function exportOrdersCSV() {
   showToast('Orders exported!','success');
 }
 function exportSalesCSV() {
-  const rows = [['Date','Buyer','Size','Style','Price','Payment','Notes']];
+  const rows = [['Date','Buyer','Size','Qty','Style','Price','Payment','Notes']];
   allSales.forEach(s=>{
-    rows.push([s.sale_date||'',s.name||'',s.size||'',s.style||'',s.price||0,s.payment||'',s.notes||'']);
+    rows.push([s.sale_date||'',s.name||'',s.size||'',s.qty||1,s.style||'',s.price||0,s.payment||'',s.notes||'']);
   });
   downloadCSV('rmk-sales.csv', rows.map(r=>r.map(csvEscape).join(',')).join('\n'));
   showToast('Sales exported!','success');
