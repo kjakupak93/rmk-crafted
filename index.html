@@ -1634,12 +1634,22 @@ body {
     </div>
 
     <div class="tab-panel" id="mtab-purchases">
+      <div class="summary-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+        <div class="summary-card c-sand"><div class="val" id="pur-stat-total">$0</div><div class="lbl">Total Spent</div></div>
+        <div class="summary-card"><div class="val" id="pur-stat-trips">0</div><div class="lbl">Trips to Lowes</div></div>
+        <div class="summary-card c-blue"><div class="val" id="pur-stat-avg">$0</div><div class="lbl">Avg per Trip</div></div>
+      </div>
       <div class="section-header">
         <h2>Lowes Purchase Log</h2>
         <div style="display:flex;gap:8px">
           <button class="btn-secondary" onclick="downloadPurchaseCSV()">↓ CSV</button>
           <button class="btn-primary" onclick="openPurchaseModal()">+ Log Purchase</button>
         </div>
+      </div>
+      <div class="sales-filter-tabs">
+        <button class="sales-filter-btn" onclick="setPurchasesFilter('month',this)">This Month</button>
+        <button class="sales-filter-btn" onclick="setPurchasesFilter('lastmonth',this)">Last Month</button>
+        <button class="sales-filter-btn active" onclick="setPurchasesFilter('all',this)">All Time</button>
       </div>
       <div id="purchaseList"></div>
     </div>
@@ -3024,12 +3034,21 @@ async function deleteInvItem(id) {
 // ===== SALES =====
 let allSales = [];
 let salesFilter = 'all';
+let allPurchases = [];
+let purchasesFilter = 'all';
 
 function setSalesFilter(period, btn) {
   salesFilter = period;
   document.querySelectorAll('.sales-filter-btn').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderSalesTable();
+}
+
+function setPurchasesFilter(period, btn) {
+  purchasesFilter = period;
+  document.querySelectorAll('.sales-filter-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderPurchaseList();
 }
 
 function renderSalesTable() {
@@ -3196,9 +3215,33 @@ async function downloadPurchaseCSV() {
 
 async function loadPurchases() {
   const {data}=await sb.from('purchases').select('*').order('purchase_date',{ascending:false});
+  allPurchases=data||[];
+  // Compute all-time stats (never filtered)
+  const totalSpent=allPurchases.reduce((s,p)=>s+(p.total||0),0);
+  const trips=allPurchases.length;
+  const avg=trips>0?totalSpent/trips:0;
+  document.getElementById('pur-stat-total').textContent='$'+totalSpent.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('pur-stat-trips').textContent=trips;
+  document.getElementById('pur-stat-avg').textContent='$'+avg.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  renderPurchaseList();
+}
+
+function renderPurchaseList() {
   const list=document.getElementById('purchaseList');
-  if (!data||!data.length) {list.innerHTML=emptyState('🛒','No purchases logged yet.');return;}
-  list.innerHTML=data.map(p=>{
+  const now=new Date();
+  const filtered=allPurchases.filter(p=>{
+    if (purchasesFilter==='all') return true;
+    if (!p.purchase_date) return false;
+    const d=new Date(p.purchase_date+'T00:00:00');
+    if (purchasesFilter==='month') return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+    if (purchasesFilter==='lastmonth') {
+      const lm=new Date(now.getFullYear(),now.getMonth()-1,1);
+      return d.getFullYear()===lm.getFullYear()&&d.getMonth()===lm.getMonth();
+    }
+    return true;
+  });
+  if (!filtered.length) {list.innerHTML=emptyState('🛒','No purchases in this period.');return;}
+  list.innerHTML=filtered.map(p=>{
     const parts=[];
     if (p.pickets) parts.push(p.pickets+' pickets');
     if (p.twobytwo) parts.push(p.twobytwo+' 2×2s');
@@ -3207,6 +3250,7 @@ async function loadPurchases() {
       <span style="font-size:18px">🛒</span>
       <div style="flex:1"><div style="font-size:14px;font-weight:500">${p.store||'Lowes'} — ${p.purchase_date||''}</div><div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">${parts.join(' · ')}${p.notes?' · '+p.notes:''}</div></div>
       <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:var(--navy)">$${(p.total||0).toFixed(2)}</div>
+      <button class="icon-btn" onclick="editPurchase(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
       <button class="icon-btn" onclick="deletePurchase('${p.id}')">🗑️</button>
     </div>`;
   }).join('');
