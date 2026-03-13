@@ -195,6 +195,8 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 **Files:**
 - `index.html` — entire dashboard (PIN-protected)
 - `schedule.html` — public customer booking page
+- `manifest.json` — PWA manifest (enables "Add to Home Screen" on mobile)
+- `icon.png` — 1024×1024 app icon
 - `CLAUDE.md` — project memory for Claude Code sessions
 - `.mcp.json` — local Claude Code config (in `.gitignore`, never committed)
 
