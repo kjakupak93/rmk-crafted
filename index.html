@@ -108,9 +108,17 @@ body {
 /* ===== HOME SCREEN ===== */
 #page-home {
   padding: 32px 24px 60px;
-  max-width: 600px;
+  max-width: 880px;
   margin: 0 auto;
 }
+.home-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.tile-span-full { grid-column: span 3; }
+
 .home-greeting {
   margin-bottom: 32px;
   text-align: center;
@@ -152,7 +160,7 @@ body {
 
 .app-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 14px;
 }
 .app-tile {
@@ -849,6 +857,15 @@ body {
   .home-stats { font-size: 12px; }
   /* Larger touch targets for icon buttons */
   .icon-btn { width: 40px; height: 40px; }
+  /* KPI row: 2×2 on iPhone */
+  .home-kpi-row { grid-template-columns: 1fr 1fr; }
+  /* Scheduler tile spans 2 cols */
+  .tile-span-full { grid-column: span 2; }
+}
+
+@media (max-width: 820px) {
+  .app-grid { grid-template-columns: 1fr 1fr; }
+  .tile-span-full { grid-column: span 2; }
 }
 
 .customer-booked-badge {
@@ -885,16 +902,6 @@ body {
   border-color: var(--navy);
   color: var(--navy);
 }
-
-/* ===== HERO EARNINGS ===== */
-.hero-earnings {
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  color: rgba(255,255,255,0.55);
-  margin-top: 10px;
-  position: relative;
-}
-.hero-earnings span { color: rgba(255,255,255,0.85); font-weight: 500; }
 
 /* ===== LOW-STOCK BANNER ===== */
 .low-stock-banner {
@@ -1057,7 +1064,6 @@ body {
 /* Misc */
 [data-theme="dark"] .low-stock-banner { background: #1F1800; border-color: #6A4A00; color: #F5C842; }
 [data-theme="dark"] .calc-result { background: #1E3347; border-color: #2C4255; }
-[data-theme="dark"] .hero-earnings { color: rgba(200,230,248,0.7); }
 [data-theme="dark"] .app-tile { color: var(--text); }
 [data-theme="dark"] .app-tile:hover { background: #1E3347 !important; }
 [data-theme="dark"] .picket-bar-fill { background: #7BADC8; }
@@ -1289,7 +1295,7 @@ body {
 
 <!-- ===== HOME PAGE ===== -->
 <div class="page active" id="page-home">
-  <div id="page-home-inner" style="padding:24px 20px 60px; max-width:600px; margin:0 auto;">
+  <div id="page-home-inner">
 
     <!-- Hero banner -->
     <div class="home-hero">
@@ -1300,7 +1306,26 @@ body {
         <span class="hero-pill hp-green"><span id="hp-owed">—</span> owed</span>
         <span class="hero-pill hp-ocean"><span id="hp-pickups">—</span> today</span>
       </div>
-      <div class="hero-earnings">This Month: <span id="hp-month-rev">—</span> · YTD: <span id="hp-ytd-rev">—</span></div>
+    </div>
+
+    <!-- KPI stat row -->
+    <div class="home-kpi-row">
+      <div class="summary-card c-green">
+        <div class="val" id="kpi-month-rev">—</div>
+        <div class="lbl">This Month</div>
+      </div>
+      <div class="summary-card c-sand">
+        <div class="val" id="kpi-ytd-rev">—</div>
+        <div class="lbl">YTD Revenue</div>
+      </div>
+      <div class="summary-card c-blue">
+        <div class="val" id="kpi-inv-count">—</div>
+        <div class="lbl">Ready to Sell</div>
+      </div>
+      <div class="summary-card c-orange">
+        <div class="val" id="kpi-owed">—</div>
+        <div class="lbl">Amount Owed</div>
+      </div>
     </div>
 
     <!-- Low-stock alert -->
@@ -1362,7 +1387,7 @@ body {
       </div>
 
       <!-- Scheduler (full width) -->
-      <div style="grid-column: span 2;">
+      <div class="tile-span-full">
         <div class="app-tile app-tile--sched" onclick="goTo('scheduler')">
           <div class="tile-head">
             <span class="tile-tag">Calendar</span>
@@ -2143,13 +2168,14 @@ async function loadHomeStats() {
     weekEnd.setDate(weekEnd.getDate() + 6);
     const weekEndKey = dateKey(weekEnd);
 
-    const [ordRes, stockRes, bookTodayRes, bookWeekRes, bookFutureRes, salesRes] = await Promise.all([
+    const [ordRes, stockRes, bookTodayRes, bookWeekRes, bookFutureRes, salesRes, invRes] = await Promise.all([
       sb.from('orders').select('id,status,price,payment,pickup_date'),
       sb.from('stock').select('material,qty'),
       sb.from('schedule_bookings').select('booking_date').eq('booking_date', todayKey()),
       sb.from('schedule_bookings').select('booking_date').gte('booking_date', todayKey()).lte('booking_date', weekEndKey),
       sb.from('schedule_bookings').select('booking_date').gt('booking_date', todayKey()).order('booking_date', { ascending: true }).limit(1),
-      sb.from('sales').select('price,sale_date')
+      sb.from('sales').select('price,sale_date'),
+      sb.from('inventory').select('qty,price')
     ]);
 
     // ── Top 3 stats (unchanged) ──
@@ -2210,8 +2236,13 @@ async function loadHomeStats() {
     const salesAll = salesRes.data||[];
     const monthRev = salesAll.filter(s=>{if(!s.sale_date)return false;const d=new Date(s.sale_date+'T00:00:00');return d.getFullYear()===nowY&&d.getMonth()===nowM;}).reduce((s,x)=>s+(x.price||0),0);
     const ytdRev = salesAll.filter(s=>{if(!s.sale_date)return false;return new Date(s.sale_date+'T00:00:00').getFullYear()===nowY;}).reduce((s,x)=>s+(x.price||0),0);
-    document.getElementById('hp-month-rev').textContent = '$'+monthRev.toFixed(0);
-    document.getElementById('hp-ytd-rev').textContent = '$'+ytdRev.toFixed(0);
+    // ── KPI cards ──
+    document.getElementById('kpi-month-rev').textContent = '$'+monthRev.toFixed(0);
+    document.getElementById('kpi-ytd-rev').textContent = '$'+ytdRev.toFixed(0);
+    const invItems = invRes.data || [];
+    const invCount = invItems.reduce((s, i) => s + (i.qty || 0), 0);
+    document.getElementById('kpi-inv-count').textContent = invCount;
+    document.getElementById('kpi-owed').textContent = '$'+owed.toFixed(0);
 
     // ── Low-stock alert ──
     const lowParts = [];
