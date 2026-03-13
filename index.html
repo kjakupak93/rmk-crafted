@@ -1510,7 +1510,7 @@ body {
 <div class="page" id="page-orders">
   <div class="tabs" id="orders-tabs">
     <button class="tab-btn active" onclick="showOrderTab('active',this)">📋 Active</button>
-    <button class="tab-btn" onclick="showOrderTab('completed',this)">✅ Completed</button>
+    <button class="tab-btn" onclick="showOrderTab('sales',this)">📈 Sales History</button>
   </div>
   <div class="app-container">
     <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Orders</h2>
@@ -1538,31 +1538,7 @@ body {
       </div>
       <div id="activeOrdersList"></div>
     </div>
-    <div class="tab-panel" id="otab-completed">
-      <div class="section-header" style="margin-top:4px">
-        <h2>Completed Orders</h2>
-      </div>
-      <div id="completedOrdersList"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== INVENTORY + SALES ===== -->
-<div class="page" id="page-inventory">
-  <div class="tabs">
-    <button class="tab-btn active" onclick="showInvTab('stock',this)">📦 Ready to Sell</button>
-    <button class="tab-btn" onclick="showInvTab('sales',this)">📈 Sales History</button>
-  </div>
-  <div class="app-container">
-    <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Inventory & Sales</h2>
-    <div class="tab-panel active" id="itab-stock">
-      <div class="section-header">
-        <h2>Ready to Sell</h2>
-        <button class="btn-primary" onclick="openInvModal()">+ Add Item</button>
-      </div>
-      <div class="inv-grid" id="invGrid"></div>
-    </div>
-    <div class="tab-panel" id="itab-sales">
+    <div class="tab-panel" id="otab-sales">
       <div class="rev-grid">
         <div class="rev-card"><div class="rev-val" id="rv-total">$0</div><div class="rev-lbl">Total Revenue</div></div>
         <div class="rev-card"><div class="rev-val" id="rv-count">0</div><div class="rev-lbl">Planters Sold</div></div>
@@ -1587,6 +1563,18 @@ body {
         </table>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ===== INVENTORY ===== -->
+<div class="page" id="page-inventory">
+  <div class="app-container">
+    <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Inventory</h2>
+    <div class="section-header">
+      <h2>Ready to Sell</h2>
+      <button class="btn-primary" onclick="openInvModal()">+ Add Item</button>
+    </div>
+    <div class="inv-grid" id="invGrid"></div>
   </div>
 </div>
 
@@ -2143,7 +2131,7 @@ function goTo(page) {
   currentPage = page;
   window.scrollTo(0,0);
   if (page==='orders') loadOrders();
-  if (page==='inventory') { loadInventory(); loadSales(); }
+  if (page==='inventory') { loadInventory(); }
   if (page==='materials') { loadStock(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
 }
@@ -2657,6 +2645,7 @@ function showOrderTab(tab,btn) {
   document.querySelectorAll('#orders-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('otab-'+tab).classList.add('active');
   btn.classList.add('active');
+  if (tab==='sales') loadSales();
 }
 
 let allOrders = [];
@@ -2680,7 +2669,6 @@ async function loadOrders() {
   if (orderFilter==='overdue') filtered=active.filter(o=>o.status!=='completed'&&o.pickup_date&&o.pickup_date<todayKey());
   else if (orderFilter!=='all') filtered=active.filter(o=>o.status===orderFilter);
   document.getElementById('activeOrdersList').innerHTML = filtered.length ? filtered.map(orderCardHTML).join('') : emptyState('📋','No active orders.');
-  document.getElementById('completedOrdersList').innerHTML = completed.length ? completed.map(orderCardHTML).join('') : emptyState('✅','No completed orders yet.');
 }
 
 function orderCardHTML(o) {
@@ -3614,12 +3602,6 @@ function goToOrder(id) {
 }
 
 // ===== SHARED HELPERS =====
-function showInvTab(tab,btn) {
-  document.querySelectorAll('#page-inventory .tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('#page-inventory .tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('itab-'+tab).classList.add('active');
-  btn.classList.add('active');
-}
 
 function emptyState(icon,msg) {
   return `<div class="empty-state"><div class="eicon">${icon}</div><p>${msg}</p></div>`;
