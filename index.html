@@ -3046,7 +3046,7 @@ function setSalesFilter(period, btn) {
 
 function setPurchasesFilter(period, btn) {
   purchasesFilter = period;
-  document.querySelectorAll('.sales-filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#mtab-purchases .sales-filter-btn').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderPurchaseList();
 }
@@ -3215,7 +3215,8 @@ async function downloadPurchaseCSV() {
 }
 
 async function loadPurchases() {
-  const {data}=await sb.from('purchases').select('*').order('purchase_date',{ascending:false});
+  const {data,error}=await sb.from('purchases').select('*').order('purchase_date',{ascending:false});
+  if (error) {showToast('Error loading purchases','error');return;}
   allPurchases=data||[];
   // Compute all-time stats (never filtered)
   const totalSpent=allPurchases.reduce((s,p)=>s+(p.total||0),0);
@@ -3229,6 +3230,10 @@ async function loadPurchases() {
 
 function renderPurchaseList() {
   const list=document.getElementById('purchaseList');
+  // Sync active state on filter buttons (restores highlight when returning to tab)
+  document.querySelectorAll('#mtab-purchases .sales-filter-btn').forEach(b=>b.classList.remove('active'));
+  const activeBtn=document.querySelector(`#mtab-purchases .sales-filter-btn[onclick*="'${purchasesFilter}'"]`);
+  if (activeBtn) activeBtn.classList.add('active');
   const now=new Date();
   const filtered=allPurchases.filter(p=>{
     if (purchasesFilter==='all') return true;
