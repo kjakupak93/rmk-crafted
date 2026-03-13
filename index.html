@@ -1093,6 +1093,11 @@ body {
 [data-theme="dark"] .picket-bar-fill { background: #7BADC8; }
 [data-theme="dark"] .page-header { border-color: #2C4255; }
 [data-theme="dark"] .section-label { color: var(--text-muted); }
+/* Analytics dark mode */
+[data-theme="dark"] .chart-card { background: #162534 !important; border-color: #2C4255 !important; }
+[data-theme="dark"] .chart-card h3 { color: var(--text-muted); }
+[data-theme="dark"] .analytics-range-toggle button { background: #162534; border-color: #2C4255; color: var(--text-muted); }
+[data-theme="dark"] .analytics-range-toggle button.active { background: #7BADC8; border-color: #7BADC8; color: #091420; }
 [data-theme="dark"] .modal h3, [data-theme="dark"] .modal label { color: var(--text); }
 /* Status & payment badges */
 [data-theme="dark"] .badge-pending   { background: rgba(212,120,42,0.2);  color: #F0A060; border: 1px solid rgba(212,120,42,0.4); }
@@ -2260,6 +2265,11 @@ function getAnalyticsMonths() {
 }
 
 function renderAnalyticsCharts() {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  const tickColor = dark ? '#6B8A99' : '#666';
+  const gridColor = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const legendColor = dark ? '#6B8A99' : '#666';
+
   const months = getAnalyticsMonths();
   const labels = months.map(m => {
     const [y, mo] = m.split('-');
@@ -2299,7 +2309,8 @@ function renderAnalyticsCharts() {
     options: {
       responsive: true,
       plugins: { legend: { display: false } },
-      scales: { y: { ticks: { callback: v => '$'+v }, beginAtZero: true } }
+      scales: { y: { ticks: { callback: v => '$'+v, color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
+                x: { ticks: { color: tickColor }, grid: { color: gridColor } } }
     }
   });
 
@@ -2311,13 +2322,14 @@ function renderAnalyticsCharts() {
       datasets: [
         { label: 'Revenue', data: revenueData, backgroundColor: '#3A7D5C', borderRadius: 4 },
         { label: 'Material Cost', data: costData, backgroundColor: '#D4782A', borderRadius: 4 },
-        { label: 'Profit', data: profitData, type: 'line', borderColor: '#1E4D6B', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3 }
+        { label: 'Profit', data: profitData, type: 'line', borderColor: dark ? '#7BADC8' : '#1E4D6B', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3 }
       ]
     },
     options: {
       responsive: true,
-      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
-      scales: { y: { ticks: { callback: v => '$'+v }, beginAtZero: true } }
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, color: legendColor } } },
+      scales: { y: { ticks: { callback: v => '$'+v, color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
+                x: { ticks: { color: tickColor }, grid: { color: gridColor } } }
     }
   });
 
@@ -2348,7 +2360,8 @@ function renderAnalyticsCharts() {
       indexAxis: 'y',
       responsive: true,
       plugins: { legend: { display: false } },
-      scales: { x: { ticks: { callback: v => '$'+v }, beginAtZero: true } }
+      scales: { x: { ticks: { callback: v => '$'+v, color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
+                y: { ticks: { color: tickColor }, grid: { color: gridColor } } }
     }
   });
 }
