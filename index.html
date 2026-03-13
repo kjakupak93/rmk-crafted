@@ -1346,7 +1346,7 @@ body {
 
       <!-- Inventory -->
       <div>
-        <div class="app-tile app-tile--inv" onclick="goTo('inventory')">
+        <div class="app-tile app-tile--inv" onclick="goTo('orders')">
           <div class="tile-head">
             <span class="tile-tag">Stock</span>
             <span class="tile-icon" style="font-size:20px">📦</span>
@@ -1510,6 +1510,7 @@ body {
 <div class="page" id="page-orders">
   <div class="tabs" id="orders-tabs">
     <button class="tab-btn active" onclick="showOrderTab('active',this)">📋 Active</button>
+    <button class="tab-btn" onclick="showOrderTab('inventory',this)">📦 Ready to Sell</button>
     <button class="tab-btn" onclick="showOrderTab('sales',this)">📈 Sales History</button>
   </div>
   <div class="app-container">
@@ -1537,6 +1538,13 @@ body {
         <button class="filter-btn" onclick="filterOrders('overdue',this)">Overdue <span id="overdue-tab-count" style="display:none;background:var(--red);color:white;border-radius:8px;padding:0 5px;font-size:10px;margin-left:2px"></span></button>
       </div>
       <div id="activeOrdersList"></div>
+    </div>
+    <div class="tab-panel" id="otab-inventory">
+      <div class="section-header">
+        <h2>Ready to Sell</h2>
+        <button class="btn-primary" onclick="openInvModal()">+ Add Item</button>
+      </div>
+      <div class="inv-grid" id="invGrid"></div>
     </div>
     <div class="tab-panel" id="otab-sales">
       <div class="rev-grid">
@@ -1566,17 +1574,6 @@ body {
   </div>
 </div>
 
-<!-- ===== INVENTORY ===== -->
-<div class="page" id="page-inventory">
-  <div class="app-container">
-    <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Inventory</h2>
-    <div class="section-header">
-      <h2>Ready to Sell</h2>
-      <button class="btn-primary" onclick="openInvModal()">+ Add Item</button>
-    </div>
-    <div class="inv-grid" id="invGrid"></div>
-  </div>
-</div>
 
 <!-- ===== MATERIALS ===== -->
 <div class="page" id="page-materials">
@@ -2131,7 +2128,6 @@ function goTo(page) {
   currentPage = page;
   window.scrollTo(0,0);
   if (page==='orders') loadOrders();
-  if (page==='inventory') { loadInventory(); }
   if (page==='materials') { loadStock(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
 }
@@ -2645,6 +2641,7 @@ function showOrderTab(tab,btn) {
   document.querySelectorAll('#orders-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('otab-'+tab).classList.add('active');
   btn.classList.add('active');
+  if (tab==='inventory') loadInventory();
   if (tab==='sales') loadSales();
 }
 
