@@ -12,17 +12,18 @@
 
 A single-page web app that manages every part of the RMK Crafted workflow:
 
-- **Home Dashboard** — at-a-glance KPI cards (this month's revenue, YTD, ready-to-sell count, amount owed) plus a 3-column tile grid linking to every section
+- **Home Dashboard** — at-a-glance KPI cards (this month's revenue, YTD, ready-to-sell count, amount owed) with trend badges showing ▲/▼ % vs prior period, plus a tile grid linking to every section
 - **Quote Calculator** — price any planter box instantly and generate a Facebook message
 - **Order & Inventory Tracker** — manage active orders, ready-to-sell stock, and sales history
 - **Material Cost Tracker** — track cedar stock levels and Lowes purchases
 - **Pickup Scheduler** — manage availability, view upcoming pickups, sync with customer bookings
+- **Analytics** — revenue trends, profit overview, and best-selling sizes with time-range filtering
 
 All data is stored in Supabase (cloud) so it works across any device. The dashboard is PIN-protected. Customers only ever see `schedule.html`.
 
 ---
 
-## The Four Modules
+## The Five Modules
 
 ### 1 — Quote Calculator
 
@@ -107,7 +108,25 @@ Use +/− buttons to adjust as you build or receive materials.
 
 ---
 
-### 4 — Pickup Scheduler
+### 4 — Analytics
+
+View revenue trends, profit margins, and best-selling planter sizes — all in one place.
+
+**Charts:**
+- **Revenue by Month** — bar chart of total sales revenue per month
+- **Profit Overview** — grouped bars (revenue + material cost) with a profit trend line overlay
+- **Best Sellers** — horizontal bar chart of top 10 planter sizes ranked by revenue
+
+**Range toggle** at the top lets you switch between:
+- **This Year** — January through the current month
+- **Last 12 Months** — rolling 12-month window
+- **All Time** — every month with recorded sales or purchase data
+
+**KPI trend badges** — the "This Month" and "YTD Revenue" cards on the home dashboard show ▲/▼ % badges comparing to the prior month and prior year-to-date respectively.
+
+---
+
+### 5 — Pickup Scheduler
 
 **Calendar tab** — monthly view of all scheduling activity.
 
@@ -181,6 +200,7 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | Log a materials purchase | Material Tracker → Lowes Purchase Log → + Log Purchase |
 | Update stock levels | Material Tracker → Stock Levels → +/− buttons |
 | View sales revenue | Orders → Sales History tab |
+| View revenue trends | Analytics tile on home → range toggle for time window |
 
 ---
 
@@ -191,6 +211,7 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | Hosting | GitHub Pages (free) |
 | Database | Supabase (cloud Postgres) |
 | Frontend | Vanilla HTML/CSS/JS — single file per page |
+| Charts | Chart.js v4 (CDN) |
 | Dev tooling | Claude Code + Claude in Chrome |
 
 **Files:**

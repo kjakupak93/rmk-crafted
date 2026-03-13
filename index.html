@@ -12,6 +12,7 @@
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --navy: #1E4D6B;
@@ -869,6 +870,31 @@ body {
   .tile-span-full { grid-column: span 2; }
 }
 
+/* ── Trend badges on KPI cards ── */
+.trend-badge { font-size: 11px; font-family: 'DM Mono', monospace; margin-top: 2px; font-weight: 600; }
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+.trend-flat { color: var(--text-muted); }
+
+/* ── Analytics page ── */
+#page-analytics { max-width: 880px; margin: 0 auto; padding: 32px 24px 60px; }
+.analytics-range-toggle { display: flex; gap: 6px; margin-bottom: 24px; }
+.analytics-range-toggle button { padding: 6px 14px; border: 1px solid var(--warm-gray); border-radius: 20px; background: white; color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.analytics-range-toggle button.active { background: var(--navy); color: white; border-color: var(--navy); }
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.chart-card { background: white; border: 1px solid var(--warm-gray); border-radius: 12px; padding: 20px; }
+.chart-card h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px; }
+.chart-card--full { grid-column: 1 / -1; }
+@media (max-width: 640px) {
+  #page-analytics { padding: 24px 16px 60px; }
+  .analytics-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Analytics app-tile color ── */
+.app-tile--analytics { background: linear-gradient(135deg, #1E4D6B 0%, #2d6b8f 100%); }
+.app-tile--analytics .tile-tag, .app-tile--analytics .tile-name, .app-tile--analytics .tile-desc { color: white; }
+.app-tile--analytics .tile-icon { opacity: 0.9; }
+
 .customer-booked-badge {
   display: inline-flex;
   align-items: center;
@@ -1314,10 +1340,12 @@ body {
       <div class="summary-card c-green">
         <div class="val" id="kpi-month-rev">—</div>
         <div class="lbl">This Month</div>
+        <div class="trend-badge" id="kpi-month-trend"></div>
       </div>
       <div class="summary-card c-sand">
         <div class="val" id="kpi-ytd-rev">—</div>
         <div class="lbl">YTD Revenue</div>
+        <div class="trend-badge" id="kpi-ytd-trend"></div>
       </div>
       <div class="summary-card c-blue">
         <div class="val" id="kpi-inv-count">—</div>
@@ -1384,6 +1412,18 @@ body {
             <span class="tms-chip"><span class="tms-val" id="ss-twobytwo">—</span> 2×2s</span>
             <span class="tms-chip"><span class="tms-val" id="ss-twobyfour">—</span> 2×4s</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Analytics -->
+      <div>
+        <div class="app-tile app-tile--analytics" onclick="goTo('analytics')">
+          <div class="tile-head">
+            <span class="tile-tag">Insights</span>
+            <span class="tile-icon" style="font-size:20px">📊</span>
+          </div>
+          <div class="tile-name">Analytics</div>
+          <div class="tile-desc">Revenue, profit & best sellers</div>
         </div>
       </div>
 
@@ -1744,6 +1784,34 @@ body {
   </div>
 </div>
 
+<!-- ===== ANALYTICS ===== -->
+<div id="page-analytics" class="page">
+  <div class="app-container">
+    <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Analytics</h2>
+
+    <div class="analytics-range-toggle">
+      <button id="range-btn-year" class="active" onclick="setAnalyticsRange('year',this)">This Year</button>
+      <button id="range-btn-12m" onclick="setAnalyticsRange('12m',this)">Last 12M</button>
+      <button id="range-btn-all" onclick="setAnalyticsRange('all',this)">All Time</button>
+    </div>
+
+    <div class="analytics-grid">
+      <div class="chart-card">
+        <h3>Revenue by Month</h3>
+        <canvas id="chart-revenue"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Profit Overview</h3>
+        <canvas id="chart-profit"></canvas>
+      </div>
+      <div class="chart-card chart-card--full">
+        <h3>Best Sellers</h3>
+        <canvas id="chart-sizes"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== MODALS ===== -->
 
 <!-- Order modal -->
@@ -2058,6 +2126,9 @@ function loadAddonSettings() {
   syncAddonChipLabels();
 }
 let currentPage = 'home';
+let analyticsRange = 'year';
+let chartRevenue = null, chartProfit = null, chartSizes = null;
+let analyticsSales = [], analyticsPurchases = [];
 let currentStyle = 'Standard';
 let matchedSize = null;
 let currentEditOrder = null;
@@ -2148,17 +2219,166 @@ function goHome() {
   loadRecentActivity();
 }
 
+// ===== ANALYTICS =====
+async function loadAnalytics() {
+  const [sRes, pRes] = await Promise.all([
+    sb.from('sales').select('price,sale_date,size,qty'),
+    sb.from('purchases').select('total,purchase_date')
+  ]);
+  analyticsSales = sRes.data || [];
+  analyticsPurchases = pRes.data || [];
+  renderAnalyticsCharts();
+}
+
+function setAnalyticsRange(range, btn) {
+  analyticsRange = range;
+  document.querySelectorAll('.analytics-range-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAnalyticsCharts();
+}
+
+function getAnalyticsMonths() {
+  const now = new Date();
+  if (analyticsRange === 'year') {
+    const months = [];
+    for (let m = 0; m <= now.getMonth(); m++) {
+      months.push(`${now.getFullYear()}-${String(m+1).padStart(2,'0')}`);
+    }
+    return months;
+  } else if (analyticsRange === '12m') {
+    const months = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+    }
+    return months;
+  } else {
+    const keys = new Set();
+    [...analyticsSales, ...analyticsPurchases].forEach(r => {
+      const d = r.sale_date || r.purchase_date;
+      if (d) keys.add(d.slice(0, 7));
+    });
+    return [...keys].sort();
+  }
+}
+
+function renderAnalyticsCharts() {
+  const months = getAnalyticsMonths();
+  const labels = months.map(m => {
+    const [y, mo] = m.split('-');
+    return new Date(parseInt(y), parseInt(mo)-1, 1).toLocaleDateString('en-US', {month:'short', year:'2-digit'});
+  });
+
+  const revByMonth = {};
+  analyticsSales.forEach(s => {
+    if (!s.sale_date) return;
+    const key = s.sale_date.slice(0, 7);
+    revByMonth[key] = (revByMonth[key] || 0) + (s.price || 0);
+  });
+
+  const costByMonth = {};
+  analyticsPurchases.forEach(p => {
+    if (!p.purchase_date) return;
+    const key = p.purchase_date.slice(0, 7);
+    costByMonth[key] = (costByMonth[key] || 0) + (p.total || 0);
+  });
+
+  const revenueData = months.map(m => revByMonth[m] || 0);
+  const costData = months.map(m => costByMonth[m] || 0);
+  const profitData = months.map((m, i) => revenueData[i] - costData[i]);
+
+  if (chartRevenue) chartRevenue.destroy();
+  chartRevenue = new Chart(document.getElementById('chart-revenue'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Revenue',
+        data: revenueData,
+        backgroundColor: '#4A86A8',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: v => '$'+v }, beginAtZero: true } }
+    }
+  });
+
+  if (chartProfit) chartProfit.destroy();
+  chartProfit = new Chart(document.getElementById('chart-profit'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Revenue', data: revenueData, backgroundColor: '#3A7D5C', borderRadius: 4 },
+        { label: 'Material Cost', data: costData, backgroundColor: '#D4782A', borderRadius: 4 },
+        { label: 'Profit', data: profitData, type: 'line', borderColor: '#1E4D6B', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+      scales: { y: { ticks: { callback: v => '$'+v }, beginAtZero: true } }
+    }
+  });
+
+  const sizeRev = {};
+  analyticsSales.forEach(s => {
+    if (!s.size) return;
+    if (s.sale_date) {
+      const key = s.sale_date.slice(0, 7);
+      if (months.length && !months.includes(key)) return;
+    }
+    sizeRev[s.size] = (sizeRev[s.size] || 0) + (s.price || 0);
+  });
+  const sorted = Object.entries(sizeRev).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+  if (chartSizes) chartSizes.destroy();
+  chartSizes = new Chart(document.getElementById('chart-sizes'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([size]) => size),
+      datasets: [{
+        label: 'Revenue',
+        data: sorted.map(([, rev]) => rev),
+        backgroundColor: '#C9A55A',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { x: { ticks: { callback: v => '$'+v }, beginAtZero: true } }
+    }
+  });
+}
+
+function renderTrendBadge(elId, current, prior) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (prior == null) { el.textContent = ''; return; }
+  const pct = ((current - prior) / prior) * 100;
+  const abs = Math.abs(pct);
+  if (abs < 1) { el.textContent = '→ flat'; el.className = 'trend-badge trend-flat'; }
+  else if (pct > 0) { el.textContent = `▲ ${abs.toFixed(0)}% vs prior`; el.className = 'trend-badge trend-up'; }
+  else { el.textContent = `▼ ${abs.toFixed(0)}% vs prior`; el.className = 'trend-badge trend-down'; }
+}
+
 function goTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   document.getElementById('backBtn').classList.add('visible');
-  const names = {quote:'Quote Calculator', orders:'Orders', inventory:'Inventory & Sales', materials:'Materials', scheduler:'Pickup Scheduler'};
+  const names = {quote:'Quote Calculator', orders:'Orders', inventory:'Inventory & Sales', materials:'Materials', scheduler:'Pickup Scheduler', analytics:'Analytics'};
   document.getElementById('header-subtitle').textContent = names[page] || page;
   currentPage = page;
   window.scrollTo(0,0);
   if (page==='orders') loadOrders();
   if (page==='materials') { loadStock(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
+  if (page==='analytics') loadAnalytics();
 }
 
 // ===== HOME STATS =====
@@ -2240,6 +2460,18 @@ async function loadHomeStats() {
     // ── KPI cards ──
     document.getElementById('kpi-month-rev').textContent = '$'+monthRev.toFixed(0);
     document.getElementById('kpi-ytd-rev').textContent = '$'+ytdRev.toFixed(0);
+    // ── Trend badges ──
+    const prevMonthDate = new Date(nowY, nowM - 1, 1);
+    const prevMonthY = prevMonthDate.getFullYear();
+    const prevMonthM = prevMonthDate.getMonth();
+    const prevMonthRev = salesAll
+      .filter(s => { if(!s.sale_date) return false; const d = new Date(s.sale_date+'T00:00:00'); return d.getFullYear()===prevMonthY && d.getMonth()===prevMonthM; })
+      .reduce((s,x) => s+(x.price||0), 0);
+    renderTrendBadge('kpi-month-trend', monthRev, prevMonthRev);
+    const ytdLastYear = salesAll
+      .filter(s => { if(!s.sale_date) return false; const d = new Date(s.sale_date+'T00:00:00'); return d.getFullYear()===(nowY-1) && d.getMonth()<=nowM; })
+      .reduce((s,x) => s+(x.price||0), 0);
+    renderTrendBadge('kpi-ytd-trend', ytdRev, ytdLastYear);
     const invItems = invRes.data || [];
     const invCount = invItems.reduce((s, i) => s + (i.qty || 0), 0);
     document.getElementById('kpi-inv-count').textContent = invCount;

@@ -8,9 +8,10 @@ A single-page web app (`index.html`) that serves as an all-in-one business dashb
 - **Database**: Supabase (PostgreSQL)
 - **Hosting**: GitHub Pages
 - **Fonts**: Google Fonts — Playfair Display, DM Mono, DM Sans
+- **Charts**: Chart.js v4 (loaded via CDN)
 
 ## File Structure
-- `index.html` — CSS: lines ~9–875, HTML: ~877–2010, JS: ~2012 onward
+- `index.html` — CSS: lines ~9–900, HTML: ~900–1820, JS: ~2080 onward
 - `manifest.json` — PWA manifest
 - `icon.png` — 1024×1024 app icon (JPEG named .png)
 
@@ -41,6 +42,7 @@ The app is a single HTML file with a multi-page navigation system (no URL routin
 - **Orders** (`page-orders`) — 3-tab fulfillment hub: 📋 Active → 📦 Ready to Sell → 📈 Sales History
 - **Materials** (`page-materials`) — Wood stock levels + Lowes purchase log (2 tabs: Stock, Purchases)
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
+- **Analytics** (`page-analytics`) — Revenue, profit & best seller charts with range toggle (This Year / Last 12M / All Time)
 
 #### Home Page KPI Cards
 4-card stat row between the hero and low-stock alert. IDs and data sources:
@@ -51,11 +53,14 @@ The app is a single HTML file with a multi-page navigation system (no URL routin
 | `kpi-inv-count` | Ready to Sell | sum of `inventory.qty` |
 | `kpi-owed` | Amount Owed | unpaid active orders |
 
+The two revenue KPI cards also show trend badges (`kpi-month-trend`, `kpi-ytd-trend`) rendered by `renderTrendBadge()` — ▲/▼ % vs prior period.
+
 #### Home Page Layout
 - Max-width: 880px (wider than other pages)
 - Tile grid: 3-column on >820px, 2-column on ≤820px
 - KPI row: 4-column on >640px, 2×2 on ≤640px
 - Scheduler tile uses `.tile-span-full` class (spans all columns)
+- Analytics tile: navy gradient (`.app-tile--analytics`), positioned before the Scheduler tile
 
 > `page-inventory` was removed — inventory (Ready to Sell) lives in the Orders page as the middle tab (`otab-inventory`).
 
