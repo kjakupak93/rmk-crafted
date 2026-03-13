@@ -985,6 +985,7 @@ body {
 /* ===== DARK MODE ===== */
 [data-theme="dark"] {
   --cream: #0E1A24;
+  --card-bg: #162534;
   --navy: #7BADC8;
   --navy-dark: #9FCDE0;
   --ocean: #9FCDE0;
@@ -3233,7 +3234,7 @@ async function loadPurchases() {
     if (p.pickets) parts.push(p.pickets+' pickets');
     if (p.twobytwo) parts.push(p.twobytwo+' 2×2s');
     if (p.twobyfour) parts.push(p.twobyfour+' 2×4s');
-    return `<div style="background:white;border:2px solid var(--warm-gray);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px">
+    return `<div style="background:var(--card-bg, white);border:2px solid var(--warm-gray);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px">
       <span style="font-size:18px">🛒</span>
       <div style="flex:1"><div style="font-size:14px;font-weight:500">${p.store||'Lowes'} — ${p.purchase_date||''}</div><div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">${parts.join(' · ')}${p.notes?' · '+p.notes:''}</div></div>
       <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:var(--navy)">$${(p.total||0).toFixed(2)}</div>
