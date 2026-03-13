@@ -1344,22 +1344,6 @@ body {
         </div>
       </div>
 
-      <!-- Inventory -->
-      <div>
-        <div class="app-tile app-tile--inv" onclick="goTo('orders')">
-          <div class="tile-head">
-            <span class="tile-tag">Stock</span>
-            <span class="tile-icon" style="font-size:20px">📦</span>
-          </div>
-          <div class="tile-name">Inventory</div>
-          <div class="tile-desc">Ready-to-sell planters</div>
-          <div class="tile-mini-stats">
-            <span class="tms-chip"><span class="tms-val" id="ss-stock">—</span> in stock</span>
-            <span class="tms-chip"><span class="tms-val money" id="ss-inv-value">—</span> value</span>
-          </div>
-        </div>
-      </div>
-
       <!-- Materials -->
       <div>
         <div class="app-tile app-tile--mats" onclick="goTo('materials')">
@@ -2140,9 +2124,8 @@ async function loadHomeStats() {
     weekEnd.setDate(weekEnd.getDate() + 6);
     const weekEndKey = dateKey(weekEnd);
 
-    const [ordRes, invRes, stockRes, bookTodayRes, bookWeekRes, bookFutureRes, salesRes] = await Promise.all([
+    const [ordRes, stockRes, bookTodayRes, bookWeekRes, bookFutureRes, salesRes] = await Promise.all([
       sb.from('orders').select('id,status,price,payment,pickup_date'),
-      sb.from('inventory').select('qty,price'),
       sb.from('stock').select('material,qty'),
       sb.from('schedule_bookings').select('booking_date').eq('booking_date', todayKey()),
       sb.from('schedule_bookings').select('booking_date').gte('booking_date', todayKey()).lte('booking_date', weekEndKey),
@@ -2153,7 +2136,6 @@ async function loadHomeStats() {
     // ── Top 3 stats (unchanged) ──
     const activeOrders = (ordRes.data||[]).filter(o => !(o.status === 'completed' && o.payment !== 'unpaid'));
     const active = activeOrders.length;
-    const ready = (invRes.data||[]).reduce((s,i) => s+(i.qty||0), 0);
     const pickups = (bookTodayRes.data||[]).length;
     document.getElementById('hp-active').textContent = active;
     document.getElementById('hp-owed').textContent = '$'+(activeOrders.filter(o=>o.payment==='unpaid').reduce((s,o)=>s+(parseFloat(o.price)||0),0)).toFixed(0);
@@ -2174,13 +2156,6 @@ async function loadHomeStats() {
     const elOD = document.getElementById('ss-overdue');
     elOD.textContent = overdue;
     elOD.className = 'tms-val' + (overdue > 0 ? ' low' : '');
-
-    // ── Inventory strip ──
-    const invItems = invRes.data||[];
-    const totalStock = invItems.reduce((s,i) => s+(i.qty||0), 0);
-    const totalValue = invItems.reduce((s,i) => s+((i.qty||0)*(parseFloat(i.price)||0)), 0);
-    document.getElementById('ss-stock').textContent = totalStock;
-    document.getElementById('ss-inv-value').textContent = '$'+totalValue.toFixed(0);
 
     // ── Materials strip ──
     const stockMap = {};
