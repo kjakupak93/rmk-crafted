@@ -10,7 +10,7 @@ A single-page web app (`index.html`) that serves as an all-in-one business dashb
 - **Fonts**: Google Fonts — Playfair Display, DM Mono, DM Sans
 
 ## File Structure
-- `index.html` — CSS: lines ~9–855, HTML: ~857–1999, JS: ~2001 onward
+- `index.html` — CSS: lines ~9–875, HTML: ~877–2010, JS: ~2012 onward
 - `manifest.json` — PWA manifest
 - `icon.png` — 1024×1024 app icon (JPEG named .png)
 
@@ -36,11 +36,26 @@ A single-page web app (`index.html`) that serves as an all-in-one business dashb
 The app is a single HTML file with a multi-page navigation system (no URL routing — pages are shown/hidden via CSS classes).
 
 ### Pages
-- **Home** (`page-home`) — Dashboard with summary stats and tile navigation
+- **Home** (`page-home`) — Dashboard: greeting hero, 4-card KPI row, low-stock alert, activity feed, 3-column tile grid
 - **Quote Calculator** (`page-quote`) — Price estimator based on picket count
 - **Orders** (`page-orders`) — 3-tab fulfillment hub: 📋 Active → 📦 Ready to Sell → 📈 Sales History
 - **Materials** (`page-materials`) — Wood stock levels + Lowes purchase log (2 tabs: Stock, Purchases)
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
+
+#### Home Page KPI Cards
+4-card stat row between the hero and low-stock alert. IDs and data sources:
+| ID | Label | Source |
+|---|---|---|
+| `kpi-month-rev` | This Month | `sales` table, current month |
+| `kpi-ytd-rev` | YTD Revenue | `sales` table, current year |
+| `kpi-inv-count` | Ready to Sell | sum of `inventory.qty` |
+| `kpi-owed` | Amount Owed | unpaid active orders |
+
+#### Home Page Layout
+- Max-width: 880px (wider than other pages)
+- Tile grid: 3-column on >820px, 2-column on ≤820px
+- KPI row: 4-column on >640px, 2×2 on ≤640px
+- Scheduler tile uses `.tile-span-full` class (spans all columns)
 
 > `page-inventory` was removed — inventory (Ready to Sell) lives in the Orders page as the middle tab (`otab-inventory`).
 

@@ -12,6 +12,7 @@
 
 A single-page web app that manages every part of the RMK Crafted workflow:
 
+- **Home Dashboard** — at-a-glance KPI cards (this month's revenue, YTD, ready-to-sell count, amount owed) plus a 3-column tile grid linking to every section
 - **Quote Calculator** — price any planter box instantly and generate a Facebook message
 - **Order & Inventory Tracker** — manage active orders, ready-to-sell stock, and sales history
 - **Material Cost Tracker** — track cedar stock levels and Lowes purchases
