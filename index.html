@@ -1528,6 +1528,10 @@ body {
         <h2>Ready to Sell</h2>
         <button class="btn-primary" onclick="openInvModal()">+ Add Item</button>
       </div>
+      <div class="summary-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px">
+        <div class="summary-card c-green"><div class="val" id="inv-stat-count">0</div><div class="lbl">Items in Stock</div></div>
+        <div class="summary-card c-blue"><div class="val" id="inv-stat-value">$0</div><div class="lbl">Inventory Value</div></div>
+      </div>
       <div class="inv-grid" id="invGrid"></div>
     </div>
     <div class="tab-panel" id="otab-sales">
@@ -2954,6 +2958,11 @@ async function loadInventory() {
   const {data,error}=await sb.from('inventory').select('*').order('created_at',{ascending:false});
   if (error) {showToast('Error loading inventory','error');return;}
   const grid=document.getElementById('invGrid');
+  // Compute stats from full dataset (before early return)
+  const totalQty=(data||[]).reduce((s,i)=>s+(i.qty||0),0);
+  const totalVal=(data||[]).reduce((s,i)=>s+((i.price||0)*(i.qty||0)),0);
+  document.getElementById('inv-stat-count').textContent=totalQty;
+  document.getElementById('inv-stat-value').textContent='$'+totalVal.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
   if (!data||!data.length) {grid.innerHTML=emptyState('📦','No ready-to-sell items yet.');return;}
   grid.innerHTML=data.map(item=>`<div class="inv-card">
     <div><div class="inv-size">${item.size}"</div><div class="inv-style">${item.style}</div></div>
