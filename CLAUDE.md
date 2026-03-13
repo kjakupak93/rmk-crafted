@@ -9,6 +9,11 @@ A single-page web app (`index.html`) that serves as an all-in-one business dashb
 - **Hosting**: GitHub Pages
 - **Fonts**: Google Fonts — Playfair Display, DM Mono, DM Sans
 
+## File Structure
+- `index.html` — CSS: lines ~9–855, HTML: ~857–1999, JS: ~2001 onward
+- `manifest.json` — PWA manifest
+- `icon.png` — 1024×1024 app icon (JPEG named .png)
+
 ## Supabase Config
 - **Project URL**: `https://mfsejmfmyuvhuclzuitc.supabase.co`
 - **Anon Key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc2VqbWZteXV2aHVjbHp1aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTgzODksImV4cCI6MjA4NzYzNDM4OX0.Ve8dY-CvGqCMSWfifd6HvrDvmrJo4J00auhos8aezpY`
@@ -33,15 +38,17 @@ The app is a single HTML file with a multi-page navigation system (no URL routin
 ### Pages
 - **Home** (`page-home`) — Dashboard with summary stats and tile navigation
 - **Quote Calculator** (`page-quote`) — Price estimator based on picket count
-- **Orders** (`page-orders`) — Active and completed order tracking
-- **Inventory** (`page-inventory`) — Ready-to-sell stock + sales history
-- **Materials** (`page-materials`) — Wood stock levels + Lowes purchase log
+- **Orders** (`page-orders`) — 3-tab fulfillment hub: 📋 Active → 📦 Ready to Sell → 📈 Sales History
+- **Materials** (`page-materials`) — Wood stock levels + Lowes purchase log (2 tabs: Stock, Purchases)
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
+
+> `page-inventory` was removed — inventory (Ready to Sell) lives in the Orders page as the middle tab (`otab-inventory`).
 
 ### Navigation
 - `goTo('pagename')` — navigate to a page (also triggers data load)
 - `goHome()` — return to home screen
 - Pages load their data when navigated to (not all at startup)
+- `showOrderTab(tab, btn)` — switches between Active / Ready to Sell / Sales History tabs; lazy-loads `loadInventory()` and `loadSales()` on first switch
 
 ## Business Context
 - **Owner**: runs RMK Crafted solo out of Oceanside, CA
@@ -50,6 +57,7 @@ The app is a single HTML file with a multi-page navigation system (no URL routin
 - **Payment**: Cash or Venmo (@RMKCrafted business account)
 - **Materials**: Cedar pickets from Lowes ($3.38 base + 8.25% tax = $3.66 each), 2×2s ($2.98 base = $3.23 each), 2×4s ($3.85 base = $4.17 each)
 - **Pricing formula**: ~$10 per picket used (e.g. 10 pickets = ~$100)
+- Material costs stored in `UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17}`
 
 ## Standard Planter Sizes & Prices
 | Size (L×W×H) | Price | Pickets |
@@ -64,6 +72,8 @@ The app is a single HTML file with a multi-page navigation system (no URL routin
 | 48×16×16" | $85 | 8 |
 | 48×16×27" | $90 | 9 |
 | 48×24×16" | $110 | 11 |
+
+8 sizes have hardcoded `pickets` in `STANDARD_SIZES`; 16×16×16 and 36×12×16 use formula fallback.
 
 ## Color Palette (CSS Variables)
 ```css
@@ -120,9 +130,34 @@ goTo('orders');    // navigate and load data
 goHome();          // back to dashboard
 ```
 
+## Known Bugs / Patterns
+
+### iOS Ghost Click (modal immediately closing)
+iOS Safari fires a synthetic `click` ~300ms after `touchend` at the same screen position. If a modal opens on `click`, that ghost click can land on the overlay and immediately close it.
+
+**Fix pattern:**
+```js
+modal._justOpened = true;
+setTimeout(() => delete modal._justOpened, 350);
+// In overlay close handler:
+if (!o._justOpened) closeModal(...);
+```
+Applied to `openAddonSettings()`. Overlay handler near bottom of JS.
+
+### Pin-Gate (auth screen)
+Pin-gate div uses `sessionStorage.rmk_auth` to show/hide. Ensure the inline style does not contain both `display:none` and `display:flex` — the last one wins and will break show/hide logic.
+
+## PWA / Mobile
+- PWA meta tags in `<head>`: `theme-color`, `apple-mobile-web-app-*`, manifest link, `apple-touch-icon`
+- `manifest.json` and `icon.png` in repo root
+- iOS input zoom fix: `font-size: 16px !important` on all inputs inside `@media (max-width: 640px)`
+- Filter bar scrolls horizontally on mobile: `overflow-x: auto; flex-wrap: nowrap`
+- Reduced mobile padding on `.app-container`, `#page-home`, `.app-header`
+- Icon buttons enlarged to 40×40px on mobile
+
 ## Deployment
-- **Repo**: GitHub (public repo, free GitHub Pages)
-- **Live URL**: `https://[username].github.io/rmk-crafted`
+- **Repo**: `https://github.com/kjakupak93/rmk-crafted` (public, free GitHub Pages)
+- **Live URL**: `https://kjakupak93.github.io/rmk-crafted`
 - **Deploy process**: commit and push to `main` → GitHub Pages auto-deploys in ~60 seconds
 - **No build step** — edit `index.html` directly and push
 
@@ -133,5 +168,4 @@ goHome();          // back to dashboard
 - Customer-facing order status page
 - Revenue charts and analytics
 - Automated Facebook Marketplace message drafting
-- Mobile PWA support (service worker, offline mode)
 - Email/text notifications when a pickup is approaching
