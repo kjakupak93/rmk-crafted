@@ -17,7 +17,7 @@ A single-page web app that manages every part of the RMK Crafted workflow:
 - **Order & Inventory Tracker** — manage active orders, ready-to-sell stock, and sales history
 - **Material Cost Tracker** — track cedar stock levels and Lowes purchases
 - **Pickup Scheduler** — manage availability, view upcoming pickups, sync with customer bookings
-- **Analytics** — revenue trends, profit overview, and best-selling sizes with time-range filtering
+- **Analytics** — P&L summary cards, revenue trends, profit overview, best-selling sizes, and a full pricing matrix with margin breakdown
 
 All data is stored in Supabase (cloud) so it works across any device. The dashboard is PIN-protected. Customers only ever see `schedule.html`.
 
@@ -110,7 +110,12 @@ Use +/− buttons to adjust as you build or receive materials.
 
 ### 4 — Analytics
 
-View revenue trends, profit margins, and best-selling planter sizes — all in one place.
+View profitability at a glance, revenue trends, and best-selling planter sizes — all in one place.
+
+**P&L Summary cards (top of page):**
+- **This Month Revenue** — total sales logged this calendar month
+- **Material Spend** — total Lowes purchases logged this calendar month
+- **Est. Net Profit** — revenue minus material spend (green if positive, red if negative)
 
 **Charts:**
 - **Revenue by Month** — bar chart of total sales revenue per month
@@ -122,7 +127,11 @@ View revenue trends, profit margins, and best-selling planter sizes — all in o
 - **Last 12 Months** — rolling 12-month window
 - **All Time** — every month with recorded sales or purchase data
 
+**Pricing Matrix** — table of all standard sizes sorted by margin %, showing price, estimated material cost, profit, and a color-coded margin dot (green ≥60%, orange ≥50%, red <50%).
+
 **KPI trend badges** — the "This Month" and "YTD Revenue" cards on the home dashboard show ▲/▼ % badges comparing to the prior month and prior year-to-date respectively.
+
+**Profit popup on order completion** — tapping ✅ on any order now shows a toast with estimated profit and margin: "Order complete 🎉 · Est. profit $XX (YY% margin)"
 
 ---
 
@@ -193,7 +202,7 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | Quote a customer | Quote Calculator → enter dimensions → Calculate → copy Facebook message |
 | Add a new order | Orders → Active tab → + New Order |
 | Mark an order ready | Edit order → Status: Ready for Pickup → Save |
-| Complete an order | Tap ✅ on order card |
+| Complete an order | Tap ✅ on order card — toast shows estimated profit & margin |
 | Send a booking link | Tap 🔗 Share booking link on order card → paste into Facebook |
 | Add your own pickup time | Edit order → fill Pickup Date + Time → Save |
 | Add open availability | Scheduler → Calendar → click day → + Add Slot |
