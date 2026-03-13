@@ -1651,7 +1651,12 @@ body {
         <button class="sales-filter-btn" onclick="setPurchasesFilter('lastmonth',this)">Last Month</button>
         <button class="sales-filter-btn active" onclick="setPurchasesFilter('all',this)">All Time</button>
       </div>
-      <div id="purchaseList"></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Store</th><th>Pickets</th><th>2×2s</th><th>2×4s</th><th>Total</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="purchaseBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -3229,7 +3234,7 @@ async function loadPurchases() {
 }
 
 function renderPurchaseList() {
-  const list=document.getElementById('purchaseList');
+  const tbody=document.getElementById('purchaseBody');
   // Sync active state on filter buttons (restores highlight when returning to tab)
   document.querySelectorAll('#mtab-purchases .sales-filter-btn').forEach(b=>b.classList.remove('active'));
   const activeBtn=document.querySelector(`#mtab-purchases .sales-filter-btn[onclick*="'${purchasesFilter}'"]`);
@@ -3246,20 +3251,20 @@ function renderPurchaseList() {
     }
     return true;
   });
-  if (!filtered.length) {list.innerHTML=emptyState('🛒','No purchases in this period.');return;}
-  list.innerHTML=filtered.map(p=>{
-    const parts=[];
-    if (p.pickets) parts.push(p.pickets+' pickets');
-    if (p.twobytwo) parts.push(p.twobytwo+' 2×2s');
-    if (p.twobyfour) parts.push(p.twobyfour+' 2×4s');
-    return `<div style="background:var(--card-bg, white);border:2px solid var(--warm-gray);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px">
-      <span style="font-size:18px">🛒</span>
-      <div style="flex:1"><div style="font-size:14px;font-weight:500">${p.store||'Lowes'} — ${p.purchase_date||''}</div><div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">${parts.join(' · ')}${p.notes?' · '+p.notes:''}</div></div>
-      <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:var(--navy)">$${(p.total||0).toFixed(2)}</div>
-      <button class="icon-btn" onclick="editPurchase(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
-      <button class="icon-btn" onclick="deletePurchase('${p.id}')">🗑️</button>
-    </div>`;
-  }).join('');
+  if (!filtered.length) {tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-muted)">No purchases in this period.</td></tr>';return;}
+  tbody.innerHTML=filtered.map(p=>`<tr>
+    <td>${p.purchase_date||''}</td>
+    <td>${p.store||'Lowes'}</td>
+    <td style="font-family:'DM Mono',monospace;text-align:center">${p.pickets||'—'}</td>
+    <td style="font-family:'DM Mono',monospace;text-align:center">${p.twobytwo||'—'}</td>
+    <td style="font-family:'DM Mono',monospace;text-align:center">${p.twobyfour||'—'}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--navy);font-weight:500">$${(p.total||0).toFixed(2)}</td>
+    <td style="color:var(--text-muted);font-size:12px">${p.notes||''}</td>
+    <td style="display:flex;gap:4px">
+      <button type="button" class="icon-btn" onclick="editPurchase(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
+      <button type="button" class="icon-btn" onclick="deletePurchase('${p.id}')">🗑️</button>
+    </td>
+  </tr>`).join('');
 }
 
 function openPurchaseModal(item=null) {
