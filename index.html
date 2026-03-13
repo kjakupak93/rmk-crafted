@@ -881,6 +881,8 @@ body {
 .analytics-range-toggle { display: flex; gap: 6px; margin-bottom: 24px; }
 .analytics-range-toggle button { padding: 6px 14px; border: 1px solid var(--warm-gray); border-radius: 20px; background: white; color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
 .analytics-range-toggle button.active { background: var(--navy); color: white; border-color: var(--navy); }
+.analytics-pnl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+@media (max-width: 640px) { .analytics-pnl { grid-template-columns: 1fr 1fr; } }
 .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .chart-card { background: white; border: 1px solid var(--warm-gray); border-radius: 12px; padding: 20px; }
 .chart-card h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px; }
@@ -1791,6 +1793,22 @@ body {
   <div class="app-container">
     <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Analytics</h2>
 
+    <!-- P&L Summary -->
+    <div class="analytics-pnl">
+      <div class="summary-card c-green">
+        <div class="val" id="pnl-revenue">—</div>
+        <div class="lbl">This Month Revenue</div>
+      </div>
+      <div class="summary-card c-orange">
+        <div class="val" id="pnl-cost">—</div>
+        <div class="lbl">Material Spend</div>
+      </div>
+      <div class="summary-card c-blue">
+        <div class="val" id="pnl-profit">—</div>
+        <div class="lbl">Est. Net Profit</div>
+      </div>
+    </div>
+
     <div class="analytics-range-toggle">
       <button id="range-btn-year" class="active" onclick="setAnalyticsRange('year',this)">This Year</button>
       <button id="range-btn-12m" onclick="setAnalyticsRange('12m',this)">Last 12M</button>
@@ -1809,6 +1827,18 @@ body {
       <div class="chart-card chart-card--full">
         <h3>Best Sellers</h3>
         <canvas id="chart-sizes"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card chart-card--full" style="margin-top:16px">
+      <h3>Pricing Matrix — Standard Sizes</h3>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Size</th><th>Price</th><th>Est. Cost</th><th>Profit</th><th>Margin</th></tr>
+          </thead>
+          <tbody id="pricing-matrix-body"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -2229,6 +2259,18 @@ async function loadAnalytics() {
   ]);
   analyticsSales = sRes.data || [];
   analyticsPurchases = pRes.data || [];
+  // ── P&L summary cards (current calendar month) ──
+  const _now = new Date();
+  const _curKey = `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}`;
+  const _pnlRev = analyticsSales.filter(s => s.sale_date?.slice(0,7) === _curKey).reduce((sum,s) => sum+(s.price||0), 0);
+  const _pnlCost = analyticsPurchases.filter(p => p.purchase_date?.slice(0,7) === _curKey).reduce((sum,p) => sum+(p.total||0), 0);
+  const _pnlNet = _pnlRev - _pnlCost;
+  document.getElementById('pnl-revenue').textContent = '$'+Math.round(_pnlRev);
+  document.getElementById('pnl-cost').textContent = '$'+Math.round(_pnlCost);
+  const _pnlEl = document.getElementById('pnl-profit');
+  _pnlEl.textContent = (_pnlNet >= 0 ? '$' : '-$') + Math.abs(Math.round(_pnlNet));
+  _pnlEl.style.color = _pnlNet >= 0 ? 'var(--green)' : 'var(--red)';
+  buildPricingMatrix();
   renderAnalyticsCharts();
 }
 
@@ -3097,6 +3139,50 @@ async function saveOrder() {
   }
 }
 
+function estimateOrderCost(order) {
+  const rows = order.items?.rows;
+  if (rows && rows.length > 0) {
+    return rows.reduce((total, item) => {
+      const parts = (item.size||'').match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);
+      if (!parts) return total;
+      const l=+parts[1], w=+parts[2], h=+parts[3];
+      const std = STANDARD_SIZES.find(s => s.l===l && s.w===w && s.h===h);
+      const pickets = std?.pickets || estPickets(l,w,h);
+      return total + pickets * UNIT_COSTS.pickets * (item.qty||1);
+    }, 0);
+  }
+  const parts = (order.size||'').match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);
+  if (!parts) return order.price * 0.37;
+  const l=+parts[1], w=+parts[2], h=+parts[3];
+  const std = STANDARD_SIZES.find(s => s.l===l && s.w===w && s.h===h);
+  const pickets = std?.pickets || estPickets(l,w,h);
+  return pickets * UNIT_COSTS.pickets;
+}
+
+function buildPricingMatrix() {
+  const tbody = document.getElementById('pricing-matrix-body');
+  if (!tbody) return;
+  const rows = STANDARD_SIZES
+    .map(s => {
+      const pickets = s.pickets || estPickets(s.l, s.w, s.h);
+      const cost = pickets * UNIT_COSTS.pickets;
+      const profit = s.price - cost;
+      const margin = Math.round((profit / s.price) * 100);
+      return { s, cost, profit, margin };
+    })
+    .sort((a, b) => b.margin - a.margin);
+  const dot = m => `<span style="color:${m>=60?'var(--green)':m>=50?'var(--orange)':'var(--red)'}">●</span>`;
+  tbody.innerHTML = rows.map(({ s, cost, profit, margin }) =>
+    `<tr>
+      <td style="font-family:'DM Mono',monospace">${s.l}×${s.w}×${s.h}"</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--green)">$${s.price}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--text-muted)">$${cost.toFixed(0)}</td>
+      <td style="font-family:'DM Mono',monospace">$${profit.toFixed(0)}</td>
+      <td style="font-family:'DM Mono',monospace">${dot(margin)} ${margin}%</td>
+    </tr>`
+  ).join('');
+}
+
 async function completeOrder(id) {
   const {data}=await sb.from('orders').select('*').eq('id',id).single();
   if (!data) return;
@@ -3106,7 +3192,10 @@ async function completeOrder(id) {
     const compQty=compItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
     const compSizeStr=compItemRows.length>1?compItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(data.size||'');
     await sb.from('sales').insert({name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:data.payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes});
-    showToast('Order completed & moved to sales! 🎉','success');
+    const _cost = estimateOrderCost(data);
+    const _profit = data.price - _cost;
+    const _margin = data.price > 0 ? Math.round((_profit / data.price) * 100) : 0;
+    showToast(`Order complete 🎉 · Est. profit $${Math.round(_profit)} (${_margin}% margin)`, 'success');
   } else {
     showToast('Marked as completed — set payment to move to Completed tab.','success');
   }

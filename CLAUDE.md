@@ -11,7 +11,7 @@ A single-page web app (`index.html`) that serves as an all-in-one business dashb
 - **Charts**: Chart.js v4 (loaded via CDN)
 
 ## File Structure
-- `index.html` — CSS: lines ~9–900, HTML: ~900–1820, JS: ~2080 onward
+- `index.html` — CSS: lines ~9–900, HTML: ~900–1850, JS: ~2080 onward
 - `manifest.json` — PWA manifest
 - `icon.png` — 1024×1024 app icon (JPEG named .png)
 
@@ -42,7 +42,7 @@ The app is a single HTML file with a multi-page navigation system (no URL routin
 - **Orders** (`page-orders`) — 3-tab fulfillment hub: 📋 Active → 📦 Ready to Sell → 📈 Sales History
 - **Materials** (`page-materials`) — Wood stock levels + Lowes purchase log (2 tabs: Stock, Purchases)
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
-- **Analytics** (`page-analytics`) — Revenue, profit & best seller charts with range toggle (This Year / Last 12M / All Time)
+- **Analytics** (`page-analytics`) — P&L summary cards (this month revenue/spend/net profit), revenue/profit/best-seller charts with range toggle (This Year / Last 12M / All Time), and a Pricing Matrix table for all standard sizes sorted by margin %
 
 #### Home Page KPI Cards
 4-card stat row between the hero and low-stock alert. IDs and data sources:
@@ -69,6 +69,14 @@ The two revenue KPI cards also show trend badges (`kpi-month-trend`, `kpi-ytd-tr
 - `goHome()` — return to home screen
 - Pages load their data when navigated to (not all at startup)
 - `showOrderTab(tab, btn)` — switches between Active / Ready to Sell / Sales History tabs; lazy-loads `loadInventory()` and `loadSales()` on first switch
+
+#### Analytics Page
+- `.analytics-pnl` — 3-column grid of P&L summary cards (collapses to 2-column on mobile)
+- `#pnl-revenue` / `#pnl-cost` / `#pnl-profit` — current calendar month P&L values, populated by `loadAnalytics()`
+- `#pricing-matrix-body` — table rows built by `buildPricingMatrix()`, sorted by margin %, colored dots: green ≥60%, orange ≥50%, red <50%
+- `estimateOrderCost(order)` — estimates material cost from order data (supports multi-item orders; falls back to 37% of price for unknown sizes)
+- `buildPricingMatrix()` — renders all standard sizes with price, estimated cost, profit, and margin %
+- `completeOrder()` — toast now shows estimated profit and margin: "Order complete 🎉 · Est. profit $XX (YY% margin)"
 
 ## Business Context
 - **Owner**: runs RMK Crafted solo out of Oceanside, CA
