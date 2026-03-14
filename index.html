@@ -2523,32 +2523,18 @@ async function loadHomeStats() {
 }
 
 // ===== RECENT ACTIVITY FEED =====
+async function logActivity(icon, name, sub) {
+  await sb.from('activity_log').insert({icon, name, sub});
+}
+
 async function loadRecentActivity() {
   try {
-    const [ordRes, bookRes, purRes] = await Promise.all([
-      sb.from('orders').select('id,name,size,style,created_at').order('created_at',{ascending:false}).limit(4),
-      sb.from('schedule_bookings').select('id,name,booking_date,pickup_time,created_at').order('created_at',{ascending:false}).limit(4),
-      sb.from('purchases').select('id,store,total,created_at').order('created_at',{ascending:false}).limit(4)
-    ]);
-    const events = [];
-    (ordRes.data||[]).forEach(o=>{
-      events.push({type:'order', name:o.name, sub:'Order — '+(o.size?o.size+'" ':'')+' '+(o.style||'Standard'), ts:new Date(o.created_at), icon:'📋'});
-    });
-    (bookRes.data||[]).forEach(b=>{
-      const [y,m,d] = b.booking_date.split('-');
-      const label = 'Booked pickup '+MONTH_SHORT[parseInt(m)-1]+' '+parseInt(d)+(b.pickup_time?' '+fmtTime(b.pickup_time):'');
-      events.push({type:'booking', name:b.name, sub:label, ts:new Date(b.created_at), icon:'📅'});
-    });
-    (purRes.data||[]).forEach(p=>{
-      events.push({type:'purchase', name:p.store||'Lowes', sub:'Materials purchase — $'+(p.total||0), ts:new Date(p.created_at), icon:'🛒'});
-    });
-    events.sort((a,b)=>b.ts-a.ts);
-    const top4 = events.slice(0,4);
+    const {data} = await sb.from('activity_log').select('icon,name,sub,created_at').order('created_at',{ascending:false}).limit(4);
     const feed = document.getElementById('home-activity');
-    if (!top4.length) { feed.innerHTML=''; return; }
-    function timeAgo(d){const diff=Math.floor((Date.now()-d)/1000);if(diff<60)return'just now';if(diff<3600)return Math.floor(diff/60)+'m ago';if(diff<86400)return Math.floor(diff/3600)+'h ago';return Math.floor(diff/86400)+'d ago';}
+    if (!data||!data.length) { feed.innerHTML=''; return; }
+    function timeAgo(d){const diff=Math.floor((Date.now()-new Date(d))/1000);if(diff<60)return'just now';if(diff<3600)return Math.floor(diff/60)+'m ago';if(diff<86400)return Math.floor(diff/3600)+'h ago';return Math.floor(diff/86400)+'d ago';}
     feed.innerHTML = `<div class="activity-feed"><div class="activity-feed-title">Recent Activity</div>`+
-      top4.map(e=>`<div class="activity-item"><span class="activity-icon">${e.icon}</span><div class="activity-text"><div>${e.name}</div><div class="activity-sub">${e.sub}</div></div><span class="activity-time">${timeAgo(e.ts)}</span></div>`).join('')+
+      data.map(e=>`<div class="activity-item"><span class="activity-icon">${e.icon}</span><div class="activity-text"><div>${e.name}</div><div class="activity-sub">${e.sub}</div></div><span class="activity-time">${timeAgo(e.created_at)}</span></div>`).join('')+
       `</div>`;
   } catch(e) { console.error(e); }
 }
@@ -3108,8 +3094,10 @@ async function saveOrder() {
       // No slot deletion needed — the calendar shows booked dots when a booking exists on that date
     }
   }
+  const sizeLabel = itemRows[0]?.size ? itemRows[0].size+'"' : '';
+  await logActivity(id?'✏️':'📋', payload.name, id?`Order updated — ${sizeLabel}`:`New order — ${sizeLabel}`);
   showToast(id?'Order updated!':'Order added!','success');
-  closeModal('orderModal'); loadOrders(); loadHomeStats();
+  closeModal('orderModal'); loadOrders(); loadHomeStats(); loadRecentActivity();
   // Refresh scheduler calendar if it's open
   if (document.getElementById('page-scheduler') && document.getElementById('page-scheduler').classList.contains('active')) {
     renderCalendar(); loadUpcoming();
@@ -3176,7 +3164,8 @@ async function completeOrder(id) {
   } else {
     showToast('Marked as completed — set payment to move to Completed tab.','success');
   }
-  loadOrders(); loadHomeStats();
+  await logActivity('✅', data.name, `Order completed — ${data.size||''}" · $${data.price||0}`);
+  loadOrders(); loadHomeStats(); loadRecentActivity();
 }
 
 async function deleteOrder(id) {
@@ -3303,9 +3292,12 @@ function filterOrders(f,btn) {
 async function advanceOrderStatus(id, currentStatus) {
   const next = {pending:'building', building:'ready'}[currentStatus];
   if (!next) return;
+  const {data:ord} = await sb.from('orders').select('name,size').eq('id',id).single();
   await sb.from('orders').update({status:next}).eq('id',id);
+  const icon = next==='building'?'🔨':'📦';
+  await logActivity(icon, ord?.name||'', `Status → ${next.charAt(0).toUpperCase()+next.slice(1)}${ord?.size?' — '+ord.size+'"':''}`);
   showToast('Status updated to '+next,'success');
-  loadOrders(); loadHomeStats();
+  loadOrders(); loadHomeStats(); loadRecentActivity();
 }
 
 // ===== INVENTORY =====
@@ -3667,8 +3659,9 @@ async function savePurchase() {
     await sb.from('stock').update({qty:Math.max(0,(stockData.pickets||0)+pickets)}).eq('material','pickets');
     await sb.from('stock').update({qty:Math.max(0,(stockData.twobytwo||0)+t22)}).eq('material','twobytwo');
     await sb.from('stock').update({qty:Math.max(0,(stockData.twobyfour||0)+t24)}).eq('material','twobyfour');
+    await logActivity('🛒', payload.store||'Lowes', `Materials purchase — $${total.toFixed(2)}`);
     showToast('Purchase logged & stock updated!','success');
-    closeModal('purchaseModal'); loadStock(); loadPurchases();
+    closeModal('purchaseModal'); loadStock(); loadPurchases(); loadRecentActivity();
   }
 }
 
@@ -3850,18 +3843,21 @@ async function saveBooking() {
   if (!payload.name) {showToast('Buyer name required','error');return;}
   const editId=document.getElementById('editBookingId').value;
   const linkedOrderId=document.getElementById('editBookingOrderId').value;
+  const [by,bm,bd] = bookingDate.split('-');
+  const dateLabel = MONTH_SHORT[parseInt(bm)-1]+' '+parseInt(bd)+(payload.pickup_time?' '+fmtTime(payload.pickup_time):'');
   if (editId) {
     await sb.from('schedule_bookings').update(payload).eq('id',editId);
-    // Sync date+time back to the linked order if one exists
     if (linkedOrderId) {
       await sb.from('orders').update({pickup_date:bookingDate,pickup_time:payload.pickup_time||null}).eq('id',linkedOrderId);
     }
+    await logActivity('📅', payload.name, `Booking updated — ${dateLabel}`);
     showToast('Booking updated!','success');
   } else {
     await sb.from('schedule_bookings').insert(payload);
+    await logActivity('📅', payload.name, `Booked pickup ${dateLabel}`);
     showToast('Pickup booked!','success');
   }
-  closeModal('bookingModal'); loadDayDetail(); renderCalendar(); loadUpcoming();
+  closeModal('bookingModal'); loadDayDetail(); renderCalendar(); loadUpcoming(); loadRecentActivity();
 }
 
 function openQuickBookModal() {
@@ -3876,8 +3872,9 @@ async function saveQuickBook() {
   const payload={booking_date:dateVal,name:document.getElementById('qbName').value,contact:document.getElementById('qbContact').value,pickup_time:document.getElementById('qbTime').value,size:document.getElementById('qbSize').value,amount:parseFloat(document.getElementById('qbAmount').value)||0,payment:document.getElementById('qbPayment').value,notes:document.getElementById('qbNotes').value};
   if (!payload.name) {showToast('Buyer name required','error');return;}
   await sb.from('schedule_bookings').insert(payload);
-  showToast('Pickup booked!','success'); closeModal('quickBookModal');
   const [y,m,d]=dateVal.split('-');
+  await logActivity('📅', payload.name, `Booked pickup ${MONTH_SHORT[parseInt(m)-1]} ${parseInt(d)}${payload.pickup_time?' '+fmtTime(payload.pickup_time):''}`);
+  showToast('Pickup booked!','success'); closeModal('quickBookModal');
   calYear=parseInt(y); calMonth=parseInt(m)-1; selectedDate=dateVal;
   renderCalendar(); loadUpcoming();
 }
