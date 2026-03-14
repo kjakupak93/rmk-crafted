@@ -17,7 +17,7 @@ A single-page web app that manages every part of the RMK Crafted workflow:
 - **Order & Inventory Tracker** — manage active orders, ready-to-sell stock, and sales history
 - **Material Cost Tracker** — track cedar stock levels and Lowes purchases
 - **Pickup Scheduler** — manage availability, view upcoming pickups, sync with customer bookings
-- **Analytics** — P&L summary cards, revenue trends, profit overview, best-selling sizes, and a full pricing matrix with margin breakdown
+- **Analytics** — P&L summary cards, revenue trends, profit overview, and best-selling sizes ranked by units sold
 
 All data is stored in Supabase (cloud) so it works across any device. The dashboard is PIN-protected. Customers only ever see `schedule.html`.
 
@@ -120,14 +120,12 @@ View profitability at a glance, revenue trends, and best-selling planter sizes �
 **Charts:**
 - **Revenue by Month** — bar chart of total sales revenue per month
 - **Profit Overview** — grouped bars (revenue + material cost) with a profit trend line overlay
-- **Best Sellers** — horizontal bar chart of top 10 planter sizes ranked by revenue
+- **Best Sellers** — horizontal bar chart of top 10 planter sizes ranked by **units sold**
 
 **Range toggle** at the top lets you switch between:
 - **This Year** — January through the current month
 - **Last 12 Months** — rolling 12-month window
 - **All Time** — every month with recorded sales or purchase data
-
-**Pricing Matrix** — table of all standard sizes sorted by margin %, showing price, estimated material cost, profit, and a color-coded margin dot (green ≥60%, orange ≥50%, red <50%).
 
 **KPI trend badges** — the "This Month" and "YTD Revenue" cards on the home dashboard show ▲/▼ % badges comparing to the prior month and prior year-to-date respectively.
 
@@ -151,6 +149,8 @@ To add open availability: select a day → **+ Add Slot** → enter start and en
 **How bookings appear on the calendar:**
 - Customer uses the 🔗 Share booking link you sent → self-books a time → calendar updates automatically
 - You enter Pickup Date + Time on an order → calendar booking created automatically
+
+**Editing a booking date** — tap ✏️ on any booking in the day detail view → the modal now includes a **Pickup Date** field you can change. Saving automatically syncs the new date and time back to the linked order.
 
 **Upcoming Pickups tab** — chronological list of all upcoming pickups. Today's pickups are highlighted. Shows counts for today / this week / total.
 
@@ -205,6 +205,7 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | Complete an order | Tap ✅ on order card — toast shows estimated profit & margin |
 | Send a booking link | Tap 🔗 Share booking link on order card → paste into Facebook |
 | Add your own pickup time | Edit order → fill Pickup Date + Time → Save |
+| Change a pickup date | Scheduler → Calendar → click day → ✏️ on booking → change Pickup Date → Save |
 | Add open availability | Scheduler → Calendar → click day → + Add Slot |
 | Log a materials purchase | Material Tracker → Lowes Purchase Log → + Log Purchase |
 | Update stock levels | Material Tracker → Stock Levels → +/− buttons |
@@ -227,6 +228,7 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 - `index.html` — entire dashboard (PIN-protected)
 - `schedule.html` — public customer booking page
 - `manifest.json` — PWA manifest (enables "Add to Home Screen" on mobile)
+- `sw.js` — service worker that caches the app and auto-reloads when a new version is deployed
 - `icon.png` — 1024×1024 app icon
 - `CLAUDE.md` — project memory for Claude Code sessions
 - `.mcp.json` — local Claude Code config (in `.gitignore`, never committed)
