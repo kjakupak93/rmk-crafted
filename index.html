@@ -914,6 +914,9 @@ body {
   color: var(--ocean);
   border-radius: 7px;
   font-size: 12px;
+  margin-top: 10px;
+  width: 100%;
+  justify-content: center;
   font-family: "DM Sans", sans-serif;
   font-weight: 500;
   padding: 6px 12px;
@@ -3009,7 +3012,6 @@ function orderCardHTML(o) {
         <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
         ${!(o.status==='completed'&&o.payment!=='unpaid')?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
         <button class="icon-btn" title="Delete" onclick="deleteOrder('${o.id}')">🗑️</button>
-        <button class="share-booking-btn" onclick="copyBookingLink('${o.id}', event)">🔗 Share booking link</button>
       </div>
     </div>
     <div class="card-meta">
@@ -3019,6 +3021,7 @@ function orderCardHTML(o) {
       ${addonBadges}
       ${o.notes?`<div class="meta-item">📝 ${o.notes}</div>`:''}
     </div>
+    <button class="share-booking-btn" onclick="copyBookingLink('${o.id}', event)">🔗 Share booking link</button>
   </div>`;
 }
 
