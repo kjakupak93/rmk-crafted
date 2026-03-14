@@ -2556,20 +2556,22 @@ async function loadHomeStats() {
 // ===== RECENT ACTIVITY FEED =====
 async function loadRecentActivity() {
   try {
-    const tk = todayKey();
-    const [ordRes, bookRes] = await Promise.all([
-      sb.from('orders').select('id,name,size,style,created_at').order('created_at',{ascending:false}).limit(3),
-      sb.from('schedule_bookings').select('id,name,booking_date,pickup_time').gte('booking_date',tk).order('booking_date').order('pickup_time').limit(3)
+    const [ordRes, bookRes, purRes] = await Promise.all([
+      sb.from('orders').select('id,name,size,style,created_at').order('created_at',{ascending:false}).limit(4),
+      sb.from('schedule_bookings').select('id,name,booking_date,pickup_time,created_at').order('created_at',{ascending:false}).limit(4),
+      sb.from('purchases').select('id,store,total,created_at').order('created_at',{ascending:false}).limit(4)
     ]);
     const events = [];
     (ordRes.data||[]).forEach(o=>{
-      events.push({type:'order', name:o.name, sub:(o.size?o.size+'"':'')+' '+(o.style||''), ts:new Date(o.created_at), icon:'📋'});
+      events.push({type:'order', name:o.name, sub:'Order — '+(o.size?o.size+'" ':'')+' '+(o.style||'Standard'), ts:new Date(o.created_at), icon:'📋'});
     });
     (bookRes.data||[]).forEach(b=>{
-      const isToday = b.booking_date === tk;
       const [y,m,d] = b.booking_date.split('-');
-      const label = isToday ? 'Pickup today' : 'Pickup '+MONTH_SHORT[parseInt(m)-1]+' '+parseInt(d);
-      events.push({type:'booking', name:b.name, sub:label+(b.pickup_time?' '+fmtTime(b.pickup_time):''), ts:new Date(b.booking_date+'T'+(b.pickup_time||'00:00')+':00'), icon:'📅'});
+      const label = 'Booked pickup '+MONTH_SHORT[parseInt(m)-1]+' '+parseInt(d)+(b.pickup_time?' '+fmtTime(b.pickup_time):'');
+      events.push({type:'booking', name:b.name, sub:label, ts:new Date(b.created_at), icon:'📅'});
+    });
+    (purRes.data||[]).forEach(p=>{
+      events.push({type:'purchase', name:p.store||'Lowes', sub:'Materials purchase — $'+(p.total||0), ts:new Date(p.created_at), icon:'🛒'});
     });
     events.sort((a,b)=>b.ts-a.ts);
     const top4 = events.slice(0,4);
