@@ -1993,16 +1993,20 @@ body {
   <div class="modal">
     <h2 id="bookingModalTitle">Book a Pickup</h2>
     <input type="hidden" id="editBookingId">
+    <input type="hidden" id="editBookingOrderId">
     <div class="form-row">
       <div class="form-group"><label>Buyer Name</label><input class="form-control" type="text" id="bkName" placeholder="Jane Smith"></div>
       <div class="form-group"><label>Contact</label><input class="form-control" type="text" id="bkContact" placeholder="@janesmith"></div>
     </div>
     <div class="form-row">
+      <div class="form-group"><label>Pickup Date</label><input class="form-control" type="date" id="bkDate"></div>
       <div class="form-group"><label>Pickup Time</label><input class="form-control" type="time" id="bkTime" value="10:00"></div>
-      <div class="form-group"><label>Planter Size</label><input class="form-control" type="text" id="bkSize" placeholder="36×16×16"></div>
     </div>
     <div class="form-row">
+      <div class="form-group"><label>Planter Size</label><input class="form-control" type="text" id="bkSize" placeholder="36×16×16"></div>
       <div class="form-group"><label>Amount ($)</label><input class="form-control" type="number" id="bkAmount" placeholder="85"></div>
+    </div>
+    <div class="form-row">
       <div class="form-group"><label>Payment</label><select class="form-control" id="bkPayment"><option value="cash">Cash</option><option value="venmo">Venmo</option><option value="tbd">TBD</option></select></div>
     </div>
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="bkNotes" placeholder="Optional"></div>
@@ -3837,10 +3841,12 @@ async function saveSlot() {
 
 function openBookingModal() {
   document.getElementById('editBookingId').value='';
+  document.getElementById('editBookingOrderId').value='';
   document.getElementById('bookingModalTitle').textContent='Book a Pickup';
   document.getElementById('bookingModalSaveBtn').textContent='Book Pickup';
   ['bkName','bkContact','bkSize','bkNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('bkAmount').value='';
+  document.getElementById('bkDate').value=selectedDate||'';
   openModal('bookingModal');
 }
 
@@ -3848,10 +3854,12 @@ async function editBooking(id) {
   const {data}=await sb.from('schedule_bookings').select('*').eq('id',id).single();
   if (!data) return;
   document.getElementById('editBookingId').value=id;
+  document.getElementById('editBookingOrderId').value=data.order_id||'';
   document.getElementById('bookingModalTitle').textContent='Edit Booking';
   document.getElementById('bookingModalSaveBtn').textContent='Save Changes';
   document.getElementById('bkName').value=data.name||'';
   document.getElementById('bkContact').value=data.contact||'';
+  document.getElementById('bkDate').value=data.booking_date||'';
   document.getElementById('bkTime').value=data.pickup_time||'10:00';
   document.getElementById('bkSize').value=data.size||'';
   document.getElementById('bkAmount').value=data.amount||'';
@@ -3861,12 +3869,18 @@ async function editBooking(id) {
 }
 
 async function saveBooking() {
-  if (!selectedDate) return;
-  const payload={booking_date:selectedDate,name:document.getElementById('bkName').value,contact:document.getElementById('bkContact').value,pickup_time:document.getElementById('bkTime').value,size:document.getElementById('bkSize').value,amount:parseFloat(document.getElementById('bkAmount').value)||0,payment:document.getElementById('bkPayment').value,notes:document.getElementById('bkNotes').value};
+  const bookingDate = document.getElementById('bkDate').value;
+  if (!bookingDate) {showToast('Pickup date required','error');return;}
+  const payload={booking_date:bookingDate,name:document.getElementById('bkName').value,contact:document.getElementById('bkContact').value,pickup_time:document.getElementById('bkTime').value,size:document.getElementById('bkSize').value,amount:parseFloat(document.getElementById('bkAmount').value)||0,payment:document.getElementById('bkPayment').value,notes:document.getElementById('bkNotes').value};
   if (!payload.name) {showToast('Buyer name required','error');return;}
   const editId=document.getElementById('editBookingId').value;
+  const linkedOrderId=document.getElementById('editBookingOrderId').value;
   if (editId) {
     await sb.from('schedule_bookings').update(payload).eq('id',editId);
+    // Sync date+time back to the linked order if one exists
+    if (linkedOrderId) {
+      await sb.from('orders').update({pickup_date:bookingDate,pickup_time:payload.pickup_time||null}).eq('id',linkedOrderId);
+    }
     showToast('Booking updated!','success');
   } else {
     await sb.from('schedule_bookings').insert(payload);
