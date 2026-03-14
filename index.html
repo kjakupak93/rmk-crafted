@@ -915,29 +915,6 @@ body {
   gap: 6px;
   margin-top: 10px;
 }
-.share-booking-btn {
-  background: white;
-  border: 2px solid var(--ocean);
-  color: var(--ocean);
-  border-radius: 7px;
-  font-size: 12px;
-  margin-top: 10px;
-  width: 100%;
-  justify-content: center;
-  font-family: "DM Sans", sans-serif;
-  font-weight: 500;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: .15s;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.share-booking-btn:hover {
-  background: var(--cream);
-  border-color: var(--navy);
-  color: var(--navy);
-}
 
 /* ===== LOW-STOCK BANNER ===== */
 .low-stock-banner {
@@ -1083,8 +1060,6 @@ body {
 [data-theme="dark"] .modal-btn-cancel:hover { background: #1E3347; }
 [data-theme="dark"] .cal-nav-btn { background: #162534; border-color: #2C4255; color: var(--text); }
 [data-theme="dark"] .cal-nav-btn:hover { background: #1E3347; }
-[data-theme="dark"] .share-booking-btn { background: #162534; border-color: #2C4255; color: var(--text); }
-[data-theme="dark"] .share-booking-btn:hover { background: #1E3347; }
 /* Calendar days */
 [data-theme="dark"] .cal-day { background: #162534; border-color: #2C4255; color: var(--text); }
 [data-theme="dark"] .cal-day.other-month { background: #0E1A24; color: var(--text-muted); }
@@ -3019,8 +2994,8 @@ function orderCardHTML(o) {
       <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
       ${!(o.status==='completed'&&o.payment!=='unpaid')?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
       <button class="icon-btn" title="Delete" onclick="deleteOrder('${o.id}')">🗑️</button>
+      <button class="icon-btn" title="Share booking link" onclick="copyBookingLink('${o.id}', event)">🔗</button>
     </div>
-    <button class="share-booking-btn" onclick="copyBookingLink('${o.id}', event)">🔗 Share booking link</button>
   </div>`;
 }
 
