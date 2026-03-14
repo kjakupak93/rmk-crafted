@@ -3018,16 +3018,18 @@ async function editOrder(id) {
   const items = itemRows.length ? itemRows : [{size:data.size||'',style:data.style||'Standard',qty:1,price:data.price||0}];
   items.forEach(item => addOrderItem(item.size, item.style||'Standard', item.qty||1, item.price||0));
   resetAddonChips('orderAddonGrid');
-  const savedAddonTotal = getItemAddonTotal(data);
   const savedAddonIds = getItemAddons(data);
-  savedAddonIds.forEach((aid, idx) => {
+  const savedAddonPrices = data.items?.add_on_prices || {};
+  savedAddonIds.forEach(aid => {
     const chip = document.querySelector('#orderAddonGrid [data-id="'+aid+'"]');
     if (!chip) return;
     chip.classList.add('selected');
-    // Restore saved price: split evenly if we don't have per-addon breakdown, else use saved total
     const input = chip.querySelector('.chip-price-input');
-    if (input && savedAddonTotal) {
-      // Try to use the stored add_on_total divided by count, or calculated default
+    if (!input) return;
+    if (savedAddonPrices[aid] !== undefined) {
+      input.value = savedAddonPrices[aid];
+    } else {
+      // fallback for old orders saved before per-addon prices were stored
       const a = ADDONS.find(x=>x.id===aid);
       const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
       const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
@@ -3045,9 +3047,13 @@ async function saveOrder() {
   if (!itemRows.length||!itemRows[0].size) {showToast('At least one item with a size is required','error');return;}
   const selectedAddons = getSelectedAddonIds('orderAddonGrid');
   const addonTotal = getAddonTotalFromGrid('orderAddonGrid');
+  const addonPrices = {};
+  document.querySelectorAll('#orderAddonGrid .addon-chip.selected').forEach(chip => {
+    addonPrices[chip.dataset.id] = parseFloat(chip.querySelector('.chip-price-input').value) || 0;
+  });
   const baseTotal = itemRows.reduce((s,i)=>s+(i.qty*i.price),0);
   const total = baseTotal + addonTotal;
-  const itemsPayload = {rows: itemRows, add_ons: selectedAddons, add_on_total: addonTotal};
+  const itemsPayload = {rows: itemRows, add_ons: selectedAddons, add_on_total: addonTotal, add_on_prices: addonPrices};
   const items = itemsPayload;
   const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:itemRows[0].size,style:itemRows[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value};
   const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
