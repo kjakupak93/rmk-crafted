@@ -4085,6 +4085,22 @@ function copyBookingLink(orderId, e) {
     }, 2000);
   });
 }
+
+// ===== SERVICE WORKER (auto-update) =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      reg.installing.addEventListener('statechange', function() {
+        if (this.state === 'activated') window.location.reload();
+      });
+    });
+  });
+  // When a new SW takes control, reload so the latest version is shown
+  let swRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!swRefreshing) { swRefreshing = true; window.location.reload(); }
+  });
+}
 </script>
 </body>
 </html>
