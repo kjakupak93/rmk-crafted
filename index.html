@@ -425,7 +425,7 @@ body {
 .card-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--navy); }
 .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
 .card-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
-.card-meta { display: flex; gap: 14px; flex-wrap: wrap; }
+.card-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
 .meta-item { font-size: 12px; color: var(--text-muted); }
 .meta-item strong { color: var(--text); font-weight: 500; }
 
@@ -910,7 +910,9 @@ body {
 }
 .card-icon-row {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
   margin-top: 10px;
 }
 .share-booking-btn {
@@ -3007,17 +3009,9 @@ function orderCardHTML(o) {
     ? `<div class="meta-item" style="color:var(--ocean)">✨ ${addonIds.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?a.label:id;}).join(' · ')}</div>`
     : '';
   return `<div class="order-card s-${o.status}${overdueClass}">
-    <div class="card-top">
-      <div><div class="card-title">${o.name}</div><div class="card-subtitle">${subtitleItems}${contactSuffix}</div>
-      ${o.customer_booked ? '<span class="customer-booked-badge">📅 Self-booked</span>' : ''}
-    </div>
-      <div class="card-actions">
-        ${overdueBadge}
-        <span class="badge ${bc}">${bl}</span>
-        ${o.status==='pending'?`<button class="advance-btn advance-btn-pending" onclick="advanceOrderStatus('${o.id}','pending')">→ Building</button>`:''}
-        ${o.status==='building'?`<button class="advance-btn advance-btn-building" onclick="advanceOrderStatus('${o.id}','building')">→ Ready</button>`:''}
-      </div>
-    </div>
+    <div class="card-title">${o.name}</div>
+    <div class="card-subtitle">${subtitleItems}${contactSuffix}</div>
+    ${o.customer_booked ? '<span class="customer-booked-badge">📅 Self-booked</span>' : ''}
     <div class="card-meta">
       <div class="meta-item"><strong>$${o.price||0}</strong></div>
       <div class="meta-item"><span class="badge ${pc}">${pl}</span></div>
@@ -3026,6 +3020,10 @@ function orderCardHTML(o) {
       ${o.notes?`<div class="meta-item">📝 ${o.notes}</div>`:''}
     </div>
     <div class="card-icon-row">
+      ${overdueBadge}
+      <span class="badge ${bc}">${bl}</span>
+      ${o.status==='pending'?`<button class="advance-btn advance-btn-pending" onclick="advanceOrderStatus('${o.id}','pending')">→ Building</button>`:''}
+      ${o.status==='building'?`<button class="advance-btn advance-btn-building" onclick="advanceOrderStatus('${o.id}','building')">→ Ready</button>`:''}
       <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
       ${!(o.status==='completed'&&o.payment!=='unpaid')?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
       <button class="icon-btn" title="Delete" onclick="deleteOrder('${o.id}')">🗑️</button>
