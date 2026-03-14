@@ -1,26 +1,24 @@
 # RMK Crafted — Business Dashboard
 
 ## Project Overview
-A single-page web app (`index.html`) that serves as an all-in-one business dashboard for RMK Crafted, a woodworking business based in Oceanside, CA that builds and sells cedar planter boxes.
+Single-page web app (`index.html`) — all-in-one business dashboard for RMK Crafted, a solo woodworking business in Oceanside, CA selling cedar planter boxes via Facebook Marketplace (pickup only, Cash or Venmo @RMKCrafted).
 
 ## Tech Stack
-- **Frontend**: Vanilla HTML/CSS/JavaScript — single `index.html` file, no build step, no framework
-- **Database**: Supabase (PostgreSQL)
-- **Hosting**: GitHub Pages
-- **Fonts**: Google Fonts — Playfair Display, DM Mono, DM Sans
-- **Charts**: Chart.js v4 (loaded via CDN)
+- Vanilla HTML/CSS/JavaScript — single `index.html`, no build step, no framework
+- Supabase (PostgreSQL) backend, client variable `sb`
+- Hosted on GitHub Pages — commit and push to `main`, auto-deploys in ~60s
+- Fonts: Playfair Display, DM Mono, DM Sans (Google Fonts)
+- Charts: Chart.js v4 (CDN)
 
 ## File Structure
-- `index.html` — CSS: lines ~9–920, HTML: ~920–1860, JS: ~2080 onward
+- `index.html` — CSS first, then HTML, then JS (all in one file)
 - `manifest.json` — PWA manifest
-- `sw.js` — Service worker: caches app shell, auto-reloads page when new version deploys (`skipWaiting` + `controllerchange` reload pattern)
+- `sw.js` — Service worker: caches app shell, auto-reloads on new deploy (`skipWaiting` + `controllerchange`)
 - `icon.png` — 1024×1024 app icon (JPEG named .png)
 
 ## Supabase Config
 - **Project URL**: `https://mfsejmfmyuvhuclzuitc.supabase.co`
 - **Anon Key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc2VqbWZteXV2aHVjbHp1aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTgzODksImV4cCI6MjA4NzYzNDM4OX0.Ve8dY-CvGqCMSWfifd6HvrDvmrJo4J00auhos8aezpY`
-- **Client**: Loaded via CDN `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2`
-- **Client variable**: `sb`
 
 ## Database Tables
 | Table | Purpose |
@@ -35,70 +33,34 @@ A single-page web app (`index.html`) that serves as an all-in-one business dashb
 | `availability_windows` | Recurring availability windows for the share message |
 
 ## App Structure
-The app is a single HTML file with a multi-page navigation system (no URL routing — pages are shown/hidden via CSS classes).
+Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pages load data when navigated to (not all at startup).
 
 ### Pages
-- **Home** (`page-home`) — Dashboard: greeting hero, 4-card KPI row, low-stock alert, activity feed, 3-column tile grid
+- **Home** (`page-home`) — KPI cards, low-stock alert, activity feed, tile nav grid
 - **Quote Calculator** (`page-quote`) — Price estimator based on picket count
-- **Orders** (`page-orders`) — 3-tab fulfillment hub: 📋 Active → 📦 Ready to Sell → 📈 Sales History
-- **Materials** (`page-materials`) — Wood stock levels + Lowes purchase log (2 tabs: Stock, Purchases)
+- **Orders** (`page-orders`) — 3 tabs: Active → Ready to Sell → Sales History
+- **Materials** (`page-materials`) — Stock levels + Lowes purchase log
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
-- **Analytics** (`page-analytics`) — P&L summary cards (this month revenue/spend/net profit), revenue/profit/best-seller charts with range toggle (This Year / Last 12M / All Time)
+- **Analytics** (`page-analytics`) — P&L cards + revenue/profit/best-seller charts
 
-#### Home Page KPI Cards
-4-card stat row between the hero and low-stock alert. IDs and data sources:
-| ID | Label | Source |
-|---|---|---|
-| `kpi-month-rev` | This Month | `sales` table, current month |
-| `kpi-ytd-rev` | YTD Revenue | `sales` table, current year |
-| `kpi-inv-count` | Ready to Sell | sum of `inventory.qty` |
-| `kpi-owed` | Amount Owed | unpaid active orders |
+### Non-Obvious Details
+- `page-inventory` was removed — inventory lives in Orders page as the middle tab (`otab-inventory`)
+- Best Sellers chart ranks by **units sold** (count), not revenue
+- `estimateOrderCost()` falls back to **37% of price** for unknown sizes
+- `saveBooking()` — when editing a booking that has a linked `order_id`, also syncs `orders.pickup_date` and `orders.pickup_time`
+- Recent Activity feed shows booking *creation* time, not pickup date (avoids future timestamps showing as "just now")
 
-The two revenue KPI cards also show trend badges (`kpi-month-trend`, `kpi-ytd-trend`) rendered by `renderTrendBadge()` — ▲/▼ % vs prior period.
-
-#### Home Page Layout
-- Max-width: 880px (wider than other pages)
-- Tile grid: 3-column on >820px, 2-column on ≤820px
-- KPI row: 4-column on >640px, 2×2 on ≤640px
-- Scheduler tile uses `.tile-span-full` class (spans all columns)
-- Analytics tile: navy gradient (`.app-tile--analytics`), positioned before the Scheduler tile
-
-> `page-inventory` was removed — inventory (Ready to Sell) lives in the Orders page as the middle tab (`otab-inventory`).
-
-### Navigation
-- `goTo('pagename')` — navigate to a page (also triggers data load)
-- `goHome()` — return to home screen
-- Pages load their data when navigated to (not all at startup)
-- `showOrderTab(tab, btn)` — switches between Active / Ready to Sell / Sales History tabs; lazy-loads `loadInventory()` and `loadSales()` on first switch
-
-#### Scheduler — Booking Modal
-- `#bookingModal` has a **Pickup Date** field (`#bkDate`, type=date) — pre-filled from `selectedDate` when creating, from `booking.booking_date` when editing
-- Hidden field `#editBookingOrderId` stores the `order_id` FK for the linked order
-- `saveBooking()` — when editing, if `order_id` is set, also updates `orders.pickup_date` and `orders.pickup_time` to keep them in sync
-
-#### Home — Recent Activity Feed
-- `loadRecentActivity()` queries `orders`, `schedule_bookings`, and `purchases` — all by `created_at` descending
-- Shows the 4 most recent actions across all three tables
-- Bookings show "Booked pickup [date]" with when the booking was *created*, not the pickup date (avoids future timestamps showing as "just now")
-
-#### Analytics Page
-- `.analytics-pnl` — 3-column grid of P&L summary cards (collapses to 2-column on mobile)
-- `#pnl-revenue` / `#pnl-cost` / `#pnl-profit` — current calendar month P&L values, populated by `loadAnalytics()`
-- Best Sellers chart (`#chart-sizes`) — horizontal bar, ranked by **units sold** (count), not revenue
-- `estimateOrderCost(order)` — estimates material cost from order data (supports multi-item orders; falls back to 37% of price for unknown sizes)
-- `completeOrder()` — toast shows estimated profit and margin: "Order complete 🎉 · Est. profit $XX (YY% margin)"
-- Pricing Matrix was removed
-
-## Business Context
-- **Owner**: runs RMK Crafted solo out of Oceanside, CA
-- **Product**: Cedar planter boxes — Standard style (pickets only) and Vertical style (deeper/bigger, uses 2×2s and 2×4s for support)
-- **Sales channel**: Facebook Marketplace, pickup only
-- **Payment**: Cash or Venmo (@RMKCrafted business account)
-- **Materials**: Cedar pickets from Lowes ($3.38 base + 8.25% tax = $3.66 each), 2×2s ($2.98 base = $3.23 each), 2×4s ($3.85 base = $4.17 each)
-- **Pricing formula**: ~$10 per picket used (e.g. 10 pickets = ~$100)
-- Material costs stored in `UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17}`
+## Business / Pricing
+- **Pricing formula**: ~$10 per picket (e.g. 10 pickets → ~$100)
+- **Material costs** (Lowes + 8.25% Oceanside tax), stored in `UNIT_COSTS`:
+  - Pickets: $3.38 → **$3.66**
+  - 2×2s: $2.98 → **$3.23**
+  - 2×4s: $3.85 → **$4.17**
+- **Planter styles**: Standard (pickets only) and Vertical (deeper, uses 2×2s + 2×4s for support)
 
 ## Standard Planter Sizes & Prices
+Stored in `STANDARD_SIZES`. 8 sizes have hardcoded `pickets`; 16×16×16 and 36×12×16 use formula fallback.
+
 | Size (L×W×H) | Price | Pickets |
 |---|---|---|
 | 16×16×16" | $30 | 4 |
@@ -112,14 +74,12 @@ The two revenue KPI cards also show trend badges (`kpi-month-trend`, `kpi-ytd-tr
 | 48×16×27" | $90 | 9 |
 | 48×24×16" | $110 | 11 |
 
-8 sizes have hardcoded `pickets` in `STANDARD_SIZES`; 16×16×16 and 36×12×16 use formula fallback.
-
 ## Color Palette (CSS Variables)
 ```css
 --navy: #1E4D6B        /* primary dark — headers, buttons */
---navy-dark: #163A52   /* darker navy */
+--navy-dark: #163A52
 --ocean: #4A86A8       /* accent blue — borders, hover */
---ocean-light: #7BADC8 /* lighter blue */
+--ocean-light: #7BADC8
 --sand: #C9A55A        /* gold accent — logo, highlights */
 --sand-light: #E8D5A3
 --sand-pale: #F5EDD8
@@ -131,48 +91,11 @@ The two revenue KPI cards also show trend badges (`kpi-month-trend`, `kpi-ytd-tr
 --orange: #D4782A      /* pending status, warnings */
 --red: #C0392B         /* errors, delete */
 ```
-Colors are derived from the RMK Crafted logo (navy wave, ocean blue text, sandy gold saw blade).
-
-## Key JavaScript Patterns
-
-### Supabase queries
-```js
-// Fetch
-const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
-
-// Insert
-const { error } = await sb.from('orders').insert({ name: 'Jane', size: '48×16×16', price: 85 });
-
-// Update
-await sb.from('orders').update({ status: 'building' }).eq('id', id);
-
-// Delete
-await sb.from('orders').delete().eq('id', id);
-```
-
-### Toast notifications
-```js
-showToast('Message here');           // neutral
-showToast('Saved!', 'success');      // green
-showToast('Error occurred', 'error'); // red
-```
-
-### Modal open/close
-```js
-document.getElementById('modalId').classList.add('open');
-closeModal('modalId');
-```
-
-### Page navigation
-```js
-goTo('orders');    // navigate and load data
-goHome();          // back to dashboard
-```
 
 ## Known Bugs / Patterns
 
 ### iOS Ghost Click (modal immediately closing)
-iOS Safari fires a synthetic `click` ~300ms after `touchend` at the same screen position. If a modal opens on `click`, that ghost click can land on the overlay and immediately close it.
+iOS Safari fires a synthetic `click` ~300ms after `touchend`. If a modal opens on `click`, that ghost click can hit the overlay and close it immediately.
 
 **Fix pattern:**
 ```js
@@ -184,29 +107,4 @@ if (!o._justOpened) closeModal(...);
 Applied to `openAddonSettings()`. Overlay handler near bottom of JS.
 
 ### Pin-Gate (auth screen)
-Pin-gate div uses `sessionStorage.rmk_auth` to show/hide. Ensure the inline style does not contain both `display:none` and `display:flex` — the last one wins and will break show/hide logic.
-
-## PWA / Mobile
-- PWA meta tags in `<head>`: `theme-color`, `apple-mobile-web-app-*`, manifest link, `apple-touch-icon`
-- `manifest.json`, `icon.png`, and `sw.js` in repo root
-- Service worker (`sw.js`) registered at bottom of JS — new deploys auto-reload the app on the home screen icon
-- iOS input zoom fix: `font-size: 16px !important` on all inputs inside `@media (max-width: 640px)`
-- Filter bar scrolls horizontally on mobile: `overflow-x: auto; flex-wrap: nowrap`
-- Reduced mobile padding on `.app-container`, `#page-home`, `.app-header`
-- Icon buttons enlarged to 40×40px on mobile
-- Order cards use flat stacked layout (no left/right flex) to prevent overflow on narrow screens: title → subtitle → meta row → `.card-icon-row` (badge + advance btn + icon btns) → share button
-
-## Deployment
-- **Repo**: `https://github.com/kjakupak93/rmk-crafted` (public, free GitHub Pages)
-- **Live URL**: `https://kjakupak93.github.io/rmk-crafted`
-- **Deploy process**: commit and push to `main` → GitHub Pages auto-deploys in ~60 seconds
-- **No build step** — edit `index.html` directly and push
-
-## Future Development Ideas
-- Add Supabase Auth so the app requires login
-- Split into multiple files / proper project structure as complexity grows
-- Add photo uploads for completed planters (Supabase Storage)
-- Customer-facing order status page
-- Revenue charts and analytics
-- Automated Facebook Marketplace message drafting
-- Email/text notifications when a pickup is approaching
+Pin-gate uses `sessionStorage.rmk_auth`. Never put both `display:none` and `display:flex` in the same inline style — the last one wins and breaks show/hide.
