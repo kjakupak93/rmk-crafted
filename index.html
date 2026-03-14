@@ -908,6 +908,11 @@ body {
   font-weight: 500;
   margin-top: 4px;
 }
+.card-icon-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
 .share-booking-btn {
   background: white;
   border: 2px solid var(--ocean);
@@ -3009,9 +3014,6 @@ function orderCardHTML(o) {
         <span class="badge ${bc}">${bl}</span>
         ${o.status==='pending'?`<button class="advance-btn advance-btn-pending" onclick="advanceOrderStatus('${o.id}','pending')">→ Building</button>`:''}
         ${o.status==='building'?`<button class="advance-btn advance-btn-building" onclick="advanceOrderStatus('${o.id}','building')">→ Ready</button>`:''}
-        <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
-        ${!(o.status==='completed'&&o.payment!=='unpaid')?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
-        <button class="icon-btn" title="Delete" onclick="deleteOrder('${o.id}')">🗑️</button>
       </div>
     </div>
     <div class="card-meta">
@@ -3020,6 +3022,11 @@ function orderCardHTML(o) {
       ${pickup?`<div class="meta-item">${pickup}</div>`:''}
       ${addonBadges}
       ${o.notes?`<div class="meta-item">📝 ${o.notes}</div>`:''}
+    </div>
+    <div class="card-icon-row">
+      <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
+      ${!(o.status==='completed'&&o.payment!=='unpaid')?`<button class="icon-btn" title="Complete" onclick="completeOrder('${o.id}')">✅</button>`:''}
+      <button class="icon-btn" title="Delete" onclick="deleteOrder('${o.id}')">🗑️</button>
     </div>
     <button class="share-booking-btn" onclick="copyBookingLink('${o.id}', event)">🔗 Share booking link</button>
   </div>`;
