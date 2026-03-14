@@ -11,8 +11,9 @@ A single-page web app (`index.html`) that serves as an all-in-one business dashb
 - **Charts**: Chart.js v4 (loaded via CDN)
 
 ## File Structure
-- `index.html` — CSS: lines ~9–900, HTML: ~900–1850, JS: ~2080 onward
+- `index.html` — CSS: lines ~9–920, HTML: ~920–1860, JS: ~2080 onward
 - `manifest.json` — PWA manifest
+- `sw.js` — Service worker: caches app shell, auto-reloads page when new version deploys (`skipWaiting` + `controllerchange` reload pattern)
 - `icon.png` — 1024×1024 app icon (JPEG named .png)
 
 ## Supabase Config
@@ -42,7 +43,7 @@ The app is a single HTML file with a multi-page navigation system (no URL routin
 - **Orders** (`page-orders`) — 3-tab fulfillment hub: 📋 Active → 📦 Ready to Sell → 📈 Sales History
 - **Materials** (`page-materials`) — Wood stock levels + Lowes purchase log (2 tabs: Stock, Purchases)
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
-- **Analytics** (`page-analytics`) — P&L summary cards (this month revenue/spend/net profit), revenue/profit/best-seller charts with range toggle (This Year / Last 12M / All Time), and a Pricing Matrix table for all standard sizes sorted by margin %
+- **Analytics** (`page-analytics`) — P&L summary cards (this month revenue/spend/net profit), revenue/profit/best-seller charts with range toggle (This Year / Last 12M / All Time)
 
 #### Home Page KPI Cards
 4-card stat row between the hero and low-stock alert. IDs and data sources:
@@ -70,13 +71,23 @@ The two revenue KPI cards also show trend badges (`kpi-month-trend`, `kpi-ytd-tr
 - Pages load their data when navigated to (not all at startup)
 - `showOrderTab(tab, btn)` — switches between Active / Ready to Sell / Sales History tabs; lazy-loads `loadInventory()` and `loadSales()` on first switch
 
+#### Scheduler — Booking Modal
+- `#bookingModal` has a **Pickup Date** field (`#bkDate`, type=date) — pre-filled from `selectedDate` when creating, from `booking.booking_date` when editing
+- Hidden field `#editBookingOrderId` stores the `order_id` FK for the linked order
+- `saveBooking()` — when editing, if `order_id` is set, also updates `orders.pickup_date` and `orders.pickup_time` to keep them in sync
+
+#### Home — Recent Activity Feed
+- `loadRecentActivity()` queries `orders`, `schedule_bookings`, and `purchases` — all by `created_at` descending
+- Shows the 4 most recent actions across all three tables
+- Bookings show "Booked pickup [date]" with when the booking was *created*, not the pickup date (avoids future timestamps showing as "just now")
+
 #### Analytics Page
 - `.analytics-pnl` — 3-column grid of P&L summary cards (collapses to 2-column on mobile)
 - `#pnl-revenue` / `#pnl-cost` / `#pnl-profit` — current calendar month P&L values, populated by `loadAnalytics()`
-- `#pricing-matrix-body` — table rows built by `buildPricingMatrix()`, sorted by margin %, colored dots: green ≥60%, orange ≥50%, red <50%
+- Best Sellers chart (`#chart-sizes`) — horizontal bar, ranked by **units sold** (count), not revenue
 - `estimateOrderCost(order)` — estimates material cost from order data (supports multi-item orders; falls back to 37% of price for unknown sizes)
-- `buildPricingMatrix()` — renders all standard sizes with price, estimated cost, profit, and margin %
-- `completeOrder()` — toast now shows estimated profit and margin: "Order complete 🎉 · Est. profit $XX (YY% margin)"
+- `completeOrder()` — toast shows estimated profit and margin: "Order complete 🎉 · Est. profit $XX (YY% margin)"
+- Pricing Matrix was removed
 
 ## Business Context
 - **Owner**: runs RMK Crafted solo out of Oceanside, CA
@@ -177,11 +188,13 @@ Pin-gate div uses `sessionStorage.rmk_auth` to show/hide. Ensure the inline styl
 
 ## PWA / Mobile
 - PWA meta tags in `<head>`: `theme-color`, `apple-mobile-web-app-*`, manifest link, `apple-touch-icon`
-- `manifest.json` and `icon.png` in repo root
+- `manifest.json`, `icon.png`, and `sw.js` in repo root
+- Service worker (`sw.js`) registered at bottom of JS — new deploys auto-reload the app on the home screen icon
 - iOS input zoom fix: `font-size: 16px !important` on all inputs inside `@media (max-width: 640px)`
 - Filter bar scrolls horizontally on mobile: `overflow-x: auto; flex-wrap: nowrap`
 - Reduced mobile padding on `.app-container`, `#page-home`, `.app-header`
 - Icon buttons enlarged to 40×40px on mobile
+- Order cards use flat stacked layout (no left/right flex) to prevent overflow on narrow screens: title → subtitle → meta row → `.card-icon-row` (badge + advance btn + icon btns) → share button
 
 ## Deployment
 - **Repo**: `https://github.com/kjakupak93/rmk-crafted` (public, free GitHub Pages)
