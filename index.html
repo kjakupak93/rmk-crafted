@@ -705,20 +705,13 @@ body {
 .cl-mat-count { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); }
 .picket-bar-wrap { margin-bottom:8px; }
 .picket-bar-label { font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; margin-bottom:3px; }
-.picket-bar { display:flex; height:30px; border-radius:6px; overflow:hidden; border:1px solid var(--warm-gray); }
+.picket-bar { display:flex; height:30px; border-radius:6px; overflow:hidden; border:1px solid var(--warm-gray); align-items:stretch; }
 .picket-segment { display:flex; align-items:center; justify-content:center; font-size:10px; font-family:'DM Mono',monospace; font-weight:600; color:white; overflow:hidden; white-space:nowrap; min-width:0; }
 .picket-segment:hover { filter:brightness(1.1); }
 .picket-waste { background:#E5DDD0; display:flex; align-items:center; justify-content:center; font-size:9px; font-family:'DM Mono',monospace; color:var(--text-muted); }
 .cl-legend { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
 .cl-legend-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--text); }
 .cl-legend-swatch { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
-.cl-rip-section { margin-top:14px; padding-top:12px; border-top:1px dashed var(--warm-gray); }
-.cl-rip-title { font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-.cl-rip-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
-.cl-rip-bar-wrap { flex:1; min-width:140px; }
-.cl-rip-bar { display:flex; height:22px; border-radius:4px; overflow:hidden; border:1px solid var(--warm-gray); }
-.cl-rip-cut { display:flex; align-items:center; justify-content:center; font-size:10px; font-family:'DM Mono',monospace; font-weight:600; color:white; }
-.cl-rip-waste { background:#E5DDD0; display:flex; align-items:center; justify-content:center; font-size:9px; font-family:'DM Mono',monospace; color:var(--text-muted); }
 
 /* ===== SCHEDULER ===== */
 .cal-nav-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
@@ -1802,7 +1795,7 @@ body {
         <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Parts</div>
         <div class="table-wrap" style="margin-bottom:10px">
           <table class="data-table">
-            <thead><tr><th style="width:32px">#</th><th>Description</th><th style="width:54px">Qty</th><th style="width:72px">Length"</th><th style="width:68px">Width"</th><th>Material</th><th style="width:32px"></th></tr></thead>
+            <thead><tr><th style="width:32px">#</th><th>Description</th><th style="width:90px">Qty</th><th style="width:130px">Length"</th><th style="width:120px">Width"</th><th>Material</th><th style="width:32px"></th></tr></thead>
             <tbody id="cl-rows"></tbody>
           </table>
         </div>
@@ -3679,9 +3672,9 @@ function updateBuildCalc() {
 const CL_COLORS = ['#1E4D6B','#3A7D5C','#D4782A','#4A86A8','#C9A55A','#7B5EA7','#2E8B8B','#8B4513','#B8860B','#5F9EA0'];
 const CL_STOCK_COLORS = ['#1E4D6B','#3A7D5C','#D4782A','#4A86A8','#C9A55A','#7B5EA7','#2E8B8B'];
 const CL_DEFAULT_STOCK = [
-  { id: 'st-1', name: 'Cedar Picket 6ft', len: 72, width: 5.5 },
-  { id: 'st-2', name: 'Pine 2×2 8ft', len: 96, width: 1.5 },
-  { id: 'st-3', name: 'Douglas Fir 2×4 8ft', len: 96, width: 3.5 },
+  { id: 'st-1', name: 'Cedar Picket 6ft', shortName: 'Picket 6\'', len: 72, width: 5.5 },
+  { id: 'st-2', name: 'Pine 2×2 8ft', shortName: '2×2 8\'', len: 96, width: 1.5 },
+  { id: 'st-3', name: 'Douglas Fir 2×4 8ft', shortName: '2×4 8\'', len: 96, width: 3.5 },
 ];
 let clStockTypes = CL_DEFAULT_STOCK.map(s => ({...s}));
 let clStockIdCounter = 10;
@@ -3707,7 +3700,7 @@ function renderStockTypes() {
     const sel = document.getElementById('cl-mat-' + id);
     if (!sel) return;
     const current = sel.value;
-    sel.innerHTML = clStockTypes.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    sel.innerHTML = clStockTypes.map(s => `<option value="${s.id}">${s.shortName || s.name}</option>`).join('');
     if (clStockTypes.find(s => s.id === current)) sel.value = current;
   });
 }
@@ -3740,7 +3733,7 @@ function addCutRow(qty, len, width, label, stockId) {
   const row = document.createElement('tr');
   row.id = 'cl-row-' + id;
   const stockOptions = clStockTypes.map(s =>
-    `<option value="${s.id}"${s.id === stockId ? ' selected' : ''}>${s.name}</option>`
+    `<option value="${s.id}"${s.id === stockId ? ' selected' : ''}>${s.shortName || s.name}</option>`
   ).join('');
   row.innerHTML = `
     <td style="text-align:center;color:var(--text-muted);font-size:12px;font-family:'DM Mono',monospace">${partNum}</td>
@@ -3819,12 +3812,52 @@ function runCutList() {
   diag.innerHTML = '';
 
   clStockTypes.forEach((stock, si) => {
-    const pieces = byStock[stock.id];
-    if (!pieces || !pieces.length) return;
+    const rawPieces = byStock[stock.id];
+    if (!rawPieces || !rawPieces.length) return;
 
+    // Batch rip-cut pieces that fit multiple across the board width
+    // e.g. 3× 1.75" fits across a 5.5" board → pack as one grouped entry
+    let pieces = rawPieces;
+    if (stock.width) {
+      const fullWidthPieces = rawPieces.filter(p => !p.width || p.width >= stock.width);
+      const ripPieces = rawPieces.filter(p => p.width && p.width < stock.width);
+      if (ripPieces.length) {
+        const ripGroups = {};
+        ripPieces.forEach(p => {
+          const key = `${p.gi}_${p.width}`;
+          if (!ripGroups[key]) ripGroups[key] = [];
+          ripGroups[key].push(p);
+        });
+        const batched = [];
+        Object.values(ripGroups).forEach(grp => {
+          const { len, width, gi, label } = grp[0];
+          const ripsPerBoard = Math.max(1, Math.floor(stock.width / width));
+          for (let i = 0; i < grp.length; i += ripsPerBoard) {
+            const cnt = Math.min(ripsPerBoard, grp.length - i);
+            batched.push({ len, width, ripCount: cnt, totalWidth: cnt * width, gi, label });
+          }
+        });
+        pieces = [...fullWidthPieces, ...batched];
+      }
+    }
+
+    const totalActualCuts = rawPieces.length;
     const bins = runCutListBins(pieces, stock.len, kerf);
-    const totalWaste = bins.reduce((s, b) => s + b.remaining, 0);
-    const wastePct = Math.round((totalWaste / (bins.length * stock.len)) * 100);
+
+    // Total waste = length scrap area + width scrap area per rip-cut slot
+    let totalWasteArea = 0;
+    bins.forEach(bin => {
+      totalWasteArea += bin.remaining * (stock.width || 1);
+      bin.cuts.forEach(c => {
+        if (stock.width && c.width && c.width < stock.width) {
+          totalWasteArea += (stock.width - (c.totalWidth || c.width)) * c.len;
+        }
+      });
+    });
+    const totalBoardArea = bins.length * stock.len * (stock.width || 1);
+    const wastePct = Math.round((totalWasteArea / totalBoardArea) * 100);
+    const totalLengthWaste = bins.reduce((s, b) => s + b.remaining, 0);
+
     const color = CL_STOCK_COLORS[si % CL_STOCK_COLORS.length];
 
     const section = document.createElement('div');
@@ -3836,34 +3869,79 @@ function runCutList() {
     header.innerHTML = `
       <div class="cl-mat-dot" style="background:${color}"></div>
       <span class="cl-mat-title">${stock.name}</span>
-      <span class="cl-mat-count">${bins.length} board${bins.length !== 1 ? 's' : ''} · ${pieces.length} cut${pieces.length !== 1 ? 's' : ''} · ${totalWaste.toFixed(2)}" waste (${wastePct}%)</span>`;
+      <span class="cl-mat-count">${bins.length} board${bins.length !== 1 ? 's' : ''} · ${totalActualCuts} cut${totalActualCuts !== 1 ? 's' : ''} · ${wastePct}% waste</span>`;
     section.appendChild(header);
 
     // Get unique cut groups for this stock type (for color coding)
-    const cutGroupIds = [...new Set(pieces.map(p => p.gi))];
+    const cutGroupIds = [...new Set(rawPieces.map(p => p.gi))];
 
-    // Bar diagram — taller boards with dimension labels
+    // Bar diagram
     bins.forEach((bin, bi) => {
       const wrap = document.createElement('div');
       wrap.className = 'picket-bar-wrap';
       const usedIn = stock.len - bin.remaining;
-      wrap.innerHTML = `<div class="picket-bar-label">Board ${bi + 1} — ${usedIn.toFixed(2)}" used · ${bin.remaining.toFixed(2)}" waste</div>`;
+      // Length scrap + width scrap this board
+      let boardWidthWaste = 0;
+      bin.cuts.forEach(c => {
+        if (stock.width && c.width && c.width < stock.width) {
+          boardWidthWaste += (stock.width - (c.totalWidth || c.width)) * c.len;
+        }
+      });
+      const boardWasteNote = (stock.width && boardWidthWaste > 0)
+        ? ` · ${bin.remaining.toFixed(2)}" length scrap · ${boardWidthWaste.toFixed(2)} sq" width scrap`
+        : ` · ${bin.remaining.toFixed(2)}" scrap`;
+      wrap.innerHTML = `<div class="picket-bar-label">Board ${bi + 1} — ${usedIn.toFixed(2)}" used${boardWasteNote}</div>`;
       const bar = document.createElement('div');
       bar.className = 'picket-bar';
-      bar.style.height = '60px';
+      bar.style.height = '100px';
       bin.cuts.forEach(c => {
         const groupColorIdx = cutGroupIds.indexOf(c.gi);
+        const color = CL_COLORS[groupColorIdx % CL_COLORS.length];
         const dimStr = c.width ? `${c.len}×${c.width}"` : `${c.len}"`;
         const displayLabel = c.label || dimStr;
-        const seg = document.createElement('div');
-        seg.className = 'picket-segment';
-        seg.style.cssText = `width:${((c.len / stock.len) * 100)}%;background:${CL_COLORS[groupColorIdx % CL_COLORS.length]};flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:4px 5px;gap:2px;`;
-        seg.title = c.label ? `${c.label} (${dimStr})` : dimStr;
-        seg.innerHTML = `<span style="font-size:10px;font-family:'DM Mono',monospace;opacity:0.85;white-space:nowrap;overflow:hidden">${dimStr}</span><span style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;max-width:100%">${displayLabel !== dimStr ? displayLabel : ''}</span>`;
-        bar.appendChild(seg);
+        const singleLine = displayLabel !== dimStr ? `${dimStr} — ${displayLabel}` : dimStr;
+
+        const usedWidth = c.totalWidth || c.width;
+        const heightPct = (stock.width && usedWidth && usedWidth < stock.width)
+          ? usedWidth / stock.width * 100
+          : 100;
+        const scrapHeightPct = 100 - heightPct;
+
+        // Wrapper: full height, proportional width
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = `width:${(c.len / stock.len) * 100}%;height:100%;display:flex;flex-direction:column;flex-shrink:0;min-width:0;`;
+
+        // Width scrap block (top) — visible when piece is narrower than board
+        if (scrapHeightPct > 0.1) {
+          const ws = document.createElement('div');
+          const scrapW = stock.width - usedWidth;
+          ws.style.cssText = `height:${scrapHeightPct}%;background:#E5DDD0;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px dashed #c8bfb0;`;
+          ws.title = `${scrapW.toFixed(3)}" width scrap`;
+          ws.innerHTML = scrapHeightPct > 12
+            ? `<span style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);white-space:nowrap">${scrapW.toFixed(2)}" scrap</span>`
+            : '';
+          wrapper.appendChild(ws);
+        }
+
+        // Piece block (bottom)
+        const pieceBlock = document.createElement('div');
+        pieceBlock.style.cssText = `height:${heightPct}%;display:flex;flex-direction:column;overflow:hidden;`;
+
+        const ripCount = c.ripCount || 1;
+        for (let ri = 0; ri < ripCount; ri++) {
+          const sub = document.createElement('div');
+          sub.style.cssText = `flex:1;background:${color};display:flex;align-items:center;padding:0 6px;overflow:hidden;min-height:0;${ri < ripCount - 1 ? 'border-bottom:1.5px solid rgba(255,255,255,0.45);' : ''}`;
+          sub.title = c.label ? `${c.label} (${dimStr})` : dimStr;
+          sub.innerHTML = `<span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:white;max-width:100%">${singleLine}</span>`;
+          pieceBlock.appendChild(sub);
+        }
+
+        wrapper.appendChild(pieceBlock);
+        bar.appendChild(wrapper);
+
         if (kerf > 0) {
           const ks = document.createElement('div');
-          ks.style.cssText = `width:${((kerf / stock.len) * 100)}%;background:#aaa;flex-shrink:0;`;
+          ks.style.cssText = `width:${(kerf / stock.len) * 100}%;background:#ccc;flex-shrink:0;`;
           ks.title = 'kerf';
           bar.appendChild(ks);
         }
@@ -3871,8 +3949,8 @@ function runCutList() {
       if (bin.remaining > 0) {
         const waste = document.createElement('div');
         waste.className = 'picket-waste';
-        waste.style.flex = '1';
-        waste.innerHTML = `<span style="font-size:10px">${bin.remaining.toFixed(1)}" scrap</span>`;
+        waste.style.cssText = 'flex:1;height:100%;align-items:center;justify-content:center;';
+        waste.innerHTML = `<span style="font-size:12px">${bin.remaining.toFixed(1)}" scrap</span>`;
         bar.appendChild(waste);
       }
       wrap.appendChild(bar);
@@ -3892,51 +3970,6 @@ function runCutList() {
       legend.appendChild(item);
     });
     section.appendChild(legend);
-
-    // Rip cuts — only if stock has a known width and some cuts are narrower
-    if (stock.width) {
-      // Group rip cuts by cut group (gi) so we know exactly which pieces need ripping
-      const ripByGroup = {};
-      pieces.forEach(p => {
-        if (p.width && p.width < stock.width) {
-          if (!ripByGroup[p.gi]) {
-            const g = groups[p.gi];
-            ripByGroup[p.gi] = { gi: p.gi, cutWidth: p.width, count: 0, label: g.label, len: g.len, groupColorIdx: cutGroupIds.indexOf(p.gi) };
-          }
-          ripByGroup[p.gi].count++;
-        }
-      });
-      const ripEntries = Object.values(ripByGroup).sort((a, b) => b.cutWidth - a.cutWidth);
-      if (ripEntries.length) {
-        const ripSec = document.createElement('div');
-        ripSec.className = 'cl-rip-section';
-        ripSec.innerHTML = `<div class="cl-rip-title">✂️ Rip Cuts Required</div>`;
-        ripEntries.forEach(rip => {
-          const waste = stock.width - rip.cutWidth;
-          const cutPct = (rip.cutWidth / stock.width) * 100;
-          const wastePct = (waste / stock.width) * 100;
-          const segColor = CL_COLORS[rip.groupColorIdx % CL_COLORS.length];
-          const pieceLabel = rip.label ? `${rip.label} (${rip.count}× ${rip.len}×${rip.cutWidth}")` : `${rip.count}× ${rip.len}×${rip.cutWidth}"`;
-          const row = document.createElement('div');
-          row.className = 'cl-rip-row';
-          row.innerHTML = `
-            <div style="min-width:0;flex:1">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-                <div style="width:10px;height:10px;border-radius:2px;background:${segColor};flex-shrink:0"></div>
-                <span style="font-size:12px;font-weight:600;color:var(--text)">${pieceLabel}</span>
-                <span style="font-size:12px;color:var(--text-muted)">→ rip ${stock.width}" to ${rip.cutWidth}"</span>
-              </div>
-              <div style="display:flex;align-items:stretch;height:32px;border-radius:5px;overflow:hidden;border:1px solid var(--warm-gray)">
-                <div style="width:${cutPct}%;background:${segColor};display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;font-weight:600;color:white;white-space:nowrap;overflow:hidden">${rip.cutWidth}" keep</div>
-                <div style="width:${wastePct}%;background:#E5DDD0;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;color:var(--text-muted);white-space:nowrap;overflow:hidden">${waste.toFixed(3)}" scrap</div>
-              </div>
-              <div style="font-size:10px;color:var(--text-muted);margin-top:3px;font-family:'DM Mono',monospace">${stock.width}" wide stock → keep ${rip.cutWidth}" · discard ${waste.toFixed(3)}"</div>
-            </div>`;
-          ripSec.appendChild(row);
-        });
-        section.appendChild(ripSec);
-      }
-    }
 
     diag.appendChild(section);
   });
