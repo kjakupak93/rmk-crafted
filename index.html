@@ -687,6 +687,39 @@ body {
 .cr-val { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; }
 .cr-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
+/* ===== CUT LIST CALC ===== */
+.cut-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+.cut-row .cut-x { font-size:13px; color:var(--text-muted); flex-shrink:0; }
+.cut-row .remove-btn { background:none; border:none; color:var(--red); font-size:18px; cursor:pointer; padding:2px 6px; line-height:1; border-radius:4px; flex-shrink:0; }
+.cut-row .remove-btn:hover { background:var(--cream); }
+.cl-stock-row { display:flex; align-items:center; gap:8px; padding:7px 10px; background:var(--cream); border-radius:6px; margin-bottom:6px; }
+.cl-stock-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.cl-stock-name { flex:1; font-size:13px; font-weight:500; color:var(--text); }
+.cl-stock-len { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); flex-shrink:0; }
+.cl-stock-remove { background:none; border:none; color:var(--red); font-size:16px; cursor:pointer; padding:0 4px; line-height:1; border-radius:4px; flex-shrink:0; }
+.cl-stock-remove:hover { background:var(--warm-gray); }
+.cl-mat-section { margin-bottom:18px; }
+.cl-mat-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; padding-bottom:6px; border-bottom:2px solid var(--warm-gray); }
+.cl-mat-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+.cl-mat-title { font-weight:700; font-size:14px; color:var(--navy); }
+.cl-mat-count { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); }
+.picket-bar-wrap { margin-bottom:8px; }
+.picket-bar-label { font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; margin-bottom:3px; }
+.picket-bar { display:flex; height:30px; border-radius:6px; overflow:hidden; border:1px solid var(--warm-gray); }
+.picket-segment { display:flex; align-items:center; justify-content:center; font-size:10px; font-family:'DM Mono',monospace; font-weight:600; color:white; overflow:hidden; white-space:nowrap; min-width:0; }
+.picket-segment:hover { filter:brightness(1.1); }
+.picket-waste { background:#E5DDD0; display:flex; align-items:center; justify-content:center; font-size:9px; font-family:'DM Mono',monospace; color:var(--text-muted); }
+.cl-legend { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.cl-legend-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--text); }
+.cl-legend-swatch { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+.cl-rip-section { margin-top:14px; padding-top:12px; border-top:1px dashed var(--warm-gray); }
+.cl-rip-title { font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+.cl-rip-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+.cl-rip-bar-wrap { flex:1; min-width:140px; }
+.cl-rip-bar { display:flex; height:22px; border-radius:4px; overflow:hidden; border:1px solid var(--warm-gray); }
+.cl-rip-cut { display:flex; align-items:center; justify-content:center; font-size:10px; font-family:'DM Mono',monospace; font-weight:600; color:white; }
+.cl-rip-waste { background:#E5DDD0; display:flex; align-items:center; justify-content:center; font-size:9px; font-family:'DM Mono',monospace; color:var(--text-muted); }
+
 /* ===== SCHEDULER ===== */
 .cal-nav-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .cal-nav-header h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--navy); }
@@ -1031,7 +1064,7 @@ body {
 [data-theme="dark"] .app-tile, [data-theme="dark"] .slot-card, [data-theme="dark"] .pickup-card,
 [data-theme="dark"] .home-stat, [data-theme="dark"] .stat-strip, [data-theme="dark"] .summary-card,
 [data-theme="dark"] .stat-card, [data-theme="dark"] .breakdown-card, [data-theme="dark"] .stock-card,
-[data-theme="dark"] .build-calc, [data-theme="dark"] .rev-card, [data-theme="dark"] .day-detail,
+[data-theme="dark"] .build-calc, [data-theme="dark"] #cut-list-calc, [data-theme="dark"] .rev-card, [data-theme="dark"] .day-detail,
 [data-theme="dark"] .table-wrap, [data-theme="dark"] .std-table-wrap, [data-theme="dark"] .picket-section,
 [data-theme="dark"] .activity-item, [data-theme="dark"] .tabs, [data-theme="dark"] .icon-btn,
 [data-theme="dark"] .modal-overlay .modal { background: #162534 !important; border-color: #2C4255 !important; color: var(--text); }
@@ -1623,6 +1656,7 @@ body {
   <div class="tabs">
     <button class="tab-btn active" onclick="showMaterialsTab('stock',this)">📦 Stock</button>
     <button class="tab-btn" onclick="showMaterialsTab('purchases',this)">🛒 Purchases</button>
+    <button class="tab-btn" onclick="showMaterialsTab('cutlist',this)">🪵 Cut List</button>
   </div>
   <div class="app-container">
     <div class="tab-panel active" id="mtab-stock">
@@ -1686,6 +1720,7 @@ body {
           <div class="cr-item"><div class="cr-val" id="bc-mkup">—</div><div class="cr-lbl">Markup</div></div>
         </div>
       </div>
+
     </div>
 
     <div class="tab-panel" id="mtab-purchases">
@@ -1708,9 +1743,72 @@ body {
       </div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Date</th><th>Store</th><th>Pickets</th><th>2×2s</th><th>2×4s</th><th>Total</th><th>Notes</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Store</th><th>Pickets</th><th>2×2s</th><th>2×4s</th><th>Discount</th><th>Total</th><th>Notes</th><th></th></tr></thead>
           <tbody id="purchaseBody"></tbody>
         </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="mtab-cutlist">
+      <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 4px;">Cut List Calculator</h2>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Enter your cuts, calculate picket usage, then save for later reuse.</p>
+
+      <!-- Saved cut lists -->
+      <div class="section-header" style="margin-bottom:12px">
+        <div class="section-label" style="margin:0">Saved Cut Lists</div>
+      </div>
+      <div id="cl-saved-list" style="margin-bottom:20px">
+        <p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>
+      </div>
+
+      <div class="build-calc" id="cut-list-calc">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <h3 style="margin:0">New Cut List</h3>
+          <button class="btn-secondary" onclick="clearCutList()" style="font-size:12px;padding:5px 10px">Clear</button>
+        </div>
+        <div class="input-group" style="margin-bottom:14px">
+          <label>Cut list name</label>
+          <input class="std-input" type="text" id="cl-name" placeholder="e.g. 36×16×16 Standard">
+        </div>
+
+        <!-- Stock materials -->
+        <div style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+            <label style="font-size:13px;font-weight:600;color:var(--text)">Stock Materials</label>
+            <div class="input-group" style="margin-bottom:0;width:148px">
+              <label style="font-size:11px">Blade kerf (in)</label>
+              <input class="std-input" type="number" id="cl-kerf" value="0.11" min="0" step="0.01" placeholder="0.11">
+            </div>
+          </div>
+          <div id="cl-stock-list"></div>
+          <div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">
+            <div class="input-group" style="margin-bottom:0;flex:1;min-width:120px">
+              <label>Name</label>
+              <input class="std-input" type="text" id="cl-new-stock-name" placeholder="e.g. Cedar Picket 8ft">
+            </div>
+            <div class="input-group" style="margin-bottom:0;flex:0 0 82px">
+              <label>Length (in)</label>
+              <input class="std-input" type="number" id="cl-new-stock-len" value="96" min="1" step="0.25">
+            </div>
+            <div class="input-group" style="margin-bottom:0;flex:0 0 78px">
+              <label>Width (in)</label>
+              <input class="std-input" type="number" id="cl-new-stock-wid" value="" min="0.25" step="0.25" placeholder="opt.">
+            </div>
+            <button class="btn-secondary" onclick="addStockType()" style="flex-shrink:0">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Cut rows -->
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Cuts</div>
+        <div id="cl-rows"></div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="btn-secondary" onclick="addCutRow()">+ Add Cut</button>
+          <button class="btn-primary" onclick="runCutList()">Calculate</button>
+          <button class="btn-primary" onclick="saveCutList()" style="background:var(--green)">💾 Save</button>
+        </div>
+        <div id="cl-results" style="display:none">
+          <div id="cl-diagram"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1935,9 +2033,12 @@ body {
       <div class="form-group"><label>2×4s (qty)</label><input class="form-control" type="number" id="p24" placeholder="0" min="0" oninput="updatePurchEst()"></div>
       <div class="form-group"><label>Price per 2×4 ($)</label><input class="form-control" type="number" id="p24p" value="4.17" step="0.01" oninput="updatePurchEst()"></div>
     </div>
-    <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="pNotes" placeholder="Optional"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Discount ($)</label><input class="form-control" type="number" id="pDiscount" placeholder="0.00" min="0" step="0.01" oninput="updatePurchEst()"></div>
+      <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="pNotes" placeholder="Optional"></div>
+    </div>
     <div style="background:#EAF2F8;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--navy);font-family:'DM Mono',monospace">
-      Estimated total: <strong id="purchEst">$0.00</strong>
+      Subtotal: <strong id="purchSubtotal">$0.00</strong><span id="purchDiscountLine" style="display:none"> &minus; <span style="color:var(--green)" id="purchDiscountAmt"></span> discount</span> &rarr; <strong id="purchEst">$0.00</strong>
     </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="editingPurchaseId=null;closeModal('purchaseModal')">Cancel</button>
@@ -2065,6 +2166,21 @@ body {
     </div>
     <div style="margin-top:10px">
       <button class="modal-btn-cancel" style="width:100%" onclick="closeModal('markPaidModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Complete Order — collect payment modal -->
+<div class="modal-overlay" id="completePaymentModal">
+  <div class="modal" style="max-width:340px;text-align:center;">
+    <h2 style="margin-bottom:6px">Collect Payment</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">How was this order paid?</p>
+    <div style="display:flex;gap:10px">
+      <button class="modal-btn-primary" style="flex:1" onclick="finishCompleteOrder('cash')">💵 Cash</button>
+      <button class="modal-btn-primary" style="flex:1;background:var(--ocean)" onclick="finishCompleteOrder('venmo')">📱 Venmo</button>
+    </div>
+    <div style="margin-top:10px">
+      <button class="modal-btn-cancel" style="width:100%" onclick="finishCompleteOrder('unpaid')">Skip — not paid yet</button>
     </div>
   </div>
 </div>
@@ -3154,15 +3270,38 @@ function buildPricingMatrix() {
   ).join('');
 }
 
+let _pendingCompleteOrderData = null;
+
 async function completeOrder(id) {
   const {data}=await sb.from('orders').select('*').eq('id',id).single();
   if (!data) return;
-  await sb.from('orders').update({status:'completed'}).eq('id',id);
-  if (data.payment!=='unpaid') {
+  if (data.payment==='unpaid') {
+    _pendingCompleteOrderData = data;
+    openModal('completePaymentModal');
+  } else {
+    await _doCompleteOrder(data, data.payment);
+  }
+}
+
+async function finishCompleteOrder(method) {
+  closeModal('completePaymentModal');
+  if (!_pendingCompleteOrderData) return;
+  const data = _pendingCompleteOrderData;
+  _pendingCompleteOrderData = null;
+  if (method !== 'unpaid') {
+    await sb.from('orders').update({payment: method}).eq('id', data.id);
+    data.payment = method;
+  }
+  await _doCompleteOrder(data, method);
+}
+
+async function _doCompleteOrder(data, payment) {
+  await sb.from('orders').update({status:'completed'}).eq('id',data.id);
+  if (payment!=='unpaid') {
     const compItemRows=data.items?.rows||[];
     const compQty=compItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
     const compSizeStr=compItemRows.length>1?compItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(data.size||'');
-    await sb.from('sales').insert({name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:data.payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes});
+    await sb.from('sales').insert({name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes});
     const _cost = estimateOrderCost(data);
     const _profit = data.price - _cost;
     const _margin = data.price > 0 ? Math.round((_profit / data.price) * 100) : 0;
@@ -3530,23 +3669,372 @@ function updateBuildCalc() {
   document.getElementById('bc-mkup').textContent=mat?markup+'%':'—';
 }
 
+// ===== CUT LIST CALCULATOR =====
+const CL_COLORS = ['#1E4D6B','#3A7D5C','#D4782A','#4A86A8','#C9A55A','#7B5EA7','#2E8B8B','#8B4513','#B8860B','#5F9EA0'];
+const CL_STOCK_COLORS = ['#1E4D6B','#3A7D5C','#D4782A','#4A86A8','#C9A55A','#7B5EA7','#2E8B8B'];
+const CL_DEFAULT_STOCK = [
+  { id: 'st-1', name: 'Cedar Picket 6ft', len: 72, width: 5.5 },
+  { id: 'st-2', name: 'Pine 2×2 8ft', len: 96, width: 1.5 },
+  { id: 'st-3', name: 'Douglas Fir 2×4 8ft', len: 96, width: 3.5 },
+];
+let clStockTypes = CL_DEFAULT_STOCK.map(s => ({...s}));
+let clStockIdCounter = 10;
+let clRowId = 0;
+
+function renderStockTypes() {
+  const list = document.getElementById('cl-stock-list');
+  if (!list) return;
+  if (!clStockTypes.length) {
+    list.innerHTML = '<p style="font-size:12px;color:var(--text-muted);margin-bottom:6px">No stock materials defined.</p>';
+  } else {
+    list.innerHTML = clStockTypes.map((s, si) => `
+      <div class="cl-stock-row">
+        <div class="cl-stock-dot" style="background:${CL_STOCK_COLORS[si % CL_STOCK_COLORS.length]}"></div>
+        <span class="cl-stock-name">${s.name}</span>
+        <span class="cl-stock-len">${s.len}"${s.width ? ' × ' + s.width + '"' : ''}</span>
+        <button class="cl-stock-remove" onclick="removeStockType('${s.id}')" title="Remove">×</button>
+      </div>`).join('');
+  }
+  // Refresh all cut row dropdowns to reflect updated stock list
+  document.querySelectorAll('#cl-rows .cut-row').forEach(row => {
+    const id = row.id.replace('cl-row-', '');
+    const sel = document.getElementById('cl-mat-' + id);
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = clStockTypes.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    if (clStockTypes.find(s => s.id === current)) sel.value = current;
+  });
+}
+
+function addStockType() {
+  const nameEl = document.getElementById('cl-new-stock-name');
+  const lenEl = document.getElementById('cl-new-stock-len');
+  const widEl = document.getElementById('cl-new-stock-wid');
+  const name = (nameEl.value || '').trim();
+  const len = parseFloat(lenEl.value) || 0;
+  const width = parseFloat(widEl.value) || null;
+  if (!name) { showToast('Enter a material name', 'error'); return; }
+  if (len <= 0) { showToast('Enter a valid length', 'error'); return; }
+  clStockTypes.push({ id: 'st-' + (++clStockIdCounter), name, len, width });
+  nameEl.value = '';
+  lenEl.value = '96';
+  widEl.value = '';
+  renderStockTypes();
+}
+
+function removeStockType(id) {
+  clStockTypes = clStockTypes.filter(s => s.id !== id);
+  renderStockTypes();
+}
+
+function addCutRow(qty, len, width, label, stockId) {
+  const id = ++clRowId;
+  const wrap = document.getElementById('cl-rows');
+  const row = document.createElement('div');
+  row.className = 'cut-row';
+  row.id = 'cl-row-' + id;
+  const stockOptions = clStockTypes.map(s =>
+    `<option value="${s.id}"${s.id === stockId ? ' selected' : ''}>${s.name}</option>`
+  ).join('');
+  row.innerHTML = `
+    <input class="std-input" type="number" id="cl-qty-${id}" value="${qty||1}" min="1" step="1" style="width:56px" placeholder="qty">
+    <span class="cut-x">×</span>
+    <input class="std-input" type="number" id="cl-len-${id}" value="${len||''}" min="0.25" step="0.25" style="width:66px" placeholder='L"'>
+    <span class="cut-x">×</span>
+    <input class="std-input" type="number" id="cl-wid-${id}" value="${width||''}" min="0.25" step="0.25" style="width:60px" placeholder='W"'>
+    <select class="std-input" id="cl-mat-${id}" style="flex:0 0 auto;min-width:130px">${stockOptions}</select>
+    <input class="std-input" type="text" id="cl-lbl-${id}" value="${label||''}" style="flex:1;min-width:90px" placeholder="label (optional)">
+    <button class="remove-btn" onclick="removeCutRow(${id})" title="Remove">×</button>`;
+  wrap.appendChild(row);
+}
+
+function removeCutRow(id) {
+  const row = document.getElementById('cl-row-' + id);
+  if (row) row.remove();
+}
+
+function collectCutGroups() {
+  const groups = [];
+  document.querySelectorAll('#cl-rows .cut-row').forEach(row => {
+    const id = row.id.replace('cl-row-', '');
+    const qty = parseInt(document.getElementById('cl-qty-' + id).value) || 0;
+    const len = parseFloat(document.getElementById('cl-len-' + id).value) || 0;
+    const width = parseFloat(document.getElementById('cl-wid-' + id).value) || null;
+    const label = (document.getElementById('cl-lbl-' + id).value || '').trim();
+    const stockId = document.getElementById('cl-mat-' + id).value;
+    if (qty > 0 && len > 0) groups.push({ qty, len, width, label, stockId });
+  });
+  return groups;
+}
+
+function runCutListBins(pieces, stockLen, kerf) {
+  const sorted = [...pieces].sort((a, b) => b.len - a.len);
+  const bins = [];
+  for (const piece of sorted) {
+    const needed = piece.len + kerf;
+    let placed = false;
+    for (const bin of bins) {
+      if (bin.remaining >= needed) {
+        bin.remaining -= needed;
+        bin.cuts.push(piece);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) {
+      bins.push({ remaining: stockLen - needed, cuts: [piece] });
+    }
+  }
+  return bins;
+}
+
+function runCutList() {
+  const kerf = parseFloat(document.getElementById('cl-kerf').value) || 0;
+  const groups = collectCutGroups();
+
+  if (!clStockTypes.length) { showToast('Add at least one stock material first', 'error'); return; }
+  if (!groups.length) { showToast('Add at least one cut first', 'error'); return; }
+
+  for (const g of groups) {
+    const stock = clStockTypes.find(s => s.id === g.stockId);
+    if (stock && g.len > stock.len) {
+      showToast(`"${g.label || g.len + '"'}" cut (${g.len}") is longer than ${stock.name} (${stock.len}")`, 'error');
+      return;
+    }
+  }
+
+  // Group cuts by stock type
+  const byStock = {};
+  groups.forEach((g, gi) => {
+    if (!byStock[g.stockId]) byStock[g.stockId] = [];
+    for (let i = 0; i < g.qty; i++) byStock[g.stockId].push({ len: g.len, width: g.width, label: g.label, gi });
+  });
+
+  const diag = document.getElementById('cl-diagram');
+  diag.innerHTML = '';
+
+  clStockTypes.forEach((stock, si) => {
+    const pieces = byStock[stock.id];
+    if (!pieces || !pieces.length) return;
+
+    const bins = runCutListBins(pieces, stock.len, kerf);
+    const totalWaste = bins.reduce((s, b) => s + b.remaining, 0);
+    const wastePct = Math.round((totalWaste / (bins.length * stock.len)) * 100);
+    const color = CL_STOCK_COLORS[si % CL_STOCK_COLORS.length];
+
+    const section = document.createElement('div');
+    section.className = 'cl-mat-section';
+
+    // Section header
+    const header = document.createElement('div');
+    header.className = 'cl-mat-header';
+    header.innerHTML = `
+      <div class="cl-mat-dot" style="background:${color}"></div>
+      <span class="cl-mat-title">${stock.name}</span>
+      <span class="cl-mat-count">${bins.length} board${bins.length !== 1 ? 's' : ''} · ${pieces.length} cut${pieces.length !== 1 ? 's' : ''} · ${totalWaste.toFixed(2)}" waste (${wastePct}%)</span>`;
+    section.appendChild(header);
+
+    // Get unique cut groups for this stock type (for color coding)
+    const cutGroupIds = [...new Set(pieces.map(p => p.gi))];
+
+    // Bar diagram
+    bins.forEach((bin, bi) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'picket-bar-wrap';
+      const usedIn = stock.len - bin.remaining;
+      wrap.innerHTML = `<div class="picket-bar-label">Board ${bi + 1} — ${usedIn.toFixed(2)}" used · ${bin.remaining.toFixed(2)}" waste</div>`;
+      const bar = document.createElement('div');
+      bar.className = 'picket-bar';
+      bin.cuts.forEach(c => {
+        const seg = document.createElement('div');
+        seg.className = 'picket-segment';
+        seg.style.width = ((c.len / stock.len) * 100) + '%';
+        const groupColorIdx = cutGroupIds.indexOf(c.gi);
+        seg.style.background = CL_COLORS[groupColorIdx % CL_COLORS.length];
+        const dimStr = c.width ? `${c.len}×${c.width}"` : `${c.len}"`;
+        const displayLabel = c.label || dimStr;
+        seg.title = c.label ? `${c.label} (${dimStr})` : dimStr;
+        seg.textContent = displayLabel;
+        bar.appendChild(seg);
+        if (kerf > 0) {
+          const ks = document.createElement('div');
+          ks.className = 'picket-segment';
+          ks.style.width = ((kerf / stock.len) * 100) + '%';
+          ks.style.background = '#aaa';
+          ks.title = 'kerf';
+          bar.appendChild(ks);
+        }
+      });
+      if (bin.remaining > 0) {
+        const waste = document.createElement('div');
+        waste.className = 'picket-waste';
+        waste.style.flex = '1';
+        waste.textContent = bin.remaining.toFixed(1) + '" scrap';
+        bar.appendChild(waste);
+      }
+      wrap.appendChild(bar);
+      section.appendChild(wrap);
+    });
+
+    // Legend for this material's cut groups
+    const legend = document.createElement('div');
+    legend.className = 'cl-legend';
+    cutGroupIds.forEach((gi, idx) => {
+      const g = groups[gi];
+      const item = document.createElement('div');
+      item.className = 'cl-legend-item';
+      const dimStr = g.width ? `${g.len}×${g.width}"` : `${g.len}"`;
+      const displayLabel = g.label ? `${g.qty}× ${dimStr} — ${g.label}` : `${g.qty}× ${dimStr}`;
+      item.innerHTML = `<div class="cl-legend-swatch" style="background:${CL_COLORS[idx % CL_COLORS.length]}"></div>${displayLabel}`;
+      legend.appendChild(item);
+    });
+    section.appendChild(legend);
+
+    // Rip cuts — only if stock has a known width and some cuts are narrower
+    if (stock.width) {
+      // Group rip cuts by cut group (gi) so we know exactly which pieces need ripping
+      const ripByGroup = {};
+      pieces.forEach(p => {
+        if (p.width && p.width < stock.width) {
+          if (!ripByGroup[p.gi]) {
+            const g = groups[p.gi];
+            ripByGroup[p.gi] = { gi: p.gi, cutWidth: p.width, count: 0, label: g.label, len: g.len, groupColorIdx: cutGroupIds.indexOf(p.gi) };
+          }
+          ripByGroup[p.gi].count++;
+        }
+      });
+      const ripEntries = Object.values(ripByGroup).sort((a, b) => b.cutWidth - a.cutWidth);
+      if (ripEntries.length) {
+        const ripSec = document.createElement('div');
+        ripSec.className = 'cl-rip-section';
+        ripSec.innerHTML = `<div class="cl-rip-title">✂️ Rip Cuts Required</div>`;
+        ripEntries.forEach(rip => {
+          const waste = stock.width - rip.cutWidth;
+          const cutPct = (rip.cutWidth / stock.width) * 100;
+          const wastePct = (waste / stock.width) * 100;
+          const segColor = CL_COLORS[rip.groupColorIdx % CL_COLORS.length];
+          const pieceLabel = rip.label ? `${rip.label} (${rip.count}× ${rip.len}×${rip.cutWidth}")` : `${rip.count}× ${rip.len}×${rip.cutWidth}"`;
+          const row = document.createElement('div');
+          row.className = 'cl-rip-row';
+          row.innerHTML = `
+            <div style="min-width:0;flex:1">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+                <div style="width:10px;height:10px;border-radius:2px;background:${segColor};flex-shrink:0"></div>
+                <span style="font-size:12px;font-weight:600;color:var(--text)">${pieceLabel}</span>
+                <span style="font-size:12px;color:var(--text-muted)">→ rip ${stock.width}" to ${rip.cutWidth}"</span>
+              </div>
+              <div style="display:flex;align-items:stretch;height:32px;border-radius:5px;overflow:hidden;border:1px solid var(--warm-gray)">
+                <div style="width:${cutPct}%;background:${segColor};display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;font-weight:600;color:white;white-space:nowrap;overflow:hidden">${rip.cutWidth}" keep</div>
+                <div style="width:${wastePct}%;background:#E5DDD0;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;color:var(--text-muted);white-space:nowrap;overflow:hidden">${waste.toFixed(3)}" scrap</div>
+              </div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:3px;font-family:'DM Mono',monospace">${stock.width}" wide stock → keep ${rip.cutWidth}" · discard ${waste.toFixed(3)}"</div>
+            </div>`;
+          ripSec.appendChild(row);
+        });
+        section.appendChild(ripSec);
+      }
+    }
+
+    diag.appendChild(section);
+  });
+
+  document.getElementById('cl-results').style.display = 'block';
+}
+
+function clearCutList() {
+  document.getElementById('cl-name').value = '';
+  document.getElementById('cl-kerf').value = '0.11';
+  document.getElementById('cl-rows').innerHTML = '';
+  document.getElementById('cl-results').style.display = 'none';
+  clRowId = 0;
+  clStockTypes = CL_DEFAULT_STOCK.map(s => ({...s}));
+  renderStockTypes();
+  addCutRow();
+}
+
+async function saveCutList() {
+  const name = (document.getElementById('cl-name').value || '').trim();
+  if (!name) { showToast('Give this cut list a name first', 'error'); return; }
+  const kerf = parseFloat(document.getElementById('cl-kerf').value) || 0;
+  const cuts = collectCutGroups();
+  if (!cuts.length) { showToast('Add at least one cut first', 'error'); return; }
+  const stock_types = clStockTypes;
+  const picket_len = 72; // kept for schema compatibility
+
+  const { error } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types });
+  if (error) { showToast('Save failed', 'error'); return; }
+  showToast('Cut list saved!');
+  loadSavedCutLists();
+}
+
+async function loadSavedCutLists() {
+  const { data } = await sb.from('cut_lists').select('*').order('created_at', { ascending: false });
+  const container = document.getElementById('cl-saved-list');
+  if (!data || !data.length) {
+    container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>';
+    return;
+  }
+  container.innerHTML = data.map(cl => {
+    const stocks = (cl.stock_types && cl.stock_types.length) ? cl.stock_types.map(s => s.name).join(', ') : `${cl.picket_len}" pickets`;
+    const cutSummary = cl.cuts.slice(0, 4).map(c => `${c.qty}× ${c.len}"${c.label ? ' ('+c.label+')' : ''}`).join(', ') + (cl.cuts.length > 4 ? ` +${cl.cuts.length - 4} more` : '');
+    return `
+    <div class="slot-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+      <div style="min-width:0">
+        <div style="font-weight:600;font-size:14px;color:var(--navy)">${cl.name}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${stocks}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:1px">${cutSummary}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="btn-secondary" style="font-size:12px;padding:5px 10px" onclick="loadCutList(${JSON.stringify(cl).replace(/"/g,'&quot;')})">Load</button>
+        <button class="icon-btn" style="color:var(--red)" onclick="deleteCutList('${cl.id}')" title="Delete">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadCutList(cl) {
+  document.getElementById('cl-name').value = cl.name;
+  document.getElementById('cl-kerf').value = cl.kerf;
+  document.getElementById('cl-rows').innerHTML = '';
+  document.getElementById('cl-results').style.display = 'none';
+  clRowId = 0;
+  // Restore stock types (fall back to default if old saved format)
+  clStockTypes = (cl.stock_types && cl.stock_types.length)
+    ? cl.stock_types.map(s => ({...s}))
+    : CL_DEFAULT_STOCK.map(s => ({...s}));
+  renderStockTypes();
+  (cl.cuts || []).forEach(c => addCutRow(c.qty, c.len, c.width, c.label, c.stockId));
+  showToast('Cut list loaded');
+}
+
+async function deleteCutList(id) {
+  if (!confirm('Delete this cut list?')) return;
+  await sb.from('cut_lists').delete().eq('id', id);
+  loadSavedCutLists();
+}
+
+// Initialize stock types and one empty cut row
+(function() { renderStockTypes(); addCutRow(); })();
+
 function showMaterialsTab(tab, btn) {
   document.querySelectorAll('#page-materials .tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('#page-materials .tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('mtab-'+tab).classList.add('active');
   btn.classList.add('active');
   if (tab==='purchases') loadPurchases();
+  if (tab==='cutlist') loadSavedCutLists();
 }
 
 async function downloadPurchaseCSV() {
   const {data}=await sb.from('purchases').select('*').order('purchase_date',{ascending:false});
   if (!data||!data.length) {showToast('No purchases to export','error');return;}
-  const headers=['Date','Store','Pickets','Picket Price','2x2s','2x2 Price','2x4s','2x4 Price','Total','Notes'];
+  const headers=['Date','Store','Pickets','Picket Price','2x2s','2x2 Price','2x4s','2x4 Price','Discount','Total','Notes'];
   const rows=data.map(p=>[
     p.purchase_date||'',p.store||'Lowes',
     p.pickets||0,p.picket_price||'',
     p.twobytwo||0,p.twobytwo_price||'',
     p.twobyfour||0,p.twobyfour_price||'',
+    (p.discount||0).toFixed(2),
     (p.total||0).toFixed(2),
     '"'+(p.notes||'').replace(/"/g,"''")+'"'
   ]);
@@ -3589,13 +4077,14 @@ function renderPurchaseList() {
     }
     return true;
   });
-  if (!filtered.length) {tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-muted)">No purchases in this period.</td></tr>';return;}
+  if (!filtered.length) {tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted)">No purchases in this period.</td></tr>';return;}
   tbody.innerHTML=filtered.map(p=>`<tr>
     <td>${p.purchase_date||''}</td>
     <td>${p.store||'Lowes'}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${p.pickets||'—'}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${p.twobytwo||'—'}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${p.twobyfour||'—'}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500">${p.discount>0?'-$'+(p.discount||0).toFixed(2):'—'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--navy);font-weight:500">$${(p.total||0).toFixed(2)}</td>
     <td style="color:var(--text-muted);font-size:12px">${p.notes||''}</td>
     <td style="display:flex;gap:4px">
@@ -3618,11 +4107,12 @@ function openPurchaseModal(item=null) {
     document.getElementById('p22p').value=item.twobytwo_price||3.23;
     document.getElementById('p24').value=item.twobyfour||'';
     document.getElementById('p24p').value=item.twobyfour_price||4.17;
+    document.getElementById('pDiscount').value=item.discount||'';
     document.getElementById('pNotes').value=item.notes||'';
   } else {
     document.getElementById('pDate').value=new Date().toISOString().split('T')[0];
     document.getElementById('pStore').value='Lowes';
-    ['pPickets','p22','p24','pNotes'].forEach(f=>document.getElementById(f).value='');
+    ['pPickets','p22','p24','pDiscount','pNotes'].forEach(f=>document.getElementById(f).value='');
     document.getElementById('pPP').value=3.66;
     document.getElementById('p22p').value=3.23;
     document.getElementById('p24p').value=4.17;
@@ -3639,7 +4129,18 @@ function updatePurchEst() {
   const p=(parseInt(document.getElementById('pPickets').value)||0)*(parseFloat(document.getElementById('pPP').value)||3.66);
   const t22=(parseInt(document.getElementById('p22').value)||0)*(parseFloat(document.getElementById('p22p').value)||3.23);
   const t24=(parseInt(document.getElementById('p24').value)||0)*(parseFloat(document.getElementById('p24p').value)||4.17);
-  document.getElementById('purchEst').textContent='$'+(p+t22+t24).toFixed(2);
+  const subtotal=p+t22+t24;
+  const discount=parseFloat(document.getElementById('pDiscount').value)||0;
+  const total=Math.max(0,subtotal-discount);
+  document.getElementById('purchSubtotal').textContent='$'+subtotal.toFixed(2);
+  const discLine=document.getElementById('purchDiscountLine');
+  if (discount>0) {
+    discLine.style.display='';
+    document.getElementById('purchDiscountAmt').textContent='$'+discount.toFixed(2);
+  } else {
+    discLine.style.display='none';
+  }
+  document.getElementById('purchEst').textContent='$'+total.toFixed(2);
 }
 
 async function savePurchase() {
@@ -3650,8 +4151,9 @@ async function savePurchase() {
   const t24=parseInt(document.getElementById('p24').value)||0;
   const t24p=parseFloat(document.getElementById('p24p').value)||4.17;
   if (!pickets&&!t22&&!t24) {showToast('Enter at least one material','error');return;}
-  const total=pickets*pp+t22*t22p+t24*t24p;
-  const payload={purchase_date:document.getElementById('pDate').value,store:document.getElementById('pStore').value,pickets,picket_price:pp,twobytwo:t22,twobytwo_price:t22p,twobyfour:t24,twobyfour_price:t24p,total,notes:document.getElementById('pNotes').value};
+  const discount=parseFloat(document.getElementById('pDiscount').value)||0;
+  const total=Math.max(0,pickets*pp+t22*t22p+t24*t24p-discount);
+  const payload={purchase_date:document.getElementById('pDate').value,store:document.getElementById('pStore').value,pickets,picket_price:pp,twobytwo:t22,twobytwo_price:t22p,twobyfour:t24,twobyfour_price:t24p,discount,total,notes:document.getElementById('pNotes').value};
   if (editingPurchaseId) {
     const {error}=await sb.from('purchases').update(payload).eq('id',editingPurchaseId);
     if (error) {showToast('Error saving','error');return;}
