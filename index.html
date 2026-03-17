@@ -1746,14 +1746,6 @@ body {
       <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 4px;">Cut List Calculator</h2>
       <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Enter your cuts, calculate picket usage, then save for later reuse.</p>
 
-      <!-- Saved cut lists -->
-      <div class="section-header" style="margin-bottom:12px">
-        <div class="section-label" style="margin:0">Saved Cut Lists</div>
-      </div>
-      <div id="cl-saved-list" style="margin-bottom:20px">
-        <p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>
-      </div>
-
       <div class="build-calc" id="cut-list-calc">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap">
           <h3 style="margin:0">New Cut List</h3>
@@ -1799,6 +1791,10 @@ body {
             <tbody id="cl-rows"></tbody>
           </table>
         </div>
+        <div class="input-group" style="margin-bottom:12px">
+          <label>Notes</label>
+          <textarea class="std-input" id="cl-notes" rows="2" placeholder="Optional notes about this cut list…" style="resize:vertical;min-height:48px;font-size:14px"></textarea>
+        </div>
         <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
           <button class="btn-secondary" onclick="addCutRow()">+ Add Part</button>
           <button class="btn-primary" onclick="runCutList()">Calculate</button>
@@ -1807,6 +1803,16 @@ body {
         <div id="cl-results" style="display:none">
           <div id="cl-diagram"></div>
           <div id="cl-parts-table" style="margin-top:20px"></div>
+        </div>
+      </div>
+
+      <!-- Saved cut lists -->
+      <div style="margin-top:24px">
+        <div class="section-header" style="margin-bottom:12px">
+          <div class="section-label" style="margin:0">Saved Cut Lists</div>
+        </div>
+        <div id="cl-saved-list">
+          <p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>
         </div>
       </div>
     </div>
@@ -4000,7 +4006,10 @@ function runCutList() {
 }
 
 function clearCutList() {
-  document.getElementById('cl-name').value = '';
+  const nameEl = document.getElementById('cl-name');
+  nameEl.value = '';
+  delete nameEl.dataset.savedId;
+  document.getElementById('cl-notes').value = '';
   document.getElementById('cl-kerf').value = '0.11';
   document.getElementById('cl-rows').innerHTML = '';
   document.getElementById('cl-results').style.display = 'none';
@@ -4016,47 +4025,64 @@ async function saveCutList() {
   const kerf = parseFloat(document.getElementById('cl-kerf').value) || 0;
   const cuts = collectCutGroups();
   if (!cuts.length) { showToast('Add at least one cut first', 'error'); return; }
+  const notes = (document.getElementById('cl-notes').value || '').trim();
   const stock_types = clStockTypes;
-  const picket_len = 72; // kept for schema compatibility
+  const picket_len = 72;
 
-  const { error } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types });
-  if (error) { showToast('Save failed', 'error'); return; }
+  // If editing an existing saved list, update it; otherwise insert
+  const existingId = document.getElementById('cl-name').dataset.savedId || null;
+  let error;
+  if (existingId) {
+    ({ error } = await sb.from('cut_lists').update({ name, kerf, cuts, stock_types, notes, updated_at: new Date().toISOString() }).eq('id', existingId));
+  } else {
+    ({ error } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types, notes }));
+  }
+  if (error) { showToast('Save failed', 'error'); console.error(error); return; }
   showToast('Cut list saved!');
   loadSavedCutLists();
 }
 
 async function loadSavedCutLists() {
-  const { data } = await sb.from('cut_lists').select('*').order('created_at', { ascending: false });
+  const { data } = await sb.from('cut_lists').select('*').order('updated_at', { ascending: false });
   const container = document.getElementById('cl-saved-list');
   if (!data || !data.length) {
     container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>';
     return;
   }
-  container.innerHTML = data.map(cl => {
-    const stocks = (cl.stock_types && cl.stock_types.length) ? cl.stock_types.map(s => s.name).join(', ') : `${cl.picket_len}" pickets`;
-    const cutSummary = cl.cuts.slice(0, 4).map(c => `${c.qty}× ${c.len}"${c.label ? ' ('+c.label+')' : ''}`).join(', ') + (cl.cuts.length > 4 ? ` +${cl.cuts.length - 4} more` : '');
-    return `
-    <div class="slot-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
-      <div style="min-width:0">
-        <div style="font-weight:600;font-size:14px;color:var(--navy)">${cl.name}</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${stocks}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:1px">${cutSummary}</div>
-      </div>
-      <div style="display:flex;gap:8px;flex-shrink:0">
-        <button class="btn-secondary" style="font-size:12px;padding:5px 10px" onclick="loadCutList(${JSON.stringify(cl).replace(/"/g,'&quot;')})">Load</button>
-        <button class="icon-btn" style="color:var(--red)" onclick="deleteCutList('${cl.id}')" title="Delete">🗑</button>
-      </div>
-    </div>`;
+  const rows = data.map(cl => {
+    const modified = new Date(cl.updated_at || cl.created_at);
+    const dateStr = modified.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const safeData = JSON.stringify(cl).replace(/"/g, '&quot;');
+    return `<tr>
+      <td style="font-weight:600;color:var(--navy)">${cl.name}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap">${dateStr}</td>
+      <td style="color:var(--text-muted);font-size:12px">${cl.notes || '—'}</td>
+      <td style="white-space:nowrap">
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="loadCutList(${safeData})">Load</button>
+          <button class="icon-btn" style="color:var(--red)" onclick="deleteCutList('${cl.id}')" title="Delete">🗑</button>
+        </div>
+      </td>
+    </tr>`;
   }).join('');
+  container.innerHTML = `
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th style="width:120px">Last Modified</th><th>Notes</th><th style="width:100px"></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
 }
 
 function loadCutList(cl) {
-  document.getElementById('cl-name').value = cl.name;
+  const nameEl = document.getElementById('cl-name');
+  nameEl.value = cl.name;
+  nameEl.dataset.savedId = cl.id;
   document.getElementById('cl-kerf').value = cl.kerf;
+  document.getElementById('cl-notes').value = cl.notes || '';
   document.getElementById('cl-rows').innerHTML = '';
   document.getElementById('cl-results').style.display = 'none';
   clRowId = 0;
-  // Restore stock types (fall back to default if old saved format)
   clStockTypes = (cl.stock_types && cl.stock_types.length)
     ? cl.stock_types.map(s => ({...s}))
     : CL_DEFAULT_STOCK.map(s => ({...s}));
