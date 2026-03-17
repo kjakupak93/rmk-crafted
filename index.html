@@ -1799,15 +1799,21 @@ body {
         </div>
 
         <!-- Cut rows -->
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Cuts</div>
-        <div id="cl-rows"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Parts</div>
+        <div class="table-wrap" style="margin-bottom:10px">
+          <table class="data-table">
+            <thead><tr><th style="width:32px">#</th><th>Description</th><th style="width:54px">Qty</th><th style="width:72px">Length"</th><th style="width:68px">Width"</th><th>Material</th><th style="width:32px"></th></tr></thead>
+            <tbody id="cl-rows"></tbody>
+          </table>
+        </div>
         <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-          <button class="btn-secondary" onclick="addCutRow()">+ Add Cut</button>
+          <button class="btn-secondary" onclick="addCutRow()">+ Add Part</button>
           <button class="btn-primary" onclick="runCutList()">Calculate</button>
           <button class="btn-primary" onclick="saveCutList()" style="background:var(--green)">💾 Save</button>
         </div>
         <div id="cl-results" style="display:none">
           <div id="cl-diagram"></div>
+          <div id="cl-parts-table" style="margin-top:20px"></div>
         </div>
       </div>
     </div>
@@ -3696,7 +3702,7 @@ function renderStockTypes() {
       </div>`).join('');
   }
   // Refresh all cut row dropdowns to reflect updated stock list
-  document.querySelectorAll('#cl-rows .cut-row').forEach(row => {
+  document.querySelectorAll('#cl-rows tr').forEach(row => {
     const id = row.id.replace('cl-row-', '');
     const sel = document.getElementById('cl-mat-' + id);
     if (!sel) return;
@@ -3729,23 +3735,22 @@ function removeStockType(id) {
 
 function addCutRow(qty, len, width, label, stockId) {
   const id = ++clRowId;
-  const wrap = document.getElementById('cl-rows');
-  const row = document.createElement('div');
-  row.className = 'cut-row';
+  const tbody = document.getElementById('cl-rows');
+  const partNum = tbody.children.length + 1;
+  const row = document.createElement('tr');
   row.id = 'cl-row-' + id;
   const stockOptions = clStockTypes.map(s =>
     `<option value="${s.id}"${s.id === stockId ? ' selected' : ''}>${s.name}</option>`
   ).join('');
   row.innerHTML = `
-    <input class="std-input" type="number" id="cl-qty-${id}" value="${qty||1}" min="1" step="1" style="width:56px" placeholder="qty">
-    <span class="cut-x">×</span>
-    <input class="std-input" type="number" id="cl-len-${id}" value="${len||''}" min="0.25" step="0.25" style="width:66px" placeholder='L"'>
-    <span class="cut-x">×</span>
-    <input class="std-input" type="number" id="cl-wid-${id}" value="${width||''}" min="0.25" step="0.25" style="width:60px" placeholder='W"'>
-    <select class="std-input" id="cl-mat-${id}" style="flex:0 0 auto;min-width:130px">${stockOptions}</select>
-    <input class="std-input" type="text" id="cl-lbl-${id}" value="${label||''}" style="flex:1;min-width:90px" placeholder="label (optional)">
-    <button class="remove-btn" onclick="removeCutRow(${id})" title="Remove">×</button>`;
-  wrap.appendChild(row);
+    <td style="text-align:center;color:var(--text-muted);font-size:12px;font-family:'DM Mono',monospace">${partNum}</td>
+    <td><input class="std-input" type="text" id="cl-lbl-${id}" value="${label||''}" style="width:100%;box-sizing:border-box" placeholder="e.g. Long side"></td>
+    <td><input class="std-input" type="number" id="cl-qty-${id}" value="${qty||1}" min="1" step="1" style="width:100%;box-sizing:border-box"></td>
+    <td><input class="std-input" type="number" id="cl-len-${id}" value="${len||''}" min="0.25" step="0.25" style="width:100%;box-sizing:border-box" placeholder='L"'></td>
+    <td><input class="std-input" type="number" id="cl-wid-${id}" value="${width||''}" min="0.25" step="0.25" style="width:100%;box-sizing:border-box" placeholder='opt'></td>
+    <td><select class="std-input" id="cl-mat-${id}" style="width:100%;box-sizing:border-box">${stockOptions}</select></td>
+    <td style="text-align:center"><button class="remove-btn" onclick="removeCutRow(${id})" title="Remove" style="font-size:16px;padding:2px 6px">×</button></td>`;
+  tbody.appendChild(row);
 }
 
 function removeCutRow(id) {
@@ -3755,7 +3760,7 @@ function removeCutRow(id) {
 
 function collectCutGroups() {
   const groups = [];
-  document.querySelectorAll('#cl-rows .cut-row').forEach(row => {
+  document.querySelectorAll('#cl-rows tr').forEach(row => {
     const id = row.id.replace('cl-row-', '');
     const qty = parseInt(document.getElementById('cl-qty-' + id).value) || 0;
     const len = parseFloat(document.getElementById('cl-len-' + id).value) || 0;
@@ -3837,7 +3842,7 @@ function runCutList() {
     // Get unique cut groups for this stock type (for color coding)
     const cutGroupIds = [...new Set(pieces.map(p => p.gi))];
 
-    // Bar diagram
+    // Bar diagram — taller boards with dimension labels
     bins.forEach((bin, bi) => {
       const wrap = document.createElement('div');
       wrap.className = 'picket-bar-wrap';
@@ -3845,22 +3850,20 @@ function runCutList() {
       wrap.innerHTML = `<div class="picket-bar-label">Board ${bi + 1} — ${usedIn.toFixed(2)}" used · ${bin.remaining.toFixed(2)}" waste</div>`;
       const bar = document.createElement('div');
       bar.className = 'picket-bar';
+      bar.style.height = '60px';
       bin.cuts.forEach(c => {
-        const seg = document.createElement('div');
-        seg.className = 'picket-segment';
-        seg.style.width = ((c.len / stock.len) * 100) + '%';
         const groupColorIdx = cutGroupIds.indexOf(c.gi);
-        seg.style.background = CL_COLORS[groupColorIdx % CL_COLORS.length];
         const dimStr = c.width ? `${c.len}×${c.width}"` : `${c.len}"`;
         const displayLabel = c.label || dimStr;
+        const seg = document.createElement('div');
+        seg.className = 'picket-segment';
+        seg.style.cssText = `width:${((c.len / stock.len) * 100)}%;background:${CL_COLORS[groupColorIdx % CL_COLORS.length]};flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:4px 5px;gap:2px;`;
         seg.title = c.label ? `${c.label} (${dimStr})` : dimStr;
-        seg.textContent = displayLabel;
+        seg.innerHTML = `<span style="font-size:10px;font-family:'DM Mono',monospace;opacity:0.85;white-space:nowrap;overflow:hidden">${dimStr}</span><span style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;max-width:100%">${displayLabel !== dimStr ? displayLabel : ''}</span>`;
         bar.appendChild(seg);
         if (kerf > 0) {
           const ks = document.createElement('div');
-          ks.className = 'picket-segment';
-          ks.style.width = ((kerf / stock.len) * 100) + '%';
-          ks.style.background = '#aaa';
+          ks.style.cssText = `width:${((kerf / stock.len) * 100)}%;background:#aaa;flex-shrink:0;`;
           ks.title = 'kerf';
           bar.appendChild(ks);
         }
@@ -3869,7 +3872,7 @@ function runCutList() {
         const waste = document.createElement('div');
         waste.className = 'picket-waste';
         waste.style.flex = '1';
-        waste.textContent = bin.remaining.toFixed(1) + '" scrap';
+        waste.innerHTML = `<span style="font-size:10px">${bin.remaining.toFixed(1)}" scrap</span>`;
         bar.appendChild(waste);
       }
       wrap.appendChild(bar);
@@ -3937,6 +3940,28 @@ function runCutList() {
 
     diag.appendChild(section);
   });
+
+  // Parts summary table (mirrors screenshot's bottom section)
+  const partsDiv = document.getElementById('cl-parts-table');
+  partsDiv.innerHTML = `
+    <div style="font-weight:700;font-size:14px;color:var(--navy);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--warm-gray)">Parts List</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th style="width:40px">#</th><th>Description</th><th style="width:54px">Qty</th><th style="width:72px">Length</th><th style="width:68px">Width</th><th>Material</th></tr></thead>
+        <tbody>${groups.map((g, gi) => {
+          const stock = clStockTypes.find(s => s.id === g.stockId);
+          const dimStr = g.width ? `${g.len}" × ${g.width}"` : `${g.len}"`;
+          return `<tr>
+            <td style="text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)">${gi + 1}</td>
+            <td style="font-weight:500">${g.label || '—'}</td>
+            <td style="font-family:'DM Mono',monospace;text-align:center">${g.qty}</td>
+            <td style="font-family:'DM Mono',monospace">${g.len}"</td>
+            <td style="font-family:'DM Mono',monospace">${g.width ? g.width + '"' : '—'}</td>
+            <td style="font-size:12px;color:var(--text-muted)">${stock ? stock.name : '—'}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
 
   document.getElementById('cl-results').style.display = 'block';
 }
