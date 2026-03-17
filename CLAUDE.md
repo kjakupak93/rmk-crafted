@@ -31,6 +31,9 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 | `schedule_slots` | Open pickup time slots on the calendar |
 | `schedule_bookings` | Booked customer pickups |
 | `availability_windows` | Recurring availability windows for the share message |
+| `cut_lists` | Saved cut lists — columns: `id`, `name`, `kerf`, `cuts` (JSONB), `stock_types` (JSONB), `notes`, `created_at`, `updated_at` |
+
+RLS is enabled on all tables. `cut_lists` has open anon policies (SELECT/INSERT/UPDATE/DELETE) — this is intentional for a single-user internal tool.
 
 ## App Structure
 Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pages load data when navigated to (not all at startup).
@@ -39,7 +42,7 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - **Home** (`page-home`) — KPI cards, low-stock alert, activity feed, tile nav grid
 - **Quote Calculator** (`page-quote`) — Price estimator based on picket count
 - **Orders** (`page-orders`) — 3 tabs: Active → Ready to Sell → Sales History
-- **Materials** (`page-materials`) — Stock levels + Lowes purchase log
+- **Materials** (`page-materials`) — Stock levels + Lowes purchase log + Cut List Calculator tab
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
 - **Analytics** (`page-analytics`) — P&L cards + revenue/profit/best-seller charts
 
@@ -49,6 +52,17 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - `estimateOrderCost()` falls back to **37% of price** for unknown sizes
 - `saveBooking()` — when editing a booking that has a linked `order_id`, also syncs `orders.pickup_date` and `orders.pickup_time`
 - Recent Activity feed shows booking *creation* time, not pickup date (avoids future timestamps showing as "just now")
+
+### Cut List Calculator (Materials → Cut List tab)
+Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
+
+**Packing algorithm** (`runCutListBins`): first-fit-decreasing by length. Before running, rip-cut pieces (width < stock.width) are batched: `ripsPerBoard = Math.floor(stock.width / piece.width)` — groups of up to that many pieces are packed as a single length slot, reducing board count.
+
+**Board diagram**: each bar = one board. Cuts are wrapped in column-flex containers — width scrap (unused board width) appears as a tan block above the piece; batched rip cuts show individual sub-pieces with white separator lines. `align-items:stretch` on `.picket-bar`.
+
+**Save/load**: `saveCutList()` checks `cl-name.dataset.savedId` — if set (loaded from DB), does an UPDATE; otherwise INSERT. `loadCutList()` sets `savedId` on the name input. `clearCutList()` deletes `savedId`. Saved lists shown as a table (Name / Last Modified / Notes) at the bottom of the page.
+
+**Stock short names**: `CL_DEFAULT_STOCK` entries have a `shortName` field used in dropdowns (e.g. `Picket 6'`); full `name` used in diagram headers.
 
 ## Business / Pricing
 - **Pricing formula**: ~$10 per picket (e.g. 10 pickets → ~$100)
