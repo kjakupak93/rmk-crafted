@@ -18,6 +18,7 @@ A single-page web app that manages every part of the RMK Crafted workflow:
 - **Material Cost Tracker** — track cedar stock levels and Lowes purchases
 - **Pickup Scheduler** — manage availability, view upcoming pickups, sync with customer bookings
 - **Analytics** — P&L summary cards, revenue trends, profit overview, and best-selling sizes ranked by units sold
+- **Cut List Calculator** — plan wood cuts, visualize board usage with rip-cut optimization, and save cut lists for reuse
 
 All data is stored in Supabase (cloud) so it works across any device. The dashboard is PIN-protected. Customers only ever see `schedule.html`.
 
@@ -133,7 +134,32 @@ View profitability at a glance, revenue trends, and best-selling planter sizes �
 
 ---
 
-### 5 — Pickup Scheduler
+### 5 — Cut List Calculator
+
+Plan material cuts before building. Enter parts, calculate board usage, and save cut lists for any planter size.
+
+**How to use:**
+1. Set stock materials (defaults: Cedar Picket 6ft, 2×2 8ft, 2×4 8ft) and blade kerf
+2. Add parts — Description, Qty, Length, Width (width optional — used for rip cuts), Material
+3. Add optional Notes for the cut list
+4. Tap **Calculate** to see the board diagram
+5. Tap **💾 Save** to store for later
+
+**Board diagram:**
+- Each bar represents one physical board
+- Colored segments = your parts, proportional to their length
+- Rip cuts (narrower than the board) appear shorter in height — multiple rip cuts that fit across the board width are **batched together** (e.g. 3× 1.75" on a 5.5" board) to minimize board count
+- Width scrap (unused board width) shown as a tan block above rip-cut segments with a dashed separator
+- Individual pieces within a batch are separated by a white divider line
+- Grey end block = length scrap remaining on that board
+
+**Waste %** accounts for both length and width waste area.
+
+**Saved Cut Lists** (bottom of page) — table showing Name, Last Modified, Notes. Load or delete any saved list. Re-saving a loaded list updates it in-place (no duplicates).
+
+---
+
+### 6 — Pickup Scheduler
 
 **Calendar tab** — monthly view of all scheduling activity.
 
@@ -211,6 +237,8 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | Update stock levels | Material Tracker → Stock Levels → +/− buttons |
 | View sales revenue | Orders → Sales History tab |
 | View revenue trends | Analytics tile on home → range toggle for time window |
+| Plan a build's cuts | Materials → Cut List tab → add parts → Calculate → Save |
+| Load a saved cut list | Materials → Cut List tab → Saved Cut Lists (bottom) → Load |
 
 ---
 
@@ -245,6 +273,7 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | `schedule_slots` | Open availability slots |
 | `schedule_bookings` | Confirmed bookings, linked to orders via `order_id` |
 | `availability_windows` | Recurring availability settings |
+| `cut_lists` | Saved cut lists — name, kerf, cuts (JSONB), stock types (JSONB), notes, updated_at |
 
 ---
 
