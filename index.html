@@ -664,6 +664,13 @@ body {
 .stock-qty.low { color: var(--red); }
 .stock-qty.medium { color: var(--orange); }
 .stock-qty.good { color: var(--green); }
+.quote-stock-strip { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.quote-stock-badge { display:flex; align-items:center; gap:6px; background:white; border:1px solid var(--warm-gray); border-radius:8px; padding:6px 12px; font-family:'DM Mono',monospace; font-size:13px; }
+.quote-stock-badge .qsb-label { color:var(--text-muted); font-size:12px; }
+.quote-stock-badge .qsb-qty { font-weight:600; }
+.quote-stock-badge .qsb-qty.low    { color: var(--red); }
+.quote-stock-badge .qsb-qty.medium { color: var(--orange); }
+.quote-stock-badge .qsb-qty.good   { color: var(--green); }
 .stock-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
 
 .summary-bar {
@@ -788,7 +795,7 @@ body {
 /* ===== MODAL ===== */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.open { display: flex; }
-.modal { background: white; border-radius: 16px; padding: 26px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+.modal { background: white; border-radius: 16px; padding: 26px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; }
 .modal h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--navy); margin-bottom: 18px; }
 .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
 .form-group label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
@@ -1503,10 +1510,11 @@ body {
       <button class="use-match-btn" onclick="applyMatch()">Use standard price</button>
     </div>
 
+    <div class="quote-stock-strip" id="quoteStockStrip"></div>
     <div class="section-label">Materials</div>
     <div class="picket-section">
       <h3>Cedar Pickets</h3>
-      <p>Price = pickets × $10. Material cost = pickets × $3.66.</p>
+      <p>Price = pickets × <span id="qHelperPPP">$10</span>. Material cost = pickets × $3.66.</p>
       <div class="input-row" style="margin-bottom:14px">
         <div class="input-group"><label>Number of pickets</label><input class="std-input" type="number" id="qPickets" placeholder="0" min="0" oninput="updateQCalc()"></div>
         <div class="input-group"><label>$ per picket charge</label><input class="std-input" type="number" id="qPPP" value="10" min="0" step="0.5" oninput="updateQCalc()"></div>
@@ -1691,6 +1699,13 @@ body {
         </div>
       </div>
 
+      <div style="margin:16px 0; padding:14px 16px; background:white; border:1px solid var(--warm-gray); border-radius:10px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <label style="font-size:13px; font-weight:600; color:var(--text); white-space:nowrap;">Selling Price per Picket</label>
+        <input class="std-input" type="number" id="matPicketPrice" min="0" step="0.5" placeholder="10" style="width:90px; margin:0;">
+        <button class="btn-primary" style="padding:8px 16px; font-size:13px;" onclick="savePicketPrice()">Save</button>
+        <span style="font-size:12px; color:var(--text-muted);">Sets the default $ per picket in the Quote Calculator.</span>
+      </div>
+
       <div class="summary-bar">
         <div class="sbar-item"><div class="sval" id="mb-spent">$0</div><div class="slbl">Total Spent</div></div>
         <div class="sbar-item"><div class="sval" id="mb-stock">$0</div><div class="slbl">Stock Value</div></div>
@@ -1730,6 +1745,7 @@ body {
         </div>
       </div>
       <div class="sales-filter-tabs">
+        <button class="sales-filter-btn" onclick="setPurchasesFilter('lastweek',this)">Last Week</button>
         <button class="sales-filter-btn" onclick="setPurchasesFilter('month',this)">This Month</button>
         <button class="sales-filter-btn" onclick="setPurchasesFilter('lastmonth',this)">Last Month</button>
         <button class="sales-filter-btn active" onclick="setPurchasesFilter('all',this)">All Time</button>
@@ -1746,6 +1762,33 @@ body {
       <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 4px;">Cut List Calculator</h2>
       <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Enter your cuts, calculate picket usage, then save for later reuse.</p>
 
+      <!-- Stock materials -->
+      <div class="build-calc" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+          <h3 style="margin:0">Stock Materials</h3>
+          <div class="input-group" style="margin-bottom:0;width:148px">
+            <label style="font-size:11px">Blade kerf (in)</label>
+            <input class="std-input" type="number" id="cl-kerf" value="0.11" min="0" step="0.01" placeholder="0.11">
+          </div>
+        </div>
+        <div id="cl-stock-list"></div>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">
+          <div class="input-group" style="margin-bottom:0;flex:1;min-width:120px">
+            <label>Name</label>
+            <input class="std-input" type="text" id="cl-new-stock-name" placeholder="e.g. Cedar Picket 8ft">
+          </div>
+          <div class="input-group" style="margin-bottom:0;flex:0 0 82px">
+            <label>Length (in)</label>
+            <input class="std-input" type="number" id="cl-new-stock-len" value="96" min="1" step="0.25">
+          </div>
+          <div class="input-group" style="margin-bottom:0;flex:0 0 78px">
+            <label>Width (in)</label>
+            <input class="std-input" type="number" id="cl-new-stock-wid" value="" min="0.25" step="0.25" placeholder="opt.">
+          </div>
+          <button class="btn-secondary" onclick="addStockType()" style="flex-shrink:0">+ Add</button>
+        </div>
+      </div>
+
       <div class="build-calc" id="cut-list-calc">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap">
           <h3 style="margin:0">New Cut List</h3>
@@ -1754,33 +1797,6 @@ body {
         <div class="input-group" style="margin-bottom:14px">
           <label>Cut list name</label>
           <input class="std-input" type="text" id="cl-name" placeholder="e.g. 36×16×16 Standard">
-        </div>
-
-        <!-- Stock materials -->
-        <div style="margin-bottom:16px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
-            <label style="font-size:13px;font-weight:600;color:var(--text)">Stock Materials</label>
-            <div class="input-group" style="margin-bottom:0;width:148px">
-              <label style="font-size:11px">Blade kerf (in)</label>
-              <input class="std-input" type="number" id="cl-kerf" value="0.11" min="0" step="0.01" placeholder="0.11">
-            </div>
-          </div>
-          <div id="cl-stock-list"></div>
-          <div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">
-            <div class="input-group" style="margin-bottom:0;flex:1;min-width:120px">
-              <label>Name</label>
-              <input class="std-input" type="text" id="cl-new-stock-name" placeholder="e.g. Cedar Picket 8ft">
-            </div>
-            <div class="input-group" style="margin-bottom:0;flex:0 0 82px">
-              <label>Length (in)</label>
-              <input class="std-input" type="number" id="cl-new-stock-len" value="96" min="1" step="0.25">
-            </div>
-            <div class="input-group" style="margin-bottom:0;flex:0 0 78px">
-              <label>Width (in)</label>
-              <input class="std-input" type="number" id="cl-new-stock-wid" value="" min="0.25" step="0.25" placeholder="opt.">
-            </div>
-            <button class="btn-secondary" onclick="addStockType()" style="flex-shrink:0">+ Add</button>
-          </div>
         </div>
 
         <!-- Cut rows -->
@@ -1809,7 +1825,7 @@ body {
       <!-- Saved cut lists -->
       <div style="margin-top:24px">
         <div class="section-header" style="margin-bottom:12px">
-          <div class="section-label" style="margin:0">Saved Cut Lists</div>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:17px;color:var(--navy)">Saved Cut Lists</h3>
         </div>
         <div id="cl-saved-list">
           <p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>
@@ -1941,13 +1957,13 @@ body {
     <div class="form-group">
       <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional — click to select, edit price when selected)</span></label>
       <div class="addon-grid" id="orderAddonGrid" style="margin-top:4px">
-        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price-static" id="oap-sealant">+$10</span><input class="chip-price-input" type="number" min="0" value="10" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
-        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price-static" id="oap-liner">+$8</span><input class="chip-price-input" type="number" min="0" value="8" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
-        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price-static" id="oap-casters">+$15</span><input class="chip-price-input" type="number" min="0" value="15" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
-        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price-static" id="oap-shelf">+$12</span><input class="chip-price-input" type="number" min="0" value="12" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
+        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price-static" id="oap-sealant">+$20</span><input class="chip-price-input" type="number" min="0" value="20" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
+        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price-static" id="oap-liner">+$15</span><input class="chip-price-input" type="number" min="0" value="15" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
+        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price-static" id="oap-casters">+$40</span><input class="chip-price-input" type="number" min="0" value="40" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
+        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price-static" id="oap-shelf">+$30</span><input class="chip-price-input" type="number" min="0" value="30" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
       </div>
     </div>
-    <div class="form-group"><label>Payment</label><select class="form-control" id="oPayment"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select></div>
+    <div class="form-group" style="max-width:180px"><label>Payment</label><select class="form-control" id="oPayment"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select></div>
     <div class="form-row">
       <div class="form-group"><label>Status</label><select class="form-control" id="oStatus"><option value="pending">Pending</option><option value="building">Building</option><option value="ready">Ready for Pickup</option><option value="completed">Completed</option></select></div>
       <div class="form-row">
@@ -2239,11 +2255,12 @@ const STANDARD_SIZES = [
   {l:48,w:24,h:16,price:110,pickets:11}
 ];
 const UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17};
+let defaultPicketPrice = 10;
 let ADDONS = [
-  {id:'sealant', label:'Sealant', base:10, scales:true},
-  {id:'liner', label:'Fabric Liner', base:8, scales:true},
-  {id:'casters', label:'Casters', base:15, scales:false},
-  {id:'shelf', label:'Bottom Shelf', base:12, scales:true}
+  {id:'sealant', label:'Sealant', base:20, scales:true},
+  {id:'liner', label:'Fabric Liner', base:15, scales:true},
+  {id:'casters', label:'Casters', base:40, scales:false},
+  {id:'shelf', label:'Bottom Shelf', base:30, scales:true}
 ];
 function loadAddonSettings() {
   try {
@@ -2517,6 +2534,64 @@ function renderTrendBadge(elId, current, prior) {
   else { el.textContent = `▼ ${abs.toFixed(0)}% vs prior`; el.className = 'trend-badge trend-down'; }
 }
 
+function renderQuoteStockStrip(stock) {
+  const strip = document.getElementById('quoteStockStrip');
+  if (!strip) return;
+  const items = [
+    { key: 'pickets',   label: 'Cedar Pickets' },
+    { key: 'twobytwo',  label: '2×2 Lumber' },
+    { key: 'twobyfour', label: '2×4 Lumber' }
+  ];
+  strip.innerHTML = items.map(({ key, label }) => {
+    const qty = stock[key] ?? '—';
+    const cls = typeof qty === 'number' ? (qty <= 5 ? 'low' : qty <= 15 ? 'medium' : 'good') : '';
+    return `<div class="quote-stock-badge">
+      <span class="qsb-label">${label}</span>
+      <span class="qsb-qty ${cls}">${qty}</span>
+    </div>`;
+  }).join('');
+}
+
+async function savePicketPrice() {
+  const val = parseFloat(document.getElementById('matPicketPrice').value);
+  if (!val || val <= 0) { showToast('Enter a valid price', 'error'); return; }
+  const { error } = await sb.from('settings').upsert({ key: 'picket_price', value: String(val) }, { onConflict: 'key' });
+  if (error) { showToast('Error saving price', 'error'); return; }
+  defaultPicketPrice = val;
+  document.getElementById('matPicketPrice').value = val;
+  showToast('Saved', 'success');
+}
+
+async function loadQuotePageData() {
+  try {
+    const [settingsRes, stockRes] = await Promise.all([
+      sb.from('settings').select('*'),
+      sb.from('stock').select('*')
+    ]);
+
+    if (settingsRes.error) console.warn('loadQuotePageData: settings fetch error', settingsRes.error);
+
+    // Update default picket price (falls back to 10 if row missing or value is NaN)
+    const priceSetting = (settingsRes.data || []).find(r => r.key === 'picket_price');
+    if (priceSetting) defaultPicketPrice = parseFloat(priceSetting.value) || 10;
+
+    // Pre-fill #qPPP with the global default
+    const qppp = document.getElementById('qPPP');
+    if (qppp) qppp.value = defaultPicketPrice;
+
+    // Sync helper text span
+    const helper = document.getElementById('qHelperPPP');
+    if (helper) helper.textContent = '$' + defaultPicketPrice;
+
+    // Render stock strip (quote-only, independent of stockData global)
+    const stock = {};
+    (stockRes.data || []).forEach(r => { stock[r.material] = r.qty || 0; });
+    renderQuoteStockStrip(stock);
+  } catch(e) {
+    console.error('loadQuotePageData:', e);
+  }
+}
+
 function goTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
@@ -2527,6 +2602,7 @@ function goTo(page) {
   window.scrollTo(0,0);
   if (page==='orders') loadOrders();
   if (page==='materials') { loadStock(); }
+  if (page==='quote') { loadQuotePageData(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
   if (page==='analytics') loadAnalytics();
 }
@@ -2773,7 +2849,12 @@ function getQuoteMatCost() {
   return mat;
 }
 
-function updateQCalc() {}
+function updateQCalc() {
+    const ppp = parseFloat(document.getElementById('qPPP').value) || 10;
+    const helper = document.getElementById('qHelperPPP');
+    if (helper) helper.textContent = '$' + ppp;
+    calculateQuote();
+  }
 
 // ===== ADD-ONS =====
 function addonScaleFactor(l, w, h) {
@@ -3648,6 +3729,9 @@ async function loadStock() {
   document.getElementById('mb-spent').textContent='$'+totalSpent.toFixed(0);
   document.getElementById('mb-stock').textContent='$'+sv.toFixed(2);
   document.getElementById('mb-trips').textContent=(purchases.data||[]).length;
+  // Pre-fill the selling price field from the in-memory global (kept in sync by savePicketPrice)
+  const matField = document.getElementById('matPicketPrice');
+  if (matField) matField.value = defaultPicketPrice;
 }
 
 async function adjustStock(material, delta) {
@@ -4068,7 +4152,7 @@ async function loadSavedCutLists() {
   container.innerHTML = `
     <div class="table-wrap">
       <table class="data-table">
-        <thead><tr><th>Name</th><th style="width:120px">Last Modified</th><th>Notes</th><th style="width:100px"></th></tr></thead>
+        <thead><tr><th style="font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0;font-weight:600">Name</th><th style="font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0;font-weight:600;width:140px;white-space:nowrap">Last Modified</th><th style="font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0;font-weight:600">Notes</th><th style="width:100px"></th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
@@ -4154,6 +4238,12 @@ function renderPurchaseList() {
     if (purchasesFilter==='all') return true;
     if (!p.purchase_date) return false;
     const d=new Date(p.purchase_date+'T00:00:00');
+    if (purchasesFilter==='lastweek') {
+      const dow=now.getDay(); // 0=Sun
+      const lastMon=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(dow===0?6:dow-1)-7);
+      const lastSun=new Date(lastMon.getFullYear(),lastMon.getMonth(),lastMon.getDate()+6);
+      return d>=lastMon&&d<=lastSun;
+    }
     if (purchasesFilter==='month') return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
     if (purchasesFilter==='lastmonth') {
       const lm=new Date(now.getFullYear(),now.getMonth()-1,1);
