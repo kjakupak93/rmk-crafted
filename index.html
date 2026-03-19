@@ -1941,6 +1941,10 @@ body {
         <h3>Margin Trend</h3>
         <canvas id="chart-margin-trend"></canvas>
       </div>
+      <div class="chart-card chart-card--full">
+        <h3>Margin by Size</h3>
+        <canvas id="chart-margin-by-size"></canvas>
+      </div>
     </div>
 
   </div>
@@ -2564,6 +2568,66 @@ function renderAnalyticsCharts() {
       plugins: { legend: { display: false } },
       scales: {
         y: { min: 0, max: 100, ticks: { callback: v => v + '%', color: tickColor }, grid: { color: gridColor } },
+        x: { ticks: { color: tickColor }, grid: { color: gridColor } }
+      }
+    }
+  });
+
+  // ── Margin by Size (all-time data, multi-planter rows excluded) ──
+  const _szMrgSum = {}, _szMrgCnt = {}, _szProfSum = {};
+  analyticsSales.forEach(s => {
+    if (!s.size || s.size.includes('+') || !s.price) return;
+    const cost = estimateOrderCost({ size: s.size, price: s.price });
+    const mp = (s.price - cost) / s.price * 100;
+    _szMrgSum[s.size] = (_szMrgSum[s.size] || 0) + mp;
+    _szMrgCnt[s.size] = (_szMrgCnt[s.size] || 0) + 1;
+    _szProfSum[s.size] = (_szProfSum[s.size] || 0) + (s.price - cost);
+  });
+  const _szEntries = Object.entries(_szMrgSum)
+    .map(([size, sum]) => ({
+      size,
+      avgMargin: Math.round(sum / _szMrgCnt[size]),
+      avgProfit: Math.round(_szProfSum[size] / _szMrgCnt[size]),
+      count: _szMrgCnt[size]
+    }))
+    .sort((a, b) => b.avgMargin - a.avgMargin);
+
+  const _szAvgMarginArr = _szEntries.map(e => e.avgMargin);
+  const _szAvgProfitArr = _szEntries.map(e => e.avgProfit);
+  const _szCountArr = _szEntries.map(e => e.count);
+  // 8-digit hex: last 2 chars = opacity (FF=100%, 80=50%)
+  const _szColors = _szEntries.map(e => {
+    const base = e.avgMargin >= 60 ? '#3A7D5C' : e.avgMargin >= 50 ? '#D4782A' : '#C0392B';
+    return e.count < 2 ? base + '80' : base + 'FF';
+  });
+
+  if (chartMarginBySize) chartMarginBySize.destroy();
+  chartMarginBySize = new Chart(document.getElementById('chart-margin-by-size'), {
+    type: 'bar',
+    data: {
+      labels: _szEntries.map(e => e.size),
+      datasets: [{
+        label: 'Avg Margin %',
+        data: _szAvgMarginArr,
+        backgroundColor: _szColors,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const i = context.dataIndex;
+              return 'Avg margin: ' + _szAvgMarginArr[i] + '% · Avg profit: $' + _szAvgProfitArr[i] + ' · ' + _szCountArr[i] + ' sale' + (_szCountArr[i] !== 1 ? 's' : '');
+            }
+          }
+        }
+      },
+      scales: {
+        y: { min: 0, max: 100, ticks: { callback: v => v + '%', color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
         x: { ticks: { color: tickColor }, grid: { color: gridColor } }
       }
     }
