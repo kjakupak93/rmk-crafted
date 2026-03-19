@@ -13,5 +13,5 @@ export async function login(page: Page): Promise<void> {
   await page.press('#pin-input', 'Enter');
   // Use waitFor({state:'hidden'}) not expect().not.toBeVisible() —
   // the gate uses inline style.display='none', and waitFor has a built-in timeout.
-  await page.locator('#pin-gate').waitFor({ state: 'hidden' });
+  await page.locator('#pin-gate').waitFor({ state: 'hidden', timeout: 5000 });
 }
