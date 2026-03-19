@@ -2281,6 +2281,7 @@ function loadAddonSettings() {
 let currentPage = 'home';
 let analyticsRange = 'year';
 let chartRevenue = null, chartProfit = null, chartSizes = null;
+let chartMarginTrend = null, chartMarginBySize = null;
 let analyticsSales = [], analyticsPurchases = [];
 let currentStyle = 'Standard';
 let matchedSize = null;
@@ -3335,6 +3336,10 @@ function estimateOrderCost(order) {
   const std = STANDARD_SIZES.find(s => s.l===l && s.w===w && s.h===h);
   const pickets = std?.pickets || estPickets(l,w,h);
   return pickets * UNIT_COSTS.pickets;
+}
+
+function marginColor(pct) {
+  return pct >= 60 ? 'var(--green)' : pct >= 50 ? 'var(--orange)' : 'var(--red)';
 }
 
 function buildPricingMatrix() {
