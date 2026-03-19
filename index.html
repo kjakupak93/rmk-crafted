@@ -1937,6 +1937,10 @@ body {
         <h3>Best Sellers</h3>
         <canvas id="chart-sizes"></canvas>
       </div>
+      <div class="chart-card chart-card--full">
+        <h3>Margin Trend</h3>
+        <canvas id="chart-margin-trend"></canvas>
+      </div>
     </div>
 
   </div>
@@ -2525,6 +2529,43 @@ function renderAnalyticsCharts() {
       plugins: { legend: { display: false } },
       scales: { x: { ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
                 y: { ticks: { color: tickColor }, grid: { color: gridColor } } }
+    }
+  });
+
+  // ── Margin Trend (average margin % per month, respects range toggle) ──
+  const _mrgSum = {}, _mrgCnt = {};
+  analyticsSales.forEach(s => {
+    if (!s.sale_date || !s.price) return;
+    const key = s.sale_date.slice(0, 7);
+    const cost = estimateOrderCost({ size: s.size, price: s.price });
+    _mrgSum[key] = (_mrgSum[key] || 0) + ((s.price - cost) / s.price * 100);
+    _mrgCnt[key] = (_mrgCnt[key] || 0) + 1;
+  });
+  const marginTrendData = months.map(m => _mrgCnt[m] ? Math.round(_mrgSum[m] / _mrgCnt[m]) : null);
+
+  if (chartMarginTrend) chartMarginTrend.destroy();
+  chartMarginTrend = new Chart(document.getElementById('chart-margin-trend'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Avg Margin %',
+        data: marginTrendData,
+        borderColor: '#C9A55A',
+        backgroundColor: 'transparent',
+        tension: 0.3,
+        pointRadius: 3,
+        fill: false,
+        spanGaps: false
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 100, ticks: { callback: v => v + '%', color: tickColor }, grid: { color: gridColor } },
+        x: { ticks: { color: tickColor }, grid: { color: gridColor } }
+      }
     }
   });
 }
