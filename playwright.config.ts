@@ -14,7 +14,7 @@ export default defineConfig({
   webServer: {
     command: 'python3 -m http.server 8080',
     url: 'http://localhost:8080',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     cwd: __dirname,
   },
 });
