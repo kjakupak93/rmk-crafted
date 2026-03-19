@@ -33,3 +33,17 @@ test('New Order button opens the order modal', async ({ page }) => {
   await page.click('button[onclick="openOrderModal()"]');
   await expect(page.locator('#orderModal')).toHaveClass(/open/);
 });
+
+test('sales history price cells show a margin badge', async ({ page }) => {
+  const tabs = page.locator('#orders-tabs .tab-btn');
+  await tabs.nth(2).click();
+  // Wait for the sales data to populate the table
+  await page.waitForSelector('#salesBody tr td', { timeout: 10000 });
+
+  const rows = page.locator('#salesBody tr');
+  // Require at least one row — this test needs real sales data in the DB
+  await expect(rows).not.toHaveCount(0);
+  // Price cell is the 6th column (index 5); should contain a % span
+  const priceCell = rows.first().locator('td').nth(5);
+  await expect(priceCell.locator('span')).toContainText('%');
+});
