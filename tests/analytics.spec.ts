@@ -13,6 +13,10 @@ test('analytics P&L summary cards are present', async ({ page }) => {
   await expect(page.locator('#page-analytics .analytics-pnl')).toBeVisible();
 });
 
+test('margin trend chart canvas is present', async ({ page }) => {
+  await expect(page.locator('#chart-margin-trend')).toBeVisible();
+});
+
 test('range filter buttons toggle active class', async ({ page }) => {
   // 'This Year' is active by default
   await expect(page.locator('#range-btn-year')).toHaveClass(/active/);
