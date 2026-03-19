@@ -1,0 +1,32 @@
+import { test, expect } from '@playwright/test';
+import { login } from './helpers/auth';
+
+test.beforeEach(async ({ page }) => {
+  await login(page);
+  await page.click('.app-tile--mats');
+  // Wait for stock data to load from Supabase (initial value is '—')
+  await expect(page.locator('#sq-pickets')).not.toHaveText('—', { timeout: 10000 });
+});
+
+test('stock counts load from Supabase', async ({ page }) => {
+  await expect(page.locator('#sq-pickets')).not.toHaveText('—');
+  await expect(page.locator('#sq-twobytwo')).not.toHaveText('—');
+  await expect(page.locator('#sq-twobyfour')).not.toHaveText('—');
+});
+
+test('all 3 materials tabs switch the active panel', async ({ page }) => {
+  const tabs = page.locator('#page-materials .tab-btn');
+
+  // Switch to Purchases (index 1)
+  await tabs.nth(1).click();
+  await expect(page.locator('#mtab-purchases')).toHaveClass(/active/);
+  await expect(page.locator('#mtab-stock')).not.toHaveClass(/active/);
+
+  // Switch to Cut List (index 2)
+  await tabs.nth(2).click();
+  await expect(page.locator('#mtab-cutlist')).toHaveClass(/active/);
+
+  // Switch back to Stock (index 0)
+  await tabs.nth(0).click();
+  await expect(page.locator('#mtab-stock')).toHaveClass(/active/);
+});
