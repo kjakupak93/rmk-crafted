@@ -3373,6 +3373,39 @@ async function completeOrder(id) {
   if (!data) return;
   if (data.payment==='unpaid') {
     _pendingCompleteOrderData = data;
+    // Compute margin (all values are numeric — safe for DOM insertion)
+    const _cost = estimateOrderCost(data);
+    const _profit = data.price - _cost;
+    const _mp = data.price > 0 ? Math.round((_profit / data.price) * 100) : 0;
+    const _isFallback = !(data.items?.rows?.length > 0) && !data.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);
+    const _mpStr = (_isFallback ? '~' : '') + _mp + '%';
+    const _modal = document.querySelector('#completePaymentModal .modal');
+    // Idempotent: reuse existing block if modal was opened before
+    let _block = document.getElementById('complete-margin-summary');
+    if (!_block) {
+      _block = document.createElement('div');
+      _block.id = 'complete-margin-summary';
+      _modal.insertBefore(_block, _modal.querySelector('div'));
+    }
+    _block.style.cssText = 'border:1px solid var(--warm-gray);border-radius:8px;padding:12px;margin-bottom:16px;background:var(--sand-pale);text-align:left';
+    // Use textContent for all user-derived values to prevent injection
+    function _row(label, value, color) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;margin-bottom:4px';
+      const lbl = document.createElement('span');
+      lbl.style.cssText = 'color:var(--text-muted);font-size:13px';
+      lbl.textContent = label;
+      const val = document.createElement('span');
+      val.style.cssText = "font-family:'DM Mono',monospace;font-size:13px" + (color ? ';font-weight:600;color:' + color : '');
+      val.textContent = value;
+      row.appendChild(lbl);
+      row.appendChild(val);
+      return row;
+    }
+    _block.textContent = '';
+    _block.appendChild(_row('Revenue', '$' + Number(data.price)));
+    _block.appendChild(_row('Est. Cost', '$' + Math.round(_cost)));
+    _block.appendChild(_row('Margin', '$' + Math.round(_profit) + '  (' + _mpStr + ')', marginColor(_mp)));
     openModal('completePaymentModal');
   } else {
     await _doCompleteOrder(data, data.payment);
