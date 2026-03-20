@@ -66,8 +66,7 @@ test('Quote modal pre-fills price and notes from cut list', async ({ page }) => 
 });
 
 async function goToOrdersFromMaterials(page: Page) {
-  await page.click('#backBtn');
-  await page.waitForSelector('#page-home.active');
+  await login(page);
   await page.click('.app-tile--orders');
   await page.waitForSelector('#page-orders.active');
 }
@@ -78,7 +77,7 @@ test('saved quote appears in Quotes tab with margin badge', async ({ page }) => 
 
   await goToOrdersFromMaterials(page);
   await page.click('#orders-tabs button:has-text("Quotes")');
-  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('#otab-quotes', { state: 'visible' });
 
   const quoteRow = page.locator('#otab-quotes').locator('tr').filter({ hasText: quoteName });
   await expect(quoteRow).toBeVisible({ timeout: 10000 });
@@ -91,7 +90,7 @@ test('convert quote pre-fills order modal and deletes quote on save', async ({ p
 
   await goToOrdersFromMaterials(page);
   await page.click('#orders-tabs button:has-text("Quotes")');
-  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('#otab-quotes', { state: 'visible' });
 
   const quoteRow = page.locator('#otab-quotes tr').filter({ hasText: quoteName });
   await quoteRow.locator('button:has-text("Convert")').click();
@@ -105,10 +104,9 @@ test('convert quote pre-fills order modal and deletes quote on save', async ({ p
 
   await page.click('button[onclick="saveOrder()"]');
   await expect(page.locator('#orderModal')).not.toHaveClass(/open/, { timeout: 10000 });
-  await page.waitForLoadState('networkidle');
 
   await page.click('#orders-tabs button:has-text("Quotes")');
-  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('#otab-quotes', { state: 'visible' });
   await expect(page.locator('#otab-quotes tr').filter({ hasText: quoteName })).toHaveCount(0);
 
   await page.click('#orders-tabs button:has-text("Active")');
@@ -121,7 +119,7 @@ test('delete quote removes it from Quotes tab', async ({ page }) => {
 
   await goToOrdersFromMaterials(page);
   await page.click('#orders-tabs button:has-text("Quotes")');
-  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('#otab-quotes', { state: 'visible' });
 
   const quoteRow = page.locator('#otab-quotes tr').filter({ hasText: quoteName });
   await expect(quoteRow).toBeVisible({ timeout: 10000 });
@@ -129,7 +127,6 @@ test('delete quote removes it from Quotes tab', async ({ page }) => {
   // deleteQuote uses native confirm() — accept it via dialog handler
   page.once('dialog', dialog => dialog.accept());
   await quoteRow.locator('button:has-text("Delete")').click();
-  await page.waitForLoadState('networkidle');
 
   await expect(page.locator('#otab-quotes tr').filter({ hasText: quoteName })).toHaveCount(0);
 });
