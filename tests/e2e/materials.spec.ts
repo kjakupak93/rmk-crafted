@@ -93,6 +93,8 @@ test('load cut list restores name; delete removes it from saved list', async ({ 
   const savedRow = page.locator('#cl-saved-list tr').filter({ hasText: cutListName });
   await savedRow.locator('button:has-text("Load")').click();
   await expect(page.locator('#cl-name')).toHaveValue(cutListName, { timeout: 5000 });
+  // Wait for saved list to finish re-rendering before interacting with it
+  await expect(page.locator('#cl-saved-list tr').filter({ hasText: cutListName })).toBeVisible({ timeout: 5000 });
 
   // deleteCutList uses native browser confirm() — accept the dialog
   page.once('dialog', dialog => dialog.accept());
