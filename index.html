@@ -3319,7 +3319,7 @@ function orderCardHTML(o) {
   </div>`;
 }
 
-function openOrderModal() {
+function openOrderModal(order, prefill) {
   currentEditOrder = null;
   document.getElementById('orderModalTitle').textContent='New Order';
   document.getElementById('editOrderId').value='';
@@ -3329,9 +3329,24 @@ function openOrderModal() {
   document.getElementById('oStatus').value='pending';
   document.getElementById('oItemsContainer').innerHTML='';
   resetAddonChips('orderAddonGrid');
-  addOrderItem();
+  if (prefill) {
+    addOrderItem('', 'Standard', 1, prefill.price || 0);
+  } else {
+    addOrderItem();
+  }
+  if (prefill) {
+    document.getElementById('oName').value = prefill.name || '';
+    document.getElementById('oNotes').value = prefill.notes || '';
+  }
   updateOrderAddonPrices();
   openModal('orderModal');
+}
+
+function convertQuoteToOrder(id) {
+  const quote = allQuotes.find(q => q.id === id);
+  if (!quote) return;
+  _pendingQuoteId = quote.id;
+  openOrderModal(null, { name: quote.name || '', notes: quote.notes || '', price: quote.price });
 }
 
 async function editOrder(id) {
@@ -3392,6 +3407,10 @@ async function saveOrder() {
   const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:itemRows[0].size,style:itemRows[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value};
   const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
   if (error) {showToast('Error saving order','error');console.error(error);return;}
+  if (_pendingQuoteId) {
+    await sb.from('quotes').delete().eq('id', _pendingQuoteId);
+    _pendingQuoteId = null;
+  }
   const isNowCompletedPaid = payload.status==='completed' && payload.payment!=='unpaid';
   const wasCompletedPaid = currentEditOrder && currentEditOrder.status==='completed' && currentEditOrder.payment!=='unpaid';
   if (isNowCompletedPaid && !wasCompletedPaid) {
