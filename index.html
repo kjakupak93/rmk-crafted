@@ -2286,7 +2286,7 @@ const STANDARD_SIZES = [
 ];
 const UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17};
 const PICKET_PRICE_PER_UNIT = 10;
-let defaultPicketPrice = 10;
+let defaultPicketPrice = PICKET_PRICE_PER_UNIT;
 let ADDONS = [
   {id:'sealant', label:'Sealant', base:20, scales:true},
   {id:'liner', label:'Fabric Liner', base:15, scales:true},
@@ -4290,6 +4290,7 @@ function openCreateQuoteModal() {
 async function saveQuote() {
   const name = document.getElementById('cqName').value.trim() || null;
   const price = parseFloat(document.getElementById('cqPrice').value) || 0;
+  if (!price || price <= 0) { showToast('Enter a price before saving', 'error'); return; }
   const notes = document.getElementById('cqNotes').value.trim() || null;
   const clNameEl = document.getElementById('cl-name');
   const cut_list_id = clNameEl.dataset.savedId || null;
