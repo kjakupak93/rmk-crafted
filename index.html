@@ -2255,15 +2255,15 @@ body {
   </div>
 </div>
 
-<div id="createQuoteModal" class="modal-overlay" onclick="if(!this._justOpened)closeModal('createQuoteModal')">
+<div id="createQuoteModal" class="modal-overlay">
   <div class="modal" onclick="event.stopPropagation()">
     <h3>Create Quote</h3>
     <label>Customer Name (optional)</label>
-    <input id="cqName" type="text" placeholder="Customer name (optional)" style="width:100%;margin-bottom:12px">
+    <input id="cqName" class="form-control" type="text" placeholder="Customer name (optional)" style="width:100%;margin-bottom:12px">
     <label>Price ($)</label>
-    <input id="cqPrice" type="number" min="0" step="1" style="width:100%;margin-bottom:12px">
+    <input id="cqPrice" class="form-control" type="number" min="0" step="1" style="width:100%;margin-bottom:12px">
     <label>Notes</label>
-    <input id="cqNotes" type="text" style="width:100%;margin-bottom:16px">
+    <input id="cqNotes" class="form-control" type="text" style="width:100%;margin-bottom:16px">
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-secondary" onclick="closeModal('createQuoteModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveQuote()">Create Quote</button>
@@ -3918,7 +3918,7 @@ function renderQuotesTable() {
   }
 
   const table = document.createElement('table');
-  table.className = 'orders-table';
+  table.className = 'data-table';
   table.style.cssText = 'width:100%;border-collapse:collapse';
 
   // Header
@@ -4004,7 +4004,10 @@ function renderQuotesTable() {
   });
 
   table.appendChild(tbody);
-  container.appendChild(table);
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+  wrap.appendChild(table);
+  container.appendChild(wrap);
 }
 
 async function deleteQuote(id) {
