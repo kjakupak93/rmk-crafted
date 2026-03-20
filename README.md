@@ -88,6 +88,8 @@ A pre-written **Facebook message** is generated at the bottom — tap **Copy** a
 
 **Sales History tab** — auto-populated when an order is completed. Shows running totals for total revenue, cash, and Venmo.
 
+**Quotes tab** — saved quotes generated from the Cut List Calculator. Each row shows the quote name, price, picket count, and estimated margin. Tap **Convert** to open the New Order modal pre-filled with the quote's details — saving the order automatically deletes the quote. Tap **Delete** to remove a quote without converting.
+
 ---
 
 ### 3 — Material Cost Tracker
@@ -156,6 +158,9 @@ Plan material cuts before building. Enter parts, calculate board usage, and save
 **Waste %** accounts for both length and width waste area.
 
 **Saved Cut Lists** (bottom of page) — table showing Name, Last Modified, Notes. Load or delete any saved list. Re-saving a loaded list updates it in-place (no duplicates).
+
+**Create Quote from Cut List:**
+After running a cut list, tap **+ Quote** to open the quote modal. The price is pre-calculated from board counts and the notes field is pre-filled with the cut list name. Fill in a quote name, adjust price/notes as needed, and save. Saved quotes appear in the **Quotes tab** on the Orders page.
 
 ---
 
@@ -239,6 +244,9 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | View revenue trends | Analytics tile on home → range toggle for time window |
 | Plan a build's cuts | Materials → Cut List tab → add parts → Calculate → Save |
 | Load a saved cut list | Materials → Cut List tab → Saved Cut Lists (bottom) → Load |
+| Save a quote from a cut list | Materials → Cut List tab → Calculate → + Quote → fill name → Save |
+| Convert a quote to an order | Orders → Quotes tab → Convert → fill order details → Save |
+| View saved quotes | Orders → Quotes tab |
 
 ---
 
@@ -274,6 +282,20 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | `schedule_bookings` | Confirmed bookings, linked to orders via `order_id` |
 | `availability_windows` | Recurring availability settings |
 | `cut_lists` | Saved cut lists — name, kerf, cuts (JSONB), stock types (JSONB), notes, updated_at |
+| `quotes` | Quotes saved from the Cut List Calculator — name, price, picket count, linked cut list |
+
+---
+
+## Testing
+
+The project has a two-tier Playwright test suite. See [`tests/README.md`](tests/README.md) for full details.
+
+| Suite | Command | Tests | What it covers |
+|---|---|---|---|
+| Smoke | `npx playwright test --project=smoke` | 22 | UI presence, navigation, no data writes |
+| E2E | `npx playwright test --project=e2e` | 18 | Full workflows with real Supabase reads/writes |
+
+Both suites run automatically on every push to `main` via GitHub Actions (`.github/workflows/e2e.yml`).
 
 ---
 
