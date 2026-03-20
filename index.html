@@ -1590,6 +1590,7 @@ body {
     <button class="tab-btn active" onclick="showOrderTab('active',this)">📋 Active</button>
     <button class="tab-btn" onclick="showOrderTab('inventory',this)">📦 Ready to Sell</button>
     <button class="tab-btn" onclick="showOrderTab('sales',this)">📈 Sales History</button>
+    <button class="tab-btn" onclick="showOrderTab('quotes',this)">💬 Quotes</button>
   </div>
   <div class="app-container">
     <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Orders</h2>
@@ -1653,6 +1654,7 @@ body {
         </table>
       </div>
     </div>
+    <div id="otab-quotes" style="display:none"></div>
   </div>
 </div>
 
@@ -3249,6 +3251,7 @@ function showOrderTab(tab,btn) {
   btn.classList.add('active');
   if (tab==='inventory') loadInventory();
   if (tab==='sales') loadSales();
+  if (tab === 'quotes') loadQuotes();
 }
 
 let allOrders = [];
@@ -3874,6 +3877,122 @@ async function deleteSale(id) {
   const {error} = await sb.from('sales').delete().eq('id',id);
   if (error) { showToast('Error: '+error.message,'error'); return; }
   showToast('Deleted','success'); loadSales();
+}
+
+async function loadQuotes() {
+  const { data, error } = await sb.from('quotes').select('*').order('created_at', { ascending: false });
+  if (error) { showToast('Error loading quotes', 'error'); return; }
+  allQuotes = data || [];
+  renderQuotesTable();
+}
+
+function renderQuotesTable() {
+  const container = document.getElementById('otab-quotes');
+  container.textContent = '';
+
+  if (!allQuotes.length) {
+    const empty = document.createElement('p');
+    empty.style.cssText = 'text-align:center;color:var(--text-muted);padding:32px';
+    empty.textContent = 'No quotes yet. Run a cut list and click + Quote to create one.';
+    container.appendChild(empty);
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'orders-table';
+  table.style.cssText = 'width:100%;border-collapse:collapse';
+
+  // Header
+  const thead = document.createElement('thead');
+  const hRow = document.createElement('tr');
+  ['Date','Customer','Price','Est. Margin','Cut List','Notes','Actions'].forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    hRow.appendChild(th);
+  });
+  thead.appendChild(hRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  allQuotes.forEach(q => {
+    const tr = document.createElement('tr');
+
+    // Date
+    const tdDate = document.createElement('td');
+    tdDate.textContent = q.created_at ? q.created_at.slice(0, 10) : '—';
+    tr.appendChild(tdDate);
+
+    // Customer
+    const tdName = document.createElement('td');
+    tdName.textContent = q.name || '—';
+    tr.appendChild(tdName);
+
+    // Price
+    const tdPrice = document.createElement('td');
+    tdPrice.textContent = '$' + Number(q.price).toFixed(0);
+    tr.appendChild(tdPrice);
+
+    // Est. Margin
+    const tdMargin = document.createElement('td');
+    if (q.price > 0) {
+      let cost, isFallback;
+      if (q.picket_count != null) {
+        cost = q.picket_count * UNIT_COSTS.pickets;
+        isFallback = false;
+      } else {
+        cost = q.price * 0.37;
+        isFallback = true;
+      }
+      const pct = Math.round(((q.price - cost) / q.price) * 100);
+      const badge = document.createElement('span');
+      badge.style.cssText = 'font-weight:600;color:' + marginColor(pct);
+      badge.textContent = (isFallback ? '~' : '') + pct + '%';
+      tdMargin.appendChild(badge);
+    } else {
+      tdMargin.textContent = '—';
+    }
+    tr.appendChild(tdMargin);
+
+    // Cut List
+    const tdCL = document.createElement('td');
+    tdCL.textContent = q.cut_list_name || '—';
+    tr.appendChild(tdCL);
+
+    // Notes
+    const tdNotes = document.createElement('td');
+    tdNotes.textContent = q.notes || '—';
+    tr.appendChild(tdNotes);
+
+    // Actions
+    const tdActions = document.createElement('td');
+
+    const convertBtn = document.createElement('button');
+    convertBtn.className = 'btn btn-secondary';
+    convertBtn.style.cssText = 'font-size:0.8em;padding:4px 10px;margin-right:6px';
+    convertBtn.textContent = 'Convert';
+    convertBtn.addEventListener('click', () => convertQuoteToOrder(q.id));
+    tdActions.appendChild(convertBtn);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn btn-danger';
+    deleteBtn.style.cssText = 'font-size:0.8em;padding:4px 10px';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.addEventListener('click', () => deleteQuote(q.id));
+    tdActions.appendChild(deleteBtn);
+
+    tr.appendChild(tdActions);
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+async function deleteQuote(id) {
+  if (!confirm('Delete this quote?')) return;
+  const { error } = await sb.from('quotes').delete().eq('id', id);
+  if (error) { showToast('Error deleting quote', 'error'); return; }
+  await loadQuotes();
 }
 
 // ===== MATERIALS =====
