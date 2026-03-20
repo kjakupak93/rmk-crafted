@@ -3917,6 +3917,9 @@ const CL_DEFAULT_STOCK = [
 let clStockTypes = CL_DEFAULT_STOCK.map(s => ({...s}));
 let clStockIdCounter = 10;
 let clRowId = 0;
+let clLastRunBoardCounts = {};   // { [stockId]: boardCount } — set after each runCutList()
+let allQuotes = [];               // loaded by loadQuotes()
+let _pendingQuoteId = null;       // set when converting a quote, cleared after saveOrder()
 
 function renderStockTypes() {
   const list = document.getElementById('cl-stock-list');
@@ -4049,6 +4052,7 @@ function runCutList() {
   const diag = document.getElementById('cl-diagram');
   diag.innerHTML = '';
 
+  clLastRunBoardCounts = {};
   clStockTypes.forEach((stock, si) => {
     const rawPieces = byStock[stock.id];
     if (!rawPieces || !rawPieces.length) return;
@@ -4081,6 +4085,7 @@ function runCutList() {
 
     const totalActualCuts = rawPieces.length;
     const bins = runCutListBins(pieces, stock.len, kerf);
+    clLastRunBoardCounts[stock.id] = bins.length;
 
     // Total waste = length scrap area + width scrap area per rip-cut slot
     let totalWasteArea = 0;
@@ -4211,6 +4216,9 @@ function runCutList() {
 
     diag.appendChild(section);
   });
+
+  const _quoteBtn = document.getElementById('cl-quote-btn');
+  if (_quoteBtn) _quoteBtn.disabled = false;
 
   // Parts summary table (mirrors screenshot's bottom section)
   const partsDiv = document.getElementById('cl-parts-table');
