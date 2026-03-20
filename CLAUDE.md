@@ -4,11 +4,12 @@
 Single-page web app (`index.html`) — all-in-one business dashboard for RMK Crafted, a solo woodworking business in Oceanside, CA selling cedar planter boxes via Facebook Marketplace (pickup only, Cash or Venmo @RMKCrafted).
 
 ## Tech Stack
-- Vanilla HTML/CSS/JavaScript — single `index.html`, no build step, no framework
-- Supabase (PostgreSQL) backend, client variable `sb`
+- Frontend: HTML, JavaScript (vanilla) — single `index.html`, no build step, no framework
+- Backend: Supabase (PostgreSQL + RLS policies), client variable `sb`
 - Hosted on GitHub Pages — commit and push to `main`, auto-deploys in ~60s
 - Fonts: Playfair Display, DM Mono, DM Sans (Google Fonts)
 - Charts: Chart.js v4 (CDN)
+- Always check that new Supabase tables have proper RLS policies and that schema columns match the app code before declaring a feature complete.
 
 ## File Structure
 - `index.html` — CSS first, then HTML, then JS (all in one file)
@@ -87,6 +88,19 @@ Stored in `STANDARD_SIZES`. 8 sizes have hardcoded `pickets`; 16×16×16 and 36�
 | 48×16×16" | $85 | 8 |
 | 48×16×27" | $90 | 9 |
 | 48×24×16" | $110 | 11 |
+
+## UI Guidelines
+
+### Mobile & Cross-Browser
+Always test UI changes for mobile overflow and iOS Safari compatibility. When fixing layout issues, use a thorough stacked/responsive approach rather than minimal tweaks.
+
+### Dark Mode
+This app supports dark mode. When adding new UI elements or pages, ensure they work with the dark mode theme. Check for contrast, badge colors, and analytics styling.
+
+## Workflow
+
+### Deployment
+After completing changes, push to GitHub and confirm deployment. Always update relevant documentation files when features change.
 
 ## Color Palette (CSS Variables)
 ```css
