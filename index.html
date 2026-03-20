@@ -1654,7 +1654,7 @@ body {
         </table>
       </div>
     </div>
-    <div id="otab-quotes" style="display:none"></div>
+    <div class="tab-panel" id="otab-quotes"></div>
   </div>
 </div>
 
@@ -3992,6 +3992,7 @@ async function deleteQuote(id) {
   if (!confirm('Delete this quote?')) return;
   const { error } = await sb.from('quotes').delete().eq('id', id);
   if (error) { showToast('Error deleting quote', 'error'); return; }
+  showToast('Deleted', 'success');
   await loadQuotes();
 }
 
