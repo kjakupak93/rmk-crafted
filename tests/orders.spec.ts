@@ -34,6 +34,15 @@ test('New Order button opens the order modal', async ({ page }) => {
   await expect(page.locator('#orderModal')).toHaveClass(/open/);
 });
 
+test('Quotes tab is present on Orders page', async ({ page }) => {
+  await expect(page.locator('#orders-tabs button:has-text("Quotes")')).toBeVisible();
+});
+
+test('clicking Quotes tab shows the quotes panel', async ({ page }) => {
+  await page.click('#orders-tabs button:has-text("Quotes")');
+  await expect(page.locator('#otab-quotes')).toHaveClass(/active/);
+});
+
 test('sales history price cells show a margin badge', async ({ page }) => {
   const tabs = page.locator('#orders-tabs .tab-btn');
   await tabs.nth(2).click();

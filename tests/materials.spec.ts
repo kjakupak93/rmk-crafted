@@ -30,3 +30,12 @@ test('all 3 materials tabs switch the active panel', async ({ page }) => {
   await tabs.nth(0).click();
   await expect(page.locator('#mtab-stock')).toHaveClass(/active/);
 });
+
+test('Cut List quote button starts disabled', async ({ page }) => {
+  // Navigate to the Cut List tab (index 2)
+  const tabs = page.locator('#page-materials .tab-btn');
+  await tabs.nth(2).click();
+  await expect(page.locator('#mtab-cutlist')).toHaveClass(/active/);
+  // Quote button should be disabled until runCutList() is called
+  await expect(page.locator('#cl-quote-btn')).toBeDisabled();
+});
