@@ -1,14 +1,25 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './tests',
   use: {
     baseURL: 'http://localhost:8080',
   },
   projects: [
     {
-      name: 'chromium',
-      use: { browserName: 'chromium' },
+      name: 'smoke',
+      testDir: './tests',
+      testIgnore: ['**/e2e/**'],
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'e2e',
+      testDir: './tests/e2e',
+      timeout: 60000,
+      use: {
+        ...devices['Desktop Chrome'],
+        actionTimeout: 30000,
+        navigationTimeout: 30000,
+      },
     },
   ],
   webServer: {
