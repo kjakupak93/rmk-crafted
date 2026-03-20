@@ -37,18 +37,15 @@ A **"+ Quote"** button is added to the cut list action bar (alongside "Add Part"
 
 **Detecting picket count from run results:**
 
-After `runCutList()` runs, the board counts per stock type are available as local `bins.length` per stock. To capture the picket count for the quote, store the result in a module-level variable `clLastRunBoardCounts` (object keyed by `stock.id`) at the end of `runCutList()`:
+After `runCutList()` runs, the board counts per stock type are available as local `bins.length` per stock type inside the existing `clStockTypes.forEach` loop (~line 4052).
+
+**Implementation:** Reset `clLastRunBoardCounts = {}` immediately before the `clStockTypes.forEach(...)` loop (not after). Then, inside that loop, after the early-return guard (`if (!rawPieces || !rawPieces.length) return;`) and after `const bins = runCutListBins(...)`, add:
 
 ```js
-// At end of runCutList(), after diagram renders:
-clLastRunBoardCounts = {};
-clStockTypes.forEach((stock, si) => {
-  // bins computed per stock inside the loop — store count
-  // (set during the existing per-stock loop, not after)
-});
+clLastRunBoardCounts[stock.id] = bins.length;
 ```
 
-More precisely: inside the existing `clStockTypes.forEach` loop in `runCutList()`, after `const bins = runCutListBins(...)`, store: `clLastRunBoardCounts[stock.id] = bins.length`.
+Stock types with no cuts assigned are skipped by the early-return and will be absent from `clLastRunBoardCounts`. When the picket stock type is absent (no picket cuts in this run), `clLastRunBoardCounts[picketStockId]` is `undefined` — treat this the same as `null` (store `picket_count: null` in the quote).
 
 **Identifying the picket stock:** The picket stock is identified as the stock type whose `shortName` or `name` contains `'Picket'` (case-insensitive). If no such stock type exists, `picket_count` is stored as `null`.
 
@@ -79,7 +76,7 @@ A 4th tab button added to `#orders-tabs`:
 
 And a corresponding panel `#otab-quotes`.
 
-**Tab loads data** when navigated to (lazy load, matching existing tab pattern): calls `loadQuotes()`.
+**Tab loads data** when navigated to (lazy load, matching existing tab pattern): calls `loadQuotes()`. This is wired by adding `if (tab==='quotes') loadQuotes();` inside the existing `showOrderTab(tab, btn)` function body, alongside the existing `if (tab==='inventory')` and `if (tab==='sales')` guards.
 
 **`loadQuotes()`** fetches all rows from `quotes` ordered by `created_at desc`, stores in `allQuotes`, calls `renderQuotesTable()`.
 
@@ -109,10 +106,15 @@ And a corresponding panel `#otab-quotes`.
    - `#oName` ← `quote.name` (if set)
    - `#oNotes` ← `quote.notes` (if set)
    - First item row price ← `quote.price`
-4. Store `quote.id` in a module-level variable `_pendingQuoteId`
-5. When `saveOrder()` completes successfully, if `_pendingQuoteId` is set: delete the quote from `quotes`, clear `_pendingQuoteId`, show toast "Order created from quote!"
+4. Store `quote.id` in the module-level variable `_pendingQuoteId`
+5. The `_pendingQuoteId` cleanup is handled inside `saveOrder()` directly: immediately after the `if (error) { showToast(...); return; }` guard (the early-exit on Supabase insert/update error), add a block that checks `if (_pendingQuoteId)` — if set, delete the quote from `quotes`, clear `_pendingQuoteId`, and the existing `showToast('Order added!', 'success')` already handles user feedback (no additional toast needed). Place this block before `closeModal('orderModal')`.
 
-**Pre-filling the order modal:** `openOrderModal()` currently resets all fields. A new optional parameter `openOrderModal(prefill)` is added where `prefill = { name, notes, price }`. If provided, after reset, set the fields. The existing call sites pass no argument so behavior is unchanged.
+**Pre-filling the order modal:** `openOrderModal()` currently resets all fields. A new optional parameter `openOrderModal(prefill)` is added where `prefill = { name, notes, price }`. If provided, after the existing reset logic:
+- Set `document.getElementById('oName').value = prefill.name || ''`
+- Set `document.getElementById('oNotes').value = prefill.notes || ''`
+- Set the first item row price by changing the bare `addOrderItem()` call (which adds the first empty row) to `addOrderItem('', 'Standard', 1, prefill.price || 0)` — `addOrderItem` accepts `(size, style, qty, price)` as arguments
+
+The existing call sites (`onclick="openOrderModal()"`) pass no argument, so `prefill` is `undefined` and behavior is unchanged.
 
 ---
 
