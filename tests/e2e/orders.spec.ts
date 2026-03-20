@@ -2,7 +2,9 @@ import { test, expect, Page } from '@playwright/test';
 import { login } from '../helpers/auth';
 import { cleanupTestData } from './helpers/cleanup';
 
-const TAG = `[TEST-${Date.now()}]`;
+test.describe.configure({ mode: 'serial' });
+
+const TAG = `[TEST] ${Date.now()}`;
 
 async function goToOrders(page: Page) {
   await login(page);
@@ -58,7 +60,6 @@ test('advance order through building to ready updates status badge', async ({ pa
 
   // pending → building
   await card().locator('button:has-text("→ Building")').click();
-  await page.waitForLoadState('networkidle');
 
   // Verify building state: "→ Ready" button visible, "→ Building" gone
   await expect(card().locator('button:has-text("→ Ready")')).toBeVisible({ timeout: 10000 });
@@ -66,7 +67,6 @@ test('advance order through building to ready updates status badge', async ({ pa
 
   // building → ready
   await card().locator('button:has-text("→ Ready")').click();
-  await page.waitForLoadState('networkidle');
 
   // Verify ready state: neither advance button remains; badge shows "Ready"
   await expect(card().locator('button:has-text("→ Building")')).toHaveCount(0);
@@ -91,7 +91,6 @@ test('complete unpaid order shows margin and moves to Sales History', async ({ p
 
   // Click Cash to complete (scope to completePaymentModal to avoid matching markPaidModal)
   await page.click('#completePaymentModal button:has-text("Cash")');
-  await page.waitForLoadState('networkidle');
 
   // Order should be gone from Active tab
   await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0);
@@ -111,7 +110,6 @@ test('delete order removes it from Active tab', async ({ page }) => {
   await card.locator('button:has-text("🗑️")').click();
   await page.waitForSelector('#confirmModal.open');
   await page.click('#confirmOkBtn');
-  await page.waitForLoadState('networkidle');
 
   await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0);
 });
