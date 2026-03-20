@@ -3406,7 +3406,7 @@ async function saveOrder() {
   const items = itemsPayload;
   const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:itemRows[0].size,style:itemRows[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value};
   const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
-  if (error) {showToast('Error saving order','error');console.error(error);return;}
+  if (error) {_pendingQuoteId=null;showToast('Error saving order','error');console.error(error);return;}
   if (_pendingQuoteId) {
     await sb.from('quotes').delete().eq('id', _pendingQuoteId);
     _pendingQuoteId = null;
