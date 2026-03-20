@@ -1820,6 +1820,7 @@ body {
           <button class="btn-secondary" onclick="addCutRow()">+ Add Part</button>
           <button class="btn-primary" onclick="runCutList()">Calculate</button>
           <button class="btn-primary" onclick="saveCutList()" style="background:var(--green)">💾 Save</button>
+          <button id="cl-quote-btn" class="btn btn-secondary" onclick="openCreateQuoteModal()" disabled>+ Quote</button>
         </div>
         <div id="cl-results" style="display:none">
           <div id="cl-diagram"></div>
@@ -2252,6 +2253,22 @@ body {
   </div>
 </div>
 
+<div id="createQuoteModal" class="modal-overlay" onclick="if(!this._justOpened)closeModal('createQuoteModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>Create Quote</h3>
+    <label>Customer Name (optional)</label>
+    <input id="cqName" type="text" placeholder="Customer name (optional)" style="width:100%;margin-bottom:12px">
+    <label>Price ($)</label>
+    <input id="cqPrice" type="number" min="0" step="1" style="width:100%;margin-bottom:12px">
+    <label>Notes</label>
+    <input id="cqNotes" type="text" style="width:100%;margin-bottom:16px">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal('createQuoteModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveQuote()">Create Quote</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== SUPABASE INIT =====
 const { createClient } = supabase;
@@ -2268,6 +2285,7 @@ const STANDARD_SIZES = [
   {l:48,w:24,h:16,price:110,pickets:11}
 ];
 const UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17};
+const PICKET_PRICE_PER_UNIT = 10;
 let defaultPicketPrice = 10;
 let ADDONS = [
   {id:'sealant', label:'Sealant', base:20, scales:true},
@@ -4257,6 +4275,32 @@ function clearCutList() {
   clStockTypes = CL_DEFAULT_STOCK.map(s => ({...s}));
   renderStockTypes();
   addCutRow();
+}
+
+function openCreateQuoteModal() {
+  const picketStock = clStockTypes.find(s => /picket/i.test(s.shortName || s.name));
+  const picketCount = picketStock ? (clLastRunBoardCounts[picketStock.id] ?? null) : null;
+  const suggestedPrice = picketCount != null ? picketCount * PICKET_PRICE_PER_UNIT : 0;
+  document.getElementById('cqName').value = '';
+  document.getElementById('cqPrice').value = suggestedPrice;
+  document.getElementById('cqNotes').value = document.getElementById('cl-name').value || '';
+  openModal('createQuoteModal');
+}
+
+async function saveQuote() {
+  const name = document.getElementById('cqName').value.trim() || null;
+  const price = parseFloat(document.getElementById('cqPrice').value) || 0;
+  const notes = document.getElementById('cqNotes').value.trim() || null;
+  const clNameEl = document.getElementById('cl-name');
+  const cut_list_id = clNameEl.dataset.savedId || null;
+  const cut_list_name = clNameEl.value.trim() || null;
+  const picketStock = clStockTypes.find(s => /picket/i.test(s.shortName || s.name));
+  const picket_count = picketStock ? (clLastRunBoardCounts[picketStock.id] ?? null) : null;
+
+  const { error } = await sb.from('quotes').insert({ name, price, cut_list_id, cut_list_name, picket_count, notes });
+  if (error) { showToast('Error saving quote', 'error'); return; }
+  showToast('Quote created!', 'success');
+  closeModal('createQuoteModal');
 }
 
 async function saveCutList() {
