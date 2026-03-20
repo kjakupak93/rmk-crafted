@@ -33,8 +33,9 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 | `schedule_bookings` | Booked customer pickups |
 | `availability_windows` | Recurring availability windows for the share message |
 | `cut_lists` | Saved cut lists — columns: `id`, `name`, `kerf`, `cuts` (JSONB), `stock_types` (JSONB), `notes`, `created_at`, `updated_at` |
+| `quotes` | Quotes generated from cut lists — columns: `id`, `name`, `price`, `cut_list_id`, `cut_list_name`, `picket_count`, `notes`, `created_at` |
 
-RLS is enabled on all tables. `cut_lists` has open anon policies (SELECT/INSERT/UPDATE/DELETE) — this is intentional for a single-user internal tool.
+RLS is enabled on all tables. `cut_lists` and `quotes` have open anon policies (SELECT/INSERT/UPDATE/DELETE) — this is intentional for a single-user internal tool.
 
 ## App Structure
 Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pages load data when navigated to (not all at startup).
@@ -42,7 +43,7 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 ### Pages
 - **Home** (`page-home`) — KPI cards, low-stock alert, activity feed, tile nav grid
 - **Quote Calculator** (`page-quote`) — Price estimator based on picket count
-- **Orders** (`page-orders`) — 3 tabs: Active → Ready to Sell → Sales History
+- **Orders** (`page-orders`) — 4 tabs: Active → Ready to Sell → Sales History → Quotes
 - **Materials** (`page-materials`) — Stock levels + Lowes purchase log + Cut List Calculator tab
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
 - **Analytics** (`page-analytics`) — P&L cards + revenue/profit/best-seller charts
@@ -53,6 +54,8 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - `estimateOrderCost()` falls back to **37% of price** for unknown sizes
 - `saveBooking()` — when editing a booking that has a linked `order_id`, also syncs `orders.pickup_date` and `orders.pickup_time`
 - Recent Activity feed shows booking *creation* time, not pickup date (avoids future timestamps showing as "just now")
+- `_pendingQuoteId` — module-level var set when converting a quote to an order. `saveOrder()` clears it (and deletes the source quote) on both success and error paths to prevent leaks.
+- `openOrderModal(order, prefill)` — optional second param lets `convertQuoteToOrder()` pre-populate the order modal from a quote without an existing order object
 
 ### Cut List Calculator (Materials → Cut List tab)
 Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
@@ -64,6 +67,8 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
 **Save/load**: `saveCutList()` checks `cl-name.dataset.savedId` — if set (loaded from DB), does an UPDATE; otherwise INSERT. `loadCutList()` sets `savedId` on the name input. `clearCutList()` deletes `savedId`. Saved lists shown as a table (Name / Last Modified / Notes) at the bottom of the page.
 
 **Stock short names**: `CL_DEFAULT_STOCK` entries have a `shortName` field used in dropdowns (e.g. `Picket 6'`); full `name` used in diagram headers.
+
+**Quote button**: `#cl-quote-btn` is disabled by default; `runCutListBins()` enables it after a successful run. `openCreateQuoteModal()` pre-fills price from `clLastRunBoardCounts` and notes from `#cl-name`. `saveQuote()` inserts to the `quotes` table. `convertQuoteToOrder(id)` opens the order modal pre-filled with quote data and sets `_pendingQuoteId`; `saveOrder()` deletes the quote on completion.
 
 ## Business / Pricing
 - **Pricing formula**: ~$10 per picket (e.g. 10 pickets → ~$100)
