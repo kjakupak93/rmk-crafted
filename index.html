@@ -2239,6 +2239,10 @@ body {
     <div style="background:#EAF2F8;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--navy);font-family:'DM Mono',monospace">
       Subtotal: <strong id="purchSubtotal">$0.00</strong><span id="purchDiscountLine" style="display:none"> &minus; <span style="color:var(--green)" id="purchDiscountAmt"></span> discount</span> &rarr; <strong id="purchEst">$0.00</strong>
     </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>Total override ($) <span style="font-size:11px;color:var(--text-muted);font-weight:400">— enter manually if no materials above</span></label>
+      <input class="form-control" type="number" id="pTotal" placeholder="0.00" min="0" step="0.01">
+    </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="editingPurchaseId=null;closeModal('purchaseModal')">Cancel</button>
       <button class="modal-btn-primary" id="purchSaveBtn" onclick="savePurchase()">Save</button>
@@ -4783,10 +4787,13 @@ function openPurchaseModal(item=null) {
     document.getElementById('p24p').value=item.twobyfour_price||4.17;
     document.getElementById('pDiscount').value=item.discount||'';
     document.getElementById('pNotes').value=item.notes||'';
+    // Pre-fill total override only when there are no material quantities (misc purchase)
+    const hasMaterials=(item.pickets||0)+(item.twobytwo||0)+(item.twobyfour||0)>0;
+    document.getElementById('pTotal').value=hasMaterials?'':(item.total||'');
   } else {
     document.getElementById('pDate').value=new Date().toISOString().split('T')[0];
     document.getElementById('pStore').value='';
-    ['pPickets','p22','p24','pDiscount','pNotes'].forEach(f=>document.getElementById(f).value='');
+    ['pPickets','p22','p24','pDiscount','pNotes','pTotal'].forEach(f=>document.getElementById(f).value='');
     document.getElementById('pPP').value=3.66;
     document.getElementById('p22p').value=3.23;
     document.getElementById('p24p').value=4.17;
@@ -4824,9 +4831,11 @@ async function savePurchase() {
   const t22p=parseFloat(document.getElementById('p22p').value)||3.23;
   const t24=parseInt(document.getElementById('p24').value)||0;
   const t24p=parseFloat(document.getElementById('p24p').value)||4.17;
-  if (!pickets&&!t22&&!t24) {showToast('Enter at least one material','error');return;}
   const discount=parseFloat(document.getElementById('pDiscount').value)||0;
-  const total=Math.max(0,pickets*pp+t22*t22p+t24*t24p-discount);
+  const calcTotal=Math.max(0,pickets*pp+t22*t22p+t24*t24p-discount);
+  const overrideTotal=parseFloat(document.getElementById('pTotal').value);
+  const total=!isNaN(overrideTotal)&&overrideTotal>0?overrideTotal:calcTotal;
+  if (!pickets&&!t22&&!t24&&!total) {showToast('Enter materials or a total amount','error');return;}
   const payload={purchase_date:document.getElementById('pDate').value,store:document.getElementById('pStore').value,pickets,picket_price:pp,twobytwo:t22,twobytwo_price:t22p,twobyfour:t24,twobyfour_price:t24p,discount,total,notes:document.getElementById('pNotes').value};
   if (editingPurchaseId) {
     const {error}=await sb.from('purchases').update(payload).eq('id',editingPurchaseId);
