@@ -3252,7 +3252,7 @@ function openAddonSettings() {
   const rows = document.getElementById('addonSettingsRows');
   rows.innerHTML = ADDONS.map((a,i) => `
     <div class="addon-settings-row">
-      <input class="form-control" type="text" value="${a.label}" id="as-label-${i}" style="font-size:13px;padding:7px 10px">
+      <input class="form-control" type="text" value="${esc(a.label)}" id="as-label-${i}" style="font-size:13px;padding:7px 10px">
       <input class="form-control" type="number" min="0" value="${a.base}" id="as-base-${i}" style="font-size:13px;padding:7px 10px;font-family:'DM Mono',monospace">
       <div class="addon-settings-scales">
         <input type="checkbox" id="as-scales-${i}" ${a.scales?'checked':''} style="width:16px;height:16px;cursor:pointer">
@@ -3339,7 +3339,7 @@ function calculateQuote() {
       const a=ADDONS.find(x=>x.id===id);
       const chip = document.querySelector('#quoteAddonGrid [data-id="'+id+'"]');
       const chipVal = chip ? parseFloat(chip.querySelector('.chip-price-input').value)||0 : 0;
-      if (a) brows+=`<div class="brow"><span class="blbl">${a.label}</span><span class="bval">+$${chipVal}</span></div>`;
+      if (a) brows+=`<div class="brow"><span class="blbl">${esc(a.label)}</span><span class="bval">+$${chipVal}</span></div>`;
     });
   }
   brows+=`<div class="brow total-row"><span class="blbl">Quoted Price</span><span class="bval">$${price}</span></div>`;
@@ -3819,7 +3819,7 @@ function addOrderItem(size='', style='Standard', qty=1, price='') {
   const row = document.createElement('div');
   row.className = 'order-item-row';
   row.innerHTML = `
-    <input class="form-control item-size" type="text" placeholder="36×16×16" value="${size}" style="flex:2;min-width:0" oninput="updateOrderTotal()">
+    <input class="form-control item-size" type="text" placeholder="36×16×16" value="${esc(size)}" style="flex:2;min-width:0" oninput="updateOrderTotal()">
     <select class="form-control item-style" style="flex:1;min-width:0" onchange="updateOrderTotal()">
       <option${style==='Standard'?' selected':''}>Standard</option>
       <option${style==='Vertical'?' selected':''}>Vertical</option>
@@ -4308,7 +4308,7 @@ function addCutRow(qty, len, width, label, stockId) {
   ).join('');
   row.innerHTML = `
     <td style="text-align:center;color:var(--text-muted);font-size:12px;font-family:'DM Mono',monospace">${partNum}</td>
-    <td><input class="std-input" type="text" id="cl-lbl-${id}" value="${label||''}" style="width:100%;box-sizing:border-box" placeholder="e.g. Long side"></td>
+    <td><input class="std-input" type="text" id="cl-lbl-${id}" value="${esc(label)||''}" style="width:100%;box-sizing:border-box" placeholder="e.g. Long side"></td>
     <td><input class="std-input" type="number" id="cl-qty-${id}" value="${qty||1}" min="1" step="1" style="width:100%;box-sizing:border-box"></td>
     <td><input class="std-input" type="number" id="cl-len-${id}" value="${len||''}" min="0.25" step="0.25" style="width:100%;box-sizing:border-box" placeholder='L"'></td>
     <td><input class="std-input" type="number" id="cl-wid-${id}" value="${width||''}" min="0.25" step="0.25" style="width:100%;box-sizing:border-box" placeholder='opt'></td>
@@ -4441,7 +4441,7 @@ function runCutList() {
     header.className = 'cl-mat-header';
     header.innerHTML = `
       <div class="cl-mat-dot" style="background:${color}"></div>
-      <span class="cl-mat-title">${stock.name}</span>
+      <span class="cl-mat-title">${esc(stock.name)}</span>
       <span class="cl-mat-count">${bins.length} board${bins.length !== 1 ? 's' : ''} · ${totalActualCuts} cut${totalActualCuts !== 1 ? 's' : ''} · ${wastePct}% waste</span>`;
     section.appendChild(header);
 
@@ -4651,9 +4651,9 @@ async function loadSavedCutLists() {
     const dateStr = modified.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const safeData = JSON.stringify(cl).replace(/"/g, '&quot;');
     return `<tr>
-      <td style="font-weight:600;color:var(--navy)">${cl.name}</td>
+      <td style="font-weight:600;color:var(--navy)">${esc(cl.name)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap">${dateStr}</td>
-      <td style="color:var(--text-muted);font-size:12px">${cl.notes || '—'}</td>
+      <td style="color:var(--text-muted);font-size:12px">${esc(cl.notes) || '—'}</td>
       <td style="white-space:nowrap">
         <div style="display:flex;gap:6px;justify-content:flex-end">
           <button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="loadCutList(${safeData})">Load</button>
