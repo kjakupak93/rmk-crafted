@@ -4937,7 +4937,7 @@ async function loadDayDetail() {
   (sRes.data||[]).forEach(s=>{
     html+=`<div class="slot-card available">
       <div class="slot-time">${fmtTime(s.start_time)} – ${fmtTime(s.end_time)}</div>
-      <div class="slot-info">Open${s.notes?' · '+s.notes:''}</div>
+      <div class="slot-info">Open${s.notes?' · '+esc(s.notes):''}</div>
       <span class="slot-badge open">Open</span>
       <button class="icon-btn" title="Edit" onclick="editSlot('${s.id}')">✏️</button>
       <button class="icon-btn" onclick="deleteSlot('${s.id}')">🗑️</button>
@@ -4947,7 +4947,7 @@ async function loadDayDetail() {
     const pi={cash:'💵',venmo:'💙',tbd:'❓'}[b.payment]||'';
     html+=`<div class="slot-card booked">
       <div class="slot-time">${fmtTime(b.pickup_time)}</div>
-      <div class="slot-info"><div class="slot-buyer">${b.name}${b.contact?' ('+b.contact+')':''}</div><div class="slot-details">${b.size?b.size+'"':''} ${b.amount?'$'+b.amount:''} ${pi} ${b.notes?'· '+b.notes:''}</div></div>
+      <div class="slot-info"><div class="slot-buyer">${esc(b.name)}${b.contact?' ('+esc(b.contact)+')':''}</div><div class="slot-details">${b.size?esc(b.size)+'"':''} ${b.amount?'$'+b.amount:''} ${pi} ${b.notes?'· '+esc(b.notes):''}</div></div>
       <span class="slot-badge booked">Booked</span>
       <button class="icon-btn" title="Edit" onclick="editBooking('${b.id}')">✏️</button>
       <button class="icon-btn" onclick="deleteBooking('${b.id}')">🗑️</button>
