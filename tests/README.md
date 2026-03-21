@@ -50,7 +50,7 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ### Authentication
 
-Each e2e test calls `login(page)` (from `tests/helpers/auth.ts`) which enters PIN 1234 and waits for the PIN gate to be dismissed. After login, each test navigates to its target page via the home tile grid.
+Each e2e test calls `login(page)` (from `tests/helpers/auth.ts`) which enters the PIN and waits for the PIN gate to be dismissed. After login, each test navigates to its target page via the home tile grid.
 
 ### Data Hygiene
 
