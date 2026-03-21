@@ -3458,15 +3458,15 @@ function orderCardHTML(o) {
   const overdueBadge = isOverdue ? `<span class="badge badge-overdue">Overdue</span>` : '';
   const itemRows = getItemRows(o);
   const subtitleItems = itemRows.length
-    ? itemRows.map(it => `${it.qty||1}× ${it.size||''}" — ${it.style||'Standard'}`).join('<br>')
-    : `${o.size||''}" — ${o.style||'Standard'}`;
-  const contactSuffix = o.contact ? ` · ${o.contact}` : '';
+    ? itemRows.map(it => `${it.qty||1}× ${esc(it.size)||''}" — ${esc(it.style)||'Standard'}`).join('<br>')
+    : `${esc(o.size)||''}" — ${esc(o.style)||'Standard'}`;
+  const contactSuffix = o.contact ? ` · ${esc(o.contact)}` : '';
   const addonIds = getItemAddons(o);
   const addonBadges = addonIds.length
-    ? `<div class="meta-item" style="color:var(--ocean)">✨ ${addonIds.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?a.label:id;}).join(' · ')}</div>`
+    ? `<div class="meta-item" style="color:var(--ocean)">✨ ${addonIds.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?esc(a.label):id;}).join(' · ')}</div>`
     : '';
   return `<div class="order-card s-${o.status}${overdueClass}">
-    <div class="card-title">${o.name}</div>
+    <div class="card-title">${esc(o.name)}</div>
     <div class="card-subtitle">${subtitleItems}${contactSuffix}</div>
     ${o.customer_booked ? '<span class="customer-booked-badge">📅 Self-booked</span>' : ''}
     <div class="card-meta">
@@ -3474,7 +3474,7 @@ function orderCardHTML(o) {
       <div class="meta-item"><span class="badge ${pc}">${pl}</span></div>
       ${pickup?`<div class="meta-item">${pickup}</div>`:''}
       ${addonBadges}
-      ${o.notes?`<div class="meta-item">📝 ${o.notes}</div>`:''}
+      ${o.notes?`<div class="meta-item">📝 ${esc(o.notes)}</div>`:''}
     </div>
     <div class="card-icon-row">
       ${overdueBadge}
