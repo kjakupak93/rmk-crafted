@@ -9,7 +9,7 @@ import { Page } from '@playwright/test';
  */
 export async function login(page: Page): Promise<void> {
   await page.goto('/');
-  await page.fill('#pin-input', '1234');
+  await page.fill('#pin-input', '9518');
   await page.press('#pin-input', 'Enter');
   // Use waitFor({state:'hidden'}) not expect().not.toBeVisible() —
   // the gate uses inline style.display='none', and waitFor has a built-in timeout.
