@@ -24,11 +24,11 @@ async function createOrder(page: Page, name: string, payment = 'unpaid'): Promis
 }
 
 test.beforeAll(async () => {
-  await cleanupTestData(['orders', 'sales']);
+  await cleanupTestData(['orders', 'sales', 'activity_log']);
 });
 
 test.afterAll(async () => {
-  await cleanupTestData(['orders', 'sales']);
+  await cleanupTestData(['orders', 'sales', 'activity_log']);
 });
 
 test('create order appears in Active tab', async ({ page }) => {
