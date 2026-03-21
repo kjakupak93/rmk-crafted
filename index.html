@@ -2170,7 +2170,7 @@ body {
         <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price-static" id="oap-shelf">+$30</span><input class="chip-price-input" type="number" min="0" value="30" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
       </div>
     </div>
-    <div class="form-group" style="max-width:180px"><label>Payment</label><select class="form-control" id="oPayment"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select></div>
+    <div class="form-group" style="max-width:180px"><label>Payment</label><select class="form-control" id="oPayment" onchange="onPaymentChange(this.value)"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select><span id="oVenmoFeeWrap" style="display:none;align-items:center;gap:4px;margin-top:6px;"><span style="font-size:0.85em;color:var(--text-muted)">+$</span><input class="form-control" type="number" id="oVenmoFee" min="0" step="0.01" style="width:70px" placeholder="0" onchange="onVenmoFeeChange(this.value)"><span style="font-size:0.85em;color:var(--text-muted)">fee</span></span></div>
     <div class="form-row">
       <div class="form-group"><label>Status</label><select class="form-control" id="oStatus"><option value="pending">Pending</option><option value="building">Building</option><option value="ready">Ready for Pickup</option><option value="completed">Completed</option></select></div>
       <div class="form-group"><label>Pickup Date</label><input class="form-control" type="date" id="oPickup"></div>
