@@ -1877,7 +1877,7 @@ body {
       <div class="summary-bar">
         <div class="sbar-item"><div class="sval" id="mb-spent">$0</div><div class="slbl">Total Spent</div></div>
         <div class="sbar-item"><div class="sval" id="mb-stock">$0</div><div class="slbl">Stock Value</div></div>
-        <div class="sbar-item"><div class="sval" id="mb-trips">0</div><div class="slbl">Lowes Runs</div></div>
+        <div class="sbar-item"><div class="sval" id="mb-trips">0</div><div class="slbl">Supply Runs</div></div>
       </div>
 
       <div class="build-calc">
@@ -1902,11 +1902,11 @@ body {
     <div class="tab-panel" id="mtab-purchases">
       <div class="summary-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
         <div class="summary-card c-sand"><div class="val" id="pur-stat-total">$0</div><div class="lbl">Total Spent</div></div>
-        <div class="summary-card"><div class="val" id="pur-stat-trips">0</div><div class="lbl">Trips to Lowes</div></div>
+        <div class="summary-card"><div class="val" id="pur-stat-trips">0</div><div class="lbl">Supply Trips</div></div>
         <div class="summary-card c-blue"><div class="val" id="pur-stat-avg">$0</div><div class="lbl">Avg per Trip</div></div>
       </div>
       <div class="section-header">
-        <h2>Lowes Purchase Log</h2>
+        <h2>Purchase Log</h2>
         <div style="display:flex;gap:8px">
           <button class="btn-secondary" onclick="downloadPurchaseCSV()">↓ CSV</button>
           <button class="btn-primary" onclick="openPurchaseModal()">+ Log Purchase</button>
@@ -2215,10 +2215,10 @@ body {
 <!-- Purchase modal -->
 <div class="modal-overlay" id="purchaseModal">
   <div class="modal">
-    <h2 id="purchModalTitle">Log Lowes Run</h2>
+    <h2 id="purchModalTitle">Log Purchase</h2>
     <div class="form-row">
       <div class="form-group"><label>Date</label><input class="form-control" type="date" id="pDate"></div>
-      <div class="form-group"><label>Store</label><input class="form-control" type="text" id="pStore" value="Lowes"></div>
+      <div class="form-group"><label>Store</label><input class="form-control" type="text" id="pStore" placeholder="e.g. Lowes, Home Depot, Amazon…"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Cedar pickets (qty)</label><input class="form-control" type="number" id="pPickets" placeholder="0" min="0" oninput="updatePurchEst()"></div>
@@ -4770,7 +4770,7 @@ function renderPurchaseList() {
 
 function openPurchaseModal(item=null) {
   editingPurchaseId=item?item.id:null;
-  document.getElementById('purchModalTitle').textContent=item?'Edit Purchase':'Log Lowes Run';
+  document.getElementById('purchModalTitle').textContent=item?'Edit Purchase':'Log Purchase';
   document.getElementById('purchSaveBtn').textContent=item?'Update':'Save';
   if (item) {
     document.getElementById('pDate').value=item.purchase_date||'';
@@ -4785,7 +4785,7 @@ function openPurchaseModal(item=null) {
     document.getElementById('pNotes').value=item.notes||'';
   } else {
     document.getElementById('pDate').value=new Date().toISOString().split('T')[0];
-    document.getElementById('pStore').value='Lowes';
+    document.getElementById('pStore').value='';
     ['pPickets','p22','p24','pDiscount','pNotes'].forEach(f=>document.getElementById(f).value='');
     document.getElementById('pPP').value=3.66;
     document.getElementById('p22p').value=3.23;
@@ -4841,7 +4841,7 @@ async function savePurchase() {
     await sb.from('stock').update({qty:Math.max(0,(stockData.pickets||0)+pickets)}).eq('material','pickets');
     await sb.from('stock').update({qty:Math.max(0,(stockData.twobytwo||0)+t22)}).eq('material','twobytwo');
     await sb.from('stock').update({qty:Math.max(0,(stockData.twobyfour||0)+t24)}).eq('material','twobyfour');
-    await logActivity('🛒', payload.store||'Lowes', `Materials purchase — $${total.toFixed(2)}`);
+    await logActivity('🛒', payload.store||'Supply run', `Materials purchase — $${total.toFixed(2)}`);
     showToast('Purchase logged & stock updated!','success');
     closeModal('purchaseModal'); loadStock(); loadPurchases(); loadRecentActivity();
   }
