@@ -23,6 +23,10 @@ async function createOrder(page: Page, name: string, payment = 'unpaid'): Promis
   await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
 }
 
+test.beforeAll(async () => {
+  await cleanupTestData(['orders', 'sales']);
+});
+
 test.afterAll(async () => {
   await cleanupTestData(['orders', 'sales']);
 });

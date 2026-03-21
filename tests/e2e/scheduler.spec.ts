@@ -35,6 +35,10 @@ async function clickFirstAvailableDay(page: Page): Promise<void> {
   await page.waitForSelector('#dayDetail', { state: 'visible', timeout: 5000 });
 }
 
+test.beforeAll(async () => {
+  await cleanupTestData(['schedule_slots', 'schedule_bookings']);
+});
+
 test.afterAll(async () => {
   await cleanupTestData(['schedule_slots', 'schedule_bookings']);
   for (const id of createdAvailabilityIds) {

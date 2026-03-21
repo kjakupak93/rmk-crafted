@@ -43,6 +43,10 @@ async function confirmDelete(page: Page): Promise<void> {
   await page.click('#confirmOkBtn');
 }
 
+test.beforeAll(async () => {
+  await cleanupTestData(['purchases', 'cut_lists']);
+});
+
 test.afterAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
 });

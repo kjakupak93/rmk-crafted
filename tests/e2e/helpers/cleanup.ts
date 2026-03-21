@@ -23,9 +23,10 @@ const TAG_COLUMN: Record<string, string> = {
 };
 
 /**
- * Delete all rows where the tag column starts with '[TEST]'.
+ * Delete all rows where the tag column starts with '[TEST'.
+ * Matches both '[TEST] ...' and '[TEST-...] ...' formats from any prior test run format.
  * Sweeps orphaned rows from prior crashed runs in addition to the current run.
- * URL encoding: '[TEST]%' → '%5BTEST%5D%25'
+ * URL encoding: '[TEST%' → '%5BTEST%25'
  */
 export async function cleanupTestData(tables: string[]): Promise<void> {
   for (const table of tables) {
@@ -35,7 +36,7 @@ export async function cleanupTestData(tables: string[]): Promise<void> {
       continue;
     }
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/${table}?${col}=like.%5BTEST%5D%25`,
+      `${SUPABASE_URL}/rest/v1/${table}?${col}=like.%5BTEST%25`,
       { method: 'DELETE', headers: HEADERS },
     );
     if (!res.ok) {
