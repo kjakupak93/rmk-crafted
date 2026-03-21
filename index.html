@@ -1515,7 +1515,6 @@ body {
       <button class="use-match-btn" onclick="applyMatch()">Use standard price</button>
     </div>
 
-    <div class="quote-stock-strip" id="quoteStockStrip"></div>
     <div class="section-label">Materials</div>
     <div class="picket-section">
       <h3>Cedar Pickets</h3>
@@ -1544,10 +1543,10 @@ body {
         <button class="addon-manage-btn" onclick="openAddonSettings()">✏️ Manage add-ons</button>
       </div>
       <div class="addon-grid" id="quoteAddonGrid">
-        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price-static" id="qap-sealant">+$10</span><input class="chip-price-input" type="number" min="0" value="10" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
-        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price-static" id="qap-liner">+$8</span><input class="chip-price-input" type="number" min="0" value="8" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
-        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price-static" id="qap-casters">+$15</span><input class="chip-price-input" type="number" min="0" value="15" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
-        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price-static" id="qap-shelf">+$12</span><input class="chip-price-input" type="number" min="0" value="12" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
+        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price-static" id="qap-sealant">+$20</span><input class="chip-price-input" type="number" min="0" value="20" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
+        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price-static" id="qap-liner">+$15</span><input class="chip-price-input" type="number" min="0" value="15" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
+        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price-static" id="qap-casters">+$40</span><input class="chip-price-input" type="number" min="0" value="40" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
+        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price-static" id="qap-shelf">+$30</span><input class="chip-price-input" type="number" min="0" value="30" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
       </div>
       <div class="addon-subtotal" id="quoteAddonSubtotal" style="display:none">
         <span id="quoteAddonSubtotalLabel" class="addon-sub-label"></span>
@@ -2695,10 +2694,7 @@ async function savePicketPrice() {
 
 async function loadQuotePageData() {
   try {
-    const [settingsRes, stockRes] = await Promise.all([
-      sb.from('settings').select('*'),
-      sb.from('stock').select('*')
-    ]);
+    const settingsRes = await sb.from('settings').select('*');
 
     if (settingsRes.error) console.warn('loadQuotePageData: settings fetch error', settingsRes.error);
 
@@ -2714,10 +2710,8 @@ async function loadQuotePageData() {
     const helper = document.getElementById('qHelperPPP');
     if (helper) helper.textContent = '$' + defaultPicketPrice;
 
-    // Render stock strip (quote-only, independent of stockData global)
-    const stock = {};
-    (stockRes.data || []).forEach(r => { stock[r.material] = r.qty || 0; });
-    renderQuoteStockStrip(stock);
+    // Sync addon chip prices with current ADDONS (handles localStorage overrides)
+    updateQuoteAddonPrices();
   } catch(e) {
     console.error('loadQuotePageData:', e);
   }

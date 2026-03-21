@@ -38,6 +38,10 @@ async function createQuote(page: Page, quoteName: string): Promise<void> {
   await expect(page.locator('#createQuoteModal')).not.toHaveClass(/open/, { timeout: 5000 });
 }
 
+test.beforeAll(async () => {
+  await cleanupTestData(['quotes', 'orders', 'cut_lists']);
+});
+
 test.afterAll(async () => {
   await cleanupTestData(['quotes', 'orders', 'cut_lists']);
 });
