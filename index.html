@@ -3996,13 +3996,13 @@ function renderSalesTable() {
   if (!data.length) {tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted)">No sales in this period.</td></tr>';return;}
   tbody.innerHTML=data.map(s=>`<tr>
     <td>${s.sale_date||''}</td>
-    <td style="font-family:'DM Mono',monospace">${s.size||''}</td>
+    <td style="font-family:'DM Mono',monospace">${esc(s.size)||''}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${s.qty||1}</td>
-    <td>${s.style||''}</td>
-    <td>${s.name||'—'}</td>
+    <td>${esc(s.style)||''}</td>
+    <td>${esc(s.name)||'—'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500">${(()=>{const _c=estimateOrderCost({size:s.size,price:s.price});const _p=s.price>0?Math.round(((s.price-_c)/s.price)*100):0;const _f=!s.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);return '$'+Number(s.price)+' <span style="color:'+marginColor(_p)+';font-size:0.8em;margin-left:4px">'+(_f?'~':'')+_p+'%</span>';})()}</td>
-    <td><span class="badge badge-${(s.payment||'').toLowerCase()}">${s.payment||''}</span></td>
-    <td style="color:var(--text-muted);font-size:12px">${s.notes||''}</td>
+    <td><span class="badge badge-${(s.payment||'').toLowerCase()}">${esc(s.payment)||''}</span></td>
+    <td style="color:var(--text-muted);font-size:12px">${esc(s.notes)||''}</td>
     <td style="display:flex;gap:4px">
       <button type="button" class="icon-btn" onclick="editSale('${s.id}')">✏️</button>
       <button type="button" class="icon-btn" onclick="deleteSale('${s.id}')">🗑️</button>
