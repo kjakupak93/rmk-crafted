@@ -10,7 +10,7 @@ test('wrong PIN shows error and clears input', async ({ page }) => {
 
 test('correct PIN dismisses gate and shows home page', async ({ page }) => {
   await page.goto('/');
-  await page.fill('#pin-input', '1234');
+  await page.fill('#pin-input', '9518');
   await page.press('#pin-input', 'Enter');
   await page.locator('#pin-gate').waitFor({ state: 'hidden' });
   await expect(page.locator('#page-home')).toBeVisible();

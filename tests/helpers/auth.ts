@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 
 /**
- * Logs into the app by entering PIN 1234.
+ * Logs into the app by entering the current PIN.
  *
  * IMPORTANT: The app IIFE always shows #pin-gate on every page load
  * regardless of sessionStorage. Every test must call login() via UI —
