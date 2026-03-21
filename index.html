@@ -3551,7 +3551,7 @@ function convertQuoteToOrder(id) {
 
 function _getVenmoFeeDefault() {
   const stored = localStorage.getItem('rmk_venmo_fee');
-  return stored !== null ? parseFloat(stored) || 0 : 3;
+  return stored !== null ? parseFloat(stored) || 3 : 3;
 }
 
 function onVenmoFeeChange(val) {
