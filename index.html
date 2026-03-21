@@ -3526,6 +3526,8 @@ function openOrderModal(order, prefill) {
   ['oName','oContact','oNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('oPickup').value='';
   document.getElementById('oPayment').value='unpaid';
+  document.getElementById('oVenmoFeeWrap').style.display = 'none';
+  document.getElementById('oVenmoFee').value = '';
   document.getElementById('oStatus').value='pending';
   document.getElementById('oItemsContainer').innerHTML='';
   resetAddonChips('orderAddonGrid');
@@ -3579,6 +3581,11 @@ async function editOrder(id) {
   document.getElementById('oName').value=data.name||'';
   document.getElementById('oContact').value=data.contact||'';
   document.getElementById('oPayment').value=data.payment||'unpaid';
+  document.getElementById('oVenmoFeeWrap').style.display = 'none';
+  if ((data.payment||'unpaid') === 'venmo') {
+    document.getElementById('oVenmoFeeWrap').style.display = 'flex';
+    document.getElementById('oVenmoFee').value = data.venmo_fee ?? 0;
+  }
   document.getElementById('oStatus').value=data.status||'pending';
   document.getElementById('oPickup').value=data.pickup_date||'';
   document.getElementById('oPickupTime').value=data.pickup_time||'';
