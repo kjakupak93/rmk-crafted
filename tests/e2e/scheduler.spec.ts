@@ -36,11 +36,11 @@ async function clickFirstAvailableDay(page: Page): Promise<void> {
 }
 
 test.beforeAll(async () => {
-  await cleanupTestData(['schedule_slots', 'schedule_bookings']);
+  await cleanupTestData(['schedule_slots', 'schedule_bookings', 'activity_log']);
 });
 
 test.afterAll(async () => {
-  await cleanupTestData(['schedule_slots', 'schedule_bookings']);
+  await cleanupTestData(['schedule_slots', 'schedule_bookings', 'activity_log']);
   for (const id of createdAvailabilityIds) {
     await cleanupById('availability_windows', id);
   }

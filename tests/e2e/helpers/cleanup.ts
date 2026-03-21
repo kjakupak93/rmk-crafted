@@ -20,6 +20,7 @@ const TAG_COLUMN: Record<string, string> = {
   cut_lists: 'name',
   schedule_slots: 'notes',
   schedule_bookings: 'name',
+  activity_log: 'name',
 };
 
 /**
