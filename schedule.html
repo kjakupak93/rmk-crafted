@@ -562,17 +562,17 @@
       <div class="form-section-title">Your contact info</div>
       <div class="form-group">
         <label class="form-label" for="input-name">Your name</label>
-        <input class="form-input" type="text" id="input-name" placeholder="Jane Smith" autocomplete="name" />
+        <input class="form-input" type="text" id="input-name" placeholder="Jane Smith" autocomplete="name" maxlength="100" />
         <div class="validation-hint" id="hint-name">Please enter your name.</div>
       </div>
       <div class="form-group">
         <label class="form-label" for="input-contact">Facebook / phone / email</label>
-        <input class="form-input" type="text" id="input-contact" placeholder="@yourname or 555-1234" />
+        <input class="form-input" type="text" id="input-contact" placeholder="@yourname or 555-1234" maxlength="100" />
         <div class="validation-hint" id="hint-contact">Please enter a way to reach you.</div>
       </div>
       <div class="form-group">
         <label class="form-label" for="input-notes">Notes (optional)</label>
-        <input class="form-input" type="text" id="input-notes" placeholder="Any pickup notes…" />
+        <input class="form-input" type="text" id="input-notes" placeholder="Any pickup notes…" maxlength="500" />
       </div>
 
       <button class="submit-btn" id="submit-btn" onclick="submitBooking()">
@@ -788,6 +788,11 @@
     const name = document.getElementById('input-name').value.trim();
     const contact = document.getElementById('input-contact').value.trim();
     const notes = document.getElementById('input-notes').value.trim();
+
+    // Length validation
+    if (name.length > 100) { alert('Name must be 100 characters or less.'); return; }
+    if (contact.length > 100) { alert('Contact info must be 100 characters or less.'); return; }
+    if (notes.length > 500) { alert('Notes must be 500 characters or less.'); return; }
 
     let valid = true;
     if (!name) { document.getElementById('hint-name').classList.add('show'); valid = false; }
