@@ -5113,8 +5113,8 @@ async function loadUpcoming() {
     return `<div class="pickup-card${isToday?' today-card':''}">
       <div class="date-badge"><div class="month">${MONTH_SHORT[parseInt(m)-1]}</div><div class="day">${parseInt(d)}</div></div>
       <div class="pickup-body">
-        <div class="pickup-buyer" style="display:flex;align-items:center;gap:6px">${u.name}${isToday?' <span style="background:var(--sand);color:white;font-size:10px;padding:2px 6px;border-radius:4px;font-family:DM Mono,monospace">TODAY</span>':''} ${orderLink}</div>
-        <div class="pickup-meta">${u.size?'<span>'+u.size+'"</span>':''} ${u.amount?'<span>$'+u.amount+' '+pi+'</span>':''} ${u.notes?'<span>'+u.notes+'</span>':''}</div>
+        <div class="pickup-buyer" style="display:flex;align-items:center;gap:6px">${esc(u.name)}${isToday?' <span style="background:var(--sand);color:white;font-size:10px;padding:2px 6px;border-radius:4px;font-family:DM Mono,monospace">TODAY</span>':''} ${orderLink}</div>
+        <div class="pickup-meta">${u.size?'<span>'+esc(u.size)+'"</span>':''} ${u.amount?'<span>$'+u.amount+' '+pi+'</span>':''} ${u.notes?'<span>'+esc(u.notes)+'</span>':''}</div>
       </div>
       <div class="pickup-time">${fmtTime(u.pickup_time)}</div>
     </div>`;
