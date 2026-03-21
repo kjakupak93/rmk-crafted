@@ -1473,15 +1473,40 @@ body {
     document.getElementById('pin-gate').style.display = 'flex';
     document.body.style.overflow = 'hidden';
   })();
+  let _pinAttempts = 0;
+  let _pinLockedUntil = 0;
   function checkPin() {
-    const PIN = '1234'; // ← Same PIN here
+    // NOTE: visible in page source — real security is Supabase RLS
+    const PIN = '7291';
+    const errEl = document.getElementById('pin-error');
+    const now = Date.now();
+    if (now < _pinLockedUntil) {
+      const secs = Math.ceil((_pinLockedUntil - now) / 1000);
+      errEl.textContent = 'Too many attempts. Try again in ' + secs + 's.';
+      errEl.style.display = 'block';
+      return;
+    }
     const val = document.getElementById('pin-input').value;
     if (val === PIN) {
+      _pinAttempts = 0;
       sessionStorage.setItem('rmk_auth', 'true');
       document.getElementById('pin-gate').style.display = 'none';
       document.body.style.overflow = '';
     } else {
-      document.getElementById('pin-error').style.display = 'block';
+      _pinAttempts++;
+      const delays = [0, 0, 0, 5000, 15000, 30000, 60000];
+      const delay = delays[Math.min(_pinAttempts, 6)];
+      if (delay > 0) {
+        _pinLockedUntil = Date.now() + delay;
+        const secs = delay / 1000;
+        errEl.textContent = 'Too many attempts. Try again in ' + secs + 's.';
+      } else {
+        const remaining = 3 - _pinAttempts;
+        errEl.textContent = remaining > 0
+          ? 'Incorrect PIN. ' + remaining + ' attempt' + (remaining === 1 ? '' : 's') + ' remaining.'
+          : 'Incorrect PIN.';
+      }
+      errEl.style.display = 'block';
       document.getElementById('pin-input').value = '';
       document.getElementById('pin-input').focus();
     }
