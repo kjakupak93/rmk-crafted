@@ -4260,7 +4260,7 @@ function renderStockTypes() {
     list.innerHTML = clStockTypes.map((s, si) => `
       <div class="cl-stock-row">
         <div class="cl-stock-dot" style="background:${CL_STOCK_COLORS[si % CL_STOCK_COLORS.length]}"></div>
-        <span class="cl-stock-name">${s.name}</span>
+        <span class="cl-stock-name">${esc(s.name)}</span>
         <span class="cl-stock-len">${s.len}"${s.width ? ' × ' + s.width + '"' : ''}</span>
         <button class="cl-stock-remove" onclick="removeStockType('${s.id}')" title="Remove">×</button>
       </div>`).join('');
@@ -4271,7 +4271,7 @@ function renderStockTypes() {
     const sel = document.getElementById('cl-mat-' + id);
     if (!sel) return;
     const current = sel.value;
-    sel.innerHTML = clStockTypes.map(s => `<option value="${s.id}">${s.shortName || s.name}</option>`).join('');
+    sel.innerHTML = clStockTypes.map(s => `<option value="${s.id}">${esc(s.shortName || s.name)}</option>`).join('');
     if (clStockTypes.find(s => s.id === current)) sel.value = current;
   });
 }
@@ -4304,7 +4304,7 @@ function addCutRow(qty, len, width, label, stockId) {
   const row = document.createElement('tr');
   row.id = 'cl-row-' + id;
   const stockOptions = clStockTypes.map(s =>
-    `<option value="${s.id}"${s.id === stockId ? ' selected' : ''}>${s.shortName || s.name}</option>`
+    `<option value="${s.id}"${s.id === stockId ? ' selected' : ''}>${esc(s.shortName || s.name)}</option>`
   ).join('');
   row.innerHTML = `
     <td style="text-align:center;color:var(--text-muted);font-size:12px;font-family:'DM Mono',monospace">${partNum}</td>
@@ -4471,8 +4471,8 @@ function runCutList() {
         const groupColorIdx = cutGroupIds.indexOf(c.gi);
         const color = CL_COLORS[groupColorIdx % CL_COLORS.length];
         const dimStr = c.width ? `${c.len}×${c.width}"` : `${c.len}"`;
-        const displayLabel = c.label || dimStr;
-        const singleLine = displayLabel !== dimStr ? `${dimStr} — ${displayLabel}` : dimStr;
+        const displayLabel = c.label ? esc(c.label) : dimStr;
+        const singleLine = c.label ? `${dimStr} — ${displayLabel}` : dimStr;
 
         const usedWidth = c.totalWidth || c.width;
         const heightPct = (stock.width && usedWidth && usedWidth < stock.width)
@@ -4538,7 +4538,7 @@ function runCutList() {
       const item = document.createElement('div');
       item.className = 'cl-legend-item';
       const dimStr = g.width ? `${g.len}×${g.width}"` : `${g.len}"`;
-      const displayLabel = g.label ? `${g.qty}× ${dimStr} — ${g.label}` : `${g.qty}× ${dimStr}`;
+      const displayLabel = g.label ? `${g.qty}× ${dimStr} — ${esc(g.label)}` : `${g.qty}× ${dimStr}`;
       item.innerHTML = `<div class="cl-legend-swatch" style="background:${CL_COLORS[idx % CL_COLORS.length]}"></div>${displayLabel}`;
       legend.appendChild(item);
     });
@@ -4562,11 +4562,11 @@ function runCutList() {
           const dimStr = g.width ? `${g.len}" × ${g.width}"` : `${g.len}"`;
           return `<tr>
             <td style="text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)">${gi + 1}</td>
-            <td style="font-weight:500">${g.label || '—'}</td>
+            <td style="font-weight:500">${esc(g.label) || '—'}</td>
             <td style="font-family:'DM Mono',monospace;text-align:center">${g.qty}</td>
             <td style="font-family:'DM Mono',monospace">${g.len}"</td>
             <td style="font-family:'DM Mono',monospace">${g.width ? g.width + '"' : '—'}</td>
-            <td style="font-size:12px;color:var(--text-muted)">${stock ? stock.name : '—'}</td>
+            <td style="font-size:12px;color:var(--text-muted)">${stock ? esc(stock.name) : '—'}</td>
           </tr>`;
         }).join('')}</tbody>
       </table>
@@ -5127,7 +5127,7 @@ async function loadWindows() {
   const wList=document.getElementById('windowsList');
   if (!windows.length) {wList.innerHTML='<div style="color:var(--text-muted);font-size:13px">No availability windows set yet.</div>';} 
   else {
-    wList.innerHTML=windows.map(w=>`<div class="window-item"><div class="wtext"><strong>${w.days}</strong></div><div class="wtime">${fmtTime(w.start_time)} – ${fmtTime(w.end_time)}</div><button class="icon-btn" onclick="deleteWindow('${w.id}')">🗑️</button></div>`).join('');
+    wList.innerHTML=windows.map(w=>`<div class="window-item"><div class="wtext"><strong>${esc(w.days)}</strong></div><div class="wtime">${fmtTime(w.start_time)} – ${fmtTime(w.end_time)}</div><button class="icon-btn" onclick="deleteWindow('${w.id}')">🗑️</button></div>`).join('');
   }
   const wStr=windows.length?windows.map(w=>`  • ${w.days}: ${fmtTime(w.start_time)} – ${fmtTime(w.end_time)}`).join('\n'):"  • Message me and we'll find a time that works!";
   document.getElementById('shareMsgBox').textContent=`Hi! Thanks for your interest in RMK Crafted 🪵\n\nI do pickup only from Oceanside, CA.\nHere are my usual available times:\n${wStr}\n\nJust let me know what works and I'll confirm!\n\nPayment: Cash or Venmo (@RMKCrafted)\n\nLooking forward to it! 🌿`;
