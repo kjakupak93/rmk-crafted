@@ -5,7 +5,7 @@
 
 ## Problem
 
-Venmo transactions incur fees paid by the seller. When customers pay via Venmo, the seller wants to collect a small upcharge to offset those fees. Currently there is no way to record or apply a Venmo fee in the order flow.
+Venmo transactions incur fees paid by the seller. When customers pay via Venmo, the seller wants to collect a small upcharge to offset those fees.
 
 ## Requirements
 
@@ -17,45 +17,85 @@ Venmo transactions incur fees paid by the seller. When customers pay via Venmo, 
 
 ## UI — Order Modal
 
-**Location:** The existing Payment form group (contains `#oPayment` select).
+**HTML structure:** Add a wrapper span (`#oVenmoFeeWrap`) inside the Payment `form-group` div, after `#oPayment`. It contains a "+$" prefix, `#oVenmoFee` numeric input, and "fee" suffix. Hidden by default (`display:none`).
 
-**Behavior:**
-- Default state: fee input is hidden.
-- On `change` of `#oPayment` to `"venmo"`: show a `+$__ fee` numeric input (`#oVenmoFee`) inline next to the select.
-- Pre-fill `#oVenmoFee` from `localStorage` key `rmk_venmo_fee` (default: `3` if not set).
-- On blur/change of `#oVenmoFee`: save new value to `localStorage.rmk_venmo_fee`.
-- On `change` of `#oPayment` away from `"venmo"`: hide and clear `#oVenmoFee`.
+**Behavior — `openOrderModal()` (new order path):**
+- Unconditionally hide `#oVenmoFeeWrap` and clear `#oVenmoFee`.
+- No conditional check for pre-set payment — `openOrderModal()` always resets payment to `"unpaid"`, so Venmo is never pre-set on new orders.
+
+**Behavior — `editOrder(id)` (edit path):**
+- Unconditionally hide `#oVenmoFeeWrap` before populating fields.
+- After setting `oPayment.value = data.payment`: if `data.payment === "venmo"`, show `#oVenmoFeeWrap` and set `#oVenmoFee.value = data.venmo_fee` (use the stored value as-is, even if `0` — do not fall back to localStorage for existing orders).
+
+**Behavior — `#oPayment` change handler:**
+- On change to `"venmo"`: show `#oVenmoFeeWrap`.
+  - If in edit mode (`currentEditOrder !== null`): pre-fill `#oVenmoFee` with `currentEditOrder.venmo_fee`.
+  - Otherwise (new order): pre-fill from `localStorage.rmk_venmo_fee` → `3` (hardcoded fallback).
+- On change away from `"venmo"`: hide `#oVenmoFeeWrap`. Do NOT clear localStorage.
+
+**Saving to localStorage:**
+- On the `change` event of `#oVenmoFee`.
+- Also at the top of `saveOrder()` before building the payload (read current input value if fee wrapper is visible).
+
+**Reading the fee:**
+```js
+const venmoFee = document.getElementById('oPayment').value === 'venmo'
+  ? (parseFloat(document.getElementById('oVenmoFee').value) || 0)
+  : 0;
+```
+Treat empty, non-numeric, or negative as `0`.
+
+**Input constraints:** `type="number"`, `min="0"`, `step="0.01"`.
 
 The planter price + add-ons total is unaffected. The fee is a separate tracked amount.
 
 ## Database
 
 ### `orders` table
-Add column: `venmo_fee NUMERIC DEFAULT 0`
-
-- Set to the fee amount when payment is Venmo.
-- Set to `0` (or omitted, falling back to default) for Cash/Unpaid orders.
+```sql
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS venmo_fee NUMERIC DEFAULT 0;
+```
 
 ### `sales` table
-Add column: `venmo_fee NUMERIC DEFAULT 0`
+```sql
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS venmo_fee NUMERIC DEFAULT 0;
+```
 
-- Populated from the order's `venmo_fee` when an order is marked complete and a sale record is inserted.
-- Also populated when logging a manual sale (sales modal) — same Venmo-triggered inline input pattern applied there if desired, or default `0` for now.
+After migration, `select('*')` on either table returns `venmo_fee` automatically.
 
 ## Data Flow
 
-1. User opens Order modal, selects Venmo → fee input appears, pre-filled.
-2. User edits fee if needed → saved to localStorage.
-3. User saves order → `saveOrder()` reads `#oVenmoFee` value (or `0` if hidden), includes `venmo_fee` in Supabase payload.
-4. Order completes (via "Complete Order" modal or status change) → existing sale insert picks up `venmo_fee` from order data.
-5. Manual sale log (`saveSale()`) → `venmo_fee` defaults to `0` (no UI change needed for v1).
+### `saveOrder()`
+1. Compute `venmoFee` (see Reading the fee above).
+2. Also save to `localStorage` at this point (belt-and-suspenders with the `change` event).
+3. `venmo_fee: venmoFee` must be included **in the main `payload` object literal** — alongside `price`, `payment`, `status`, etc. Do not add it as a separate mutation after the fact.
+4. The `orders` upsert uses this payload directly.
+5. If auto-completing inline (the `isNowCompletedPaid` block), the `sales` insert is built from `payload` fields — `venmo_fee: payload.venmo_fee` is included there.
+6. The `schedule_bookings` row uses `amount: payload.price` (planter price only). `venmo_fee` is NOT stored in `schedule_bookings`.
+
+### `completeOrder` / `_doCompleteOrder` / `finishCompleteOrder`
+- `completeOrder(id)` fetches with `select('*')` → `venmo_fee` is on the returned `data` object after migration.
+- `_doCompleteOrder(data, payment)` inserts to `sales` — include `venmo_fee: data.venmo_fee || 0` in the insert payload.
+- `finishCompleteOrder(method)` mutates `data.payment` in place then passes `data` to `_doCompleteOrder`. No re-fetch needed. No fee input on the Collect Payment modal — fee was captured at order-save time and persisted to the database.
+
+### `editSale` / `saveSale`
+- `venmo_fee` is **not** a form input in the sale modal and must not appear in the `saveSale` update payload.
+- Excluding it from the payload causes Supabase to leave the column untouched on update — the stored value is preserved as-is. This is the correct behavior.
+- For a new manual sale insert: `venmo_fee: 0`.
+
+## Complete Order Modal — Fee Display
+
+Out of scope for v1.
 
 ## Profit Calculations
 
-No changes. `price` remains the planter revenue. `venmo_fee` is additive income tracked separately. Margin/cost estimation functions are unaffected.
+No changes. `price` remains the planter revenue. `venmo_fee` is additive income tracked separately.
 
 ## Out of Scope
 
-- Venmo fee on bookings or quick-book modals (these don't store sales directly).
-- Displaying fee totals in analytics (future).
-- Manual sale modal Venmo fee input (default `0` for v1).
+- Venmo fee on bookings or quick-book modals.
+- `markAllPaid('venmo')` — updates `payment` field only, no sale inserts, no `venmo_fee` risk.
+- `schedule_bookings.amount` — stores planter price only, unchanged.
+- Analytics fee totals (future).
+- Manual sale modal fee input — edits preserve stored value via Supabase partial update.
+- Fee display in "Complete Order" summary modal.
