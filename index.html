@@ -3549,6 +3549,27 @@ function convertQuoteToOrder(id) {
   openOrderModal(null, { name: quote.name || '', notes: quote.notes || '', price: quote.price });
 }
 
+function _getVenmoFeeDefault() {
+  const stored = localStorage.getItem('rmk_venmo_fee');
+  return stored !== null ? parseFloat(stored) || 0 : 3;
+}
+
+function onVenmoFeeChange(val) {
+  const n = parseFloat(val);
+  if (!isNaN(n) && n >= 0) localStorage.setItem('rmk_venmo_fee', n);
+}
+
+function onPaymentChange(val) {
+  const wrap = document.getElementById('oVenmoFeeWrap');
+  if (val === 'venmo') {
+    wrap.style.display = 'flex';
+    const fee = currentEditOrder ? (currentEditOrder.venmo_fee ?? _getVenmoFeeDefault()) : _getVenmoFeeDefault();
+    document.getElementById('oVenmoFee').value = fee;
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
 async function editOrder(id) {
   const {data} = await sb.from('orders').select('*').eq('id',id).single();
   if (!data) return;
