@@ -4767,13 +4767,13 @@ function renderPurchaseList() {
   if (!filtered.length) {tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted)">No purchases in this period.</td></tr>';return;}
   tbody.innerHTML=filtered.map(p=>`<tr>
     <td>${p.purchase_date||''}</td>
-    <td>${p.store||'Lowes'}</td>
+    <td>${esc(p.store)||'Lowes'}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${p.pickets||'—'}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${p.twobytwo||'—'}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${p.twobyfour||'—'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500">${p.discount>0?'-$'+(p.discount||0).toFixed(2):'—'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--navy);font-weight:500">$${(p.total||0).toFixed(2)}</td>
-    <td style="color:var(--text-muted);font-size:12px">${p.notes||''}</td>
+    <td style="color:var(--text-muted);font-size:12px">${esc(p.notes)||''}</td>
     <td style="display:flex;gap:4px">
       <button type="button" class="icon-btn" onclick="editPurchase(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
       <button type="button" class="icon-btn" onclick="deletePurchase('${p.id}')">🗑️</button>
