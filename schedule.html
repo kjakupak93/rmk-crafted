@@ -633,20 +633,27 @@
   // ── Init ──
   async function init() {
     const params = new URLSearchParams(window.location.search);
-    orderId = params.get('order');
+    const bookingToken = params.get('token') || params.get('order'); // ?order= fallback for old links
 
-    if (!orderId) {
+    if (!bookingToken) {
       showError('No order linked', 'This link doesn\'t have an order attached. Ask RMK Crafted to resend your booking link.');
       return;
     }
 
-    const { data, error } = await sb.from('orders').select('*').eq('id', orderId).single();
+    let data, error;
+    if (params.get('token')) {
+      ({ data, error } = await sb.from('orders').select('*').eq('booking_token', bookingToken).maybeSingle());
+    } else {
+      // Legacy ?order=<id> links
+      ({ data, error } = await sb.from('orders').select('*').eq('id', bookingToken).maybeSingle());
+    }
 
     if (error || !data) {
       showError('Order not found', 'We couldn\'t find your order. This link may be invalid or expired. Please reach out to RMK Crafted directly.');
       return;
     }
 
+    orderId = data.id;
     order = data;
 
     // Check if already booked

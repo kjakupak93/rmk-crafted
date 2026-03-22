@@ -5338,7 +5338,9 @@ function formatTime(hhmm) {
 function copyBookingLink(orderId, e) {
   const btn = e.currentTarget;
   const base = window.location.origin + window.location.pathname.replace('index.html', '');
-  const url = base + 'schedule.html?order=' + orderId;
+  const orderObj = allOrders.find(o => o.id === orderId);
+  const token = orderObj?.booking_token || orderId;
+  const url = base + 'schedule.html?token=' + token;
   navigator.clipboard.writeText(url).then(() => {
     const orig = btn.innerHTML;
     btn.innerHTML = '✓ Copied!';
