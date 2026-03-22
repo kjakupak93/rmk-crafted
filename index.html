@@ -3159,7 +3159,7 @@ function onDimChange() {
 function applyMatch() {
   if (matchedSize) {
     document.getElementById('qOverride').value = matchedSize.price;
-    document.getElementById('qPickets').value = estPickets(matchedSize.l,matchedSize.w,matchedSize.h);
+    document.getElementById('qPickets').value = matchedSize.pickets || estPickets(matchedSize.l,matchedSize.w,matchedSize.h);
   }
 }
 
@@ -4018,7 +4018,6 @@ function openInvModal() {
 }
 
 async function saveInvItem() {
-  const id=document.getElementById('editInvId').value;
   const addons = getSelectedAddonIds('invAddonGrid');
   const payload={size:document.getElementById('iSize').value,style:document.getElementById('iStyle').value,price:parseFloat(document.getElementById('iPrice').value)||0,qty:parseInt(document.getElementById('iQty').value)||1,notes:document.getElementById('iNotes').value,add_ons:addons.length?addons:null};
   if (!payload.size) {showToast('Size required','error');return;}
@@ -4055,7 +4054,7 @@ let purchasesFilter = 'all';
 
 function setSalesFilter(period, btn) {
   salesFilter = period;
-  document.querySelectorAll('.sales-filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#otab-sales .sales-filter-btn').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderSalesTable();
 }
@@ -5183,7 +5182,7 @@ async function loadUpcoming() {
   const weekEnd=new Date(today);weekEnd.setDate(today.getDate()+7);
   const [{data:bookData},{data:ordData}]=await Promise.all([
     sb.from('schedule_bookings').select('*').gte('booking_date',tk).order('booking_date').order('pickup_time'),
-    sb.from('orders').select('id,name,customer_name,status').not('status','eq','completed')
+    sb.from('orders').select('id,name,status').not('status','eq','completed')
   ]);
   const upcoming=bookData||[];
   const activeOrds=ordData||[];

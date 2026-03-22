@@ -117,3 +117,125 @@ test('delete order removes it from Active tab', async ({ page }) => {
 
   await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0);
 });
+
+test('order filter buttons narrow visible cards', async ({ page }) => {
+  await goToOrders(page);
+  const pendingName = `${TAG} Filter Pending`;
+  const buildingName = `${TAG} Filter Building`;
+
+  await createOrder(page, pendingName);
+  await createOrder(page, buildingName);
+
+  // Advance the building order to "building" status
+  const buildingCard = () => page.locator('.order-card').filter({ hasText: buildingName });
+  await buildingCard().locator('button:has-text("→ Building")').click();
+  await expect(buildingCard().locator('button:has-text("→ Ready")')).toBeVisible({ timeout: 10000 });
+
+  // Filter by Pending — only pending card should be visible
+  await page.locator('#page-orders button:has-text("Pending")').click();
+  await expect(page.locator('.order-card').filter({ hasText: pendingName })).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('.order-card').filter({ hasText: buildingName })).toHaveCount(0);
+
+  // Filter by Building — only building card should be visible
+  await page.locator('#page-orders button:has-text("Building")').click();
+  await expect(page.locator('.order-card').filter({ hasText: buildingName })).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('.order-card').filter({ hasText: pendingName })).toHaveCount(0);
+
+  // Filter by All — both cards visible again
+  await page.locator('#page-orders button:has-text("All")').click();
+  await expect(page.locator('.order-card').filter({ hasText: pendingName })).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('.order-card').filter({ hasText: buildingName })).toBeVisible({ timeout: 5000 });
+});
+
+test('complete order via Venmo payment moves to Sales History', async ({ page }) => {
+  await goToOrders(page);
+  const name = `${TAG} Venmo Complete`;
+  await createOrder(page, name, 'unpaid');
+
+  const card = page.locator('.order-card').filter({ hasText: name });
+  await card.locator('button:has-text("✅")').click();
+
+  await page.waitForSelector('#completePaymentModal.open');
+  await page.click('#completePaymentModal button:has-text("Venmo")');
+
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0);
+  await page.click('#orders-tabs button:has-text("Sales History")');
+  await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
+});
+
+test('complete order via Skip — not paid yet moves to Sales History', async ({ page }) => {
+  await goToOrders(page);
+  const name = `${TAG} Skip Complete`;
+  await createOrder(page, name, 'unpaid');
+
+  const card = page.locator('.order-card').filter({ hasText: name });
+  await card.locator('button:has-text("✅")').click();
+
+  await page.waitForSelector('#completePaymentModal.open');
+  await page.click('#completePaymentModal button:has-text("Skip")');
+
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0);
+  await page.click('#orders-tabs button:has-text("Sales History")');
+  await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
+});
+
+test('complete a pre-paid order bypasses payment modal', async ({ page }) => {
+  await goToOrders(page);
+  const name = `${TAG} Prepaid Complete`;
+  await createOrder(page, name, 'cash');
+
+  const card = page.locator('.order-card').filter({ hasText: name });
+  await card.locator('button:has-text("✅")').click();
+
+  // Payment modal should NOT open — pre-paid orders skip it
+  await expect(page.locator('#completePaymentModal')).not.toHaveClass(/open/);
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0);
+
+  await page.click('#orders-tabs button:has-text("Sales History")');
+  await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
+});
+
+test('mark all paid — cash path clears unpaid badges', async ({ page }) => {
+  await goToOrders(page);
+  const name1 = `${TAG} MarkPaid 1`;
+  const name2 = `${TAG} MarkPaid 2`;
+
+  await createOrder(page, name1, 'unpaid');
+  await createOrder(page, name2, 'unpaid');
+
+  await expect(page.locator('#markPaidBtn')).toBeVisible({ timeout: 10000 });
+  await page.click('#markPaidBtn');
+
+  await page.waitForSelector('#markPaidModal.open');
+  await page.locator('#markPaidModal button:has-text("Cash")').click();
+
+  // After marking paid, neither card should show an unpaid badge
+  await expect(page.locator('.order-card').filter({ hasText: name1 }).locator('.badge-unpaid')).toHaveCount(0);
+  await expect(page.locator('.order-card').filter({ hasText: name2 }).locator('.badge-unpaid')).toHaveCount(0);
+});
+
+test('multi-item order — total reflects both items', async ({ page }) => {
+  await goToOrders(page);
+  const name = `${TAG} Multi Item`;
+
+  await page.click('button:has-text("+ New Order")');
+  await page.waitForSelector('#orderModal.open');
+  await page.fill('#oName', name);
+
+  // Fill first item
+  await page.locator('#oItemsContainer .item-size').first().fill('36×16×16');
+  await page.locator('#oItemsContainer .item-price').first().fill('60');
+
+  // Add second item row
+  await page.click('button:has-text("+ Add Item")');
+
+  // Fill second item
+  await page.locator('#oItemsContainer .item-size').last().fill('48×16×16');
+  await page.locator('#oItemsContainer .item-price').last().fill('85');
+
+  // Verify total shows $145
+  await expect(page.locator('#oItemsTotal')).toContainText('145');
+
+  await page.click('button[onclick="saveOrder()"]');
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
+});
