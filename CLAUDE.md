@@ -7,12 +7,14 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 - Frontend: HTML, JavaScript (vanilla) — single `index.html`, no build step, no framework
 - Backend: Supabase (PostgreSQL + RLS policies), client variable `sb`
 - Hosted on GitHub Pages — commit and push to `main`, auto-deploys in ~60s
-- Fonts: Playfair Display, DM Mono, DM Sans (Google Fonts)
+- Fonts: Playfair Display, DM Mono, DM Sans — self-hosted in `fonts/` (no CDN dependency)
 - Charts: Chart.js v4 (CDN)
 - Always check that new Supabase tables have proper RLS policies and that schema columns match the app code before declaring a feature complete.
 
 ## File Structure
 - `index.html` — CSS first, then HTML, then JS (all in one file)
+- `schedule.html` — public customer booking page (no auth required)
+- `fonts/` — self-hosted WOFF2 files + `fonts.css` (Playfair Display, DM Mono, DM Sans)
 - `manifest.json` — PWA manifest
 - `sw.js` — Service worker: caches app shell, auto-reloads on new deploy (`skipWaiting` + `controllerchange`)
 - `icon.png` — 1024×1024 app icon (JPEG named .png)
@@ -35,7 +37,10 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 | `cut_lists` | Saved cut lists — columns: `id`, `name`, `kerf`, `cuts` (JSONB), `stock_types` (JSONB), `notes`, `created_at`, `updated_at` |
 | `quotes` | Quotes generated from cut lists — columns: `id`, `name`, `price`, `cut_list_id`, `cut_list_name`, `picket_count`, `notes`, `created_at` |
 
-RLS is enabled on all tables. `cut_lists` and `quotes` have open anon policies (SELECT/INSERT/UPDATE/DELETE) — this is intentional for a single-user internal tool.
+RLS is enabled on all tables. All business tables require `authenticated` role. Anon has SELECT + UPDATE on `orders` (for `schedule.html` booking flow) and INSERT on `schedule_bookings`. The `orders` table also has a `booking_token` UUID column (indexed) — `schedule.html` resolves orders by `?token=<uuid>`, not `?order=<id>`.
+
+### Authentication
+Dashboard uses Supabase Auth (email/password). The `#pin-gate` div is shown immediately on load and hidden by `sb.auth.onAuthStateChange()` once a session is confirmed. `signIn()` calls `sb.auth.signInWithPassword()`. Sign-out clears the session and re-shows the gate. The Supabase client `sb` is exposed on `window.sb` for use in Playwright `page.evaluate()` calls.
 
 ## App Structure
 Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pages load data when navigated to (not all at startup).
@@ -64,7 +69,9 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
 
 **Board diagram**: each bar = one board. Cuts are wrapped in column-flex containers — width scrap (unused board width) appears as a tan block above the piece; batched rip cuts show individual sub-pieces with white separator lines. `align-items:stretch` on `.picket-bar`.
 
-**Save/load**: `saveCutList()` checks `cl-name.dataset.savedId` — if set (loaded from DB), does an UPDATE; otherwise INSERT. `loadCutList()` sets `savedId` on the name input. `clearCutList()` deletes `savedId`. Saved lists shown as a table (Name / Last Modified / Notes) at the bottom of the page.
+**Save/load**: `saveCutList()` checks `cl-name.dataset.savedId` — if set (loaded from DB), does an UPDATE; otherwise INSERT. `loadCutList(idOrObj)` accepts an ID string (looks up from `allCutLists` module-level array) or a legacy object. `clearCutList()` deletes `savedId`. Saved lists shown as a table (Name / Last Modified / Notes) at the bottom of the page.
+
+**XSS safety**: `loadSavedCutLists()` uses ID-only `onclick="loadCutList('${cl.id}')"` (not full JSON). `renderPurchaseList()` uses `onclick="editPurchase('${p.id}')"`. Both functions resolve the full object from the corresponding module-level array (`allCutLists`, `allPurchases`). The board diagram uses `textContent` (not innerHTML) for cut-piece labels.
 
 **Stock short names**: `CL_DEFAULT_STOCK` entries have a `shortName` field used in dropdowns (e.g. `Picket 6'`); full `name` used in diagram headers.
 
@@ -158,5 +165,5 @@ if (!o._justOpened) closeModal(...);
 ```
 Applied to `openAddonSettings()`. Overlay handler near bottom of JS.
 
-### Pin-Gate (auth screen)
-Pin-gate uses `sessionStorage.rmk_auth`. Never put both `display:none` and `display:flex` in the same inline style — the last one wins and breaks show/hide.
+### Auth Gate (`#pin-gate`)
+The gate HTML is above the main `<script>` block, so `sb` is not yet defined when the gate appears. Auth logic (`getSession`, `onAuthStateChange`, `signIn`) is inside `initAuth()` which runs inside the main `<script>` block after `sb` is created.
