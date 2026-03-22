@@ -134,12 +134,12 @@ test('order filter buttons narrow visible cards', async ({ page }) => {
   // Filter by Pending — only pending card should be visible
   await page.locator('#page-orders button:has-text("Pending")').click();
   await expect(page.locator('.order-card').filter({ hasText: pendingName })).toBeVisible({ timeout: 5000 });
-  await expect(page.locator('.order-card').filter({ hasText: buildingName })).toHaveCount(0);
+  await expect(page.locator('.order-card').filter({ hasText: buildingName })).not.toBeVisible();
 
   // Filter by Building — only building card should be visible
   await page.locator('#page-orders button:has-text("Building")').click();
   await expect(page.locator('.order-card').filter({ hasText: buildingName })).toBeVisible({ timeout: 5000 });
-  await expect(page.locator('.order-card').filter({ hasText: pendingName })).toHaveCount(0);
+  await expect(page.locator('.order-card').filter({ hasText: pendingName })).not.toBeVisible();
 
   // Filter by All — both cards visible again
   await page.locator('#page-orders button:has-text("All")').click();
