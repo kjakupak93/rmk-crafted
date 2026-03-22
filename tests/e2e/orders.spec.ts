@@ -164,7 +164,7 @@ test('complete order via Venmo payment moves to Sales History', async ({ page })
   await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
 });
 
-test('complete order via Skip — not paid yet moves to Sales History', async ({ page }) => {
+test('Skip — not paid yet closes payment modal and order stays in Active', async ({ page }) => {
   await goToOrders(page);
   const name = `${TAG} Skip Complete`;
   await createOrder(page, name, 'unpaid');
@@ -175,9 +175,9 @@ test('complete order via Skip — not paid yet moves to Sales History', async ({
   await page.waitForSelector('#completePaymentModal.open');
   await page.click('#completePaymentModal button:has-text("Skip")');
 
-  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0);
-  await page.click('#orders-tabs button:has-text("Sales History")');
-  await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
+  // Skip closes the modal without completing — order remains in Active
+  await expect(page.locator('#completePaymentModal')).not.toHaveClass(/open/);
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 5000 });
 });
 
 test('complete a pre-paid order bypasses payment modal', async ({ page }) => {
