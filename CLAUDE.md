@@ -102,6 +102,25 @@ Always test UI changes for mobile overflow and iOS Safari compatibility. When fi
 ### Dark Mode
 This app supports dark mode. When adding new UI elements or pages, ensure they work with the dark mode theme. Check for contrast, badge colors, and analytics styling.
 
+## Testing
+
+Two-tier Playwright suite — see `tests/README.md` for full details.
+
+- **Smoke** (`tests/*.spec.ts`) — 22 tests, read-only, runs in parallel. Covers page load, navigation, and UI presence for all pages.
+- **E2E** (`tests/e2e/*.spec.ts`) — 42 tests, writes real data to Supabase, serial per file. Run with `npx playwright test --project=e2e`.
+
+E2E coverage by file:
+
+| File | Coverage |
+|---|---|
+| `orders.spec.ts` | Create/edit/delete order, advance status, complete (Cash + Venmo), skip, prepaid bypass, filter, multi-item, mark all paid (Cash + Venmo) |
+| `cutlist-quotes.spec.ts` | Quote button enable, modal pre-fill, save/convert/delete quote |
+| `materials.spec.ts` | Purchase CRUD, cut list run/save/re-save UPDATE/load-delete, stock +/− |
+| `scheduler.spec.ts` | Slot CRUD, booking CRUD, quick book, booking edit syncs `orders.pickup_time`, availability window add/delete |
+| `inventory-sales.spec.ts` | Inventory add/qty-adjust/qty→0-removes/delete, sale log/edit/delete |
+
+**When adding new features:** add E2E tests for any new CRUD operations or non-obvious side effects. Update the counts in `tests/README.md` and `README.md`.
+
 ## Workflow
 
 ### Deployment

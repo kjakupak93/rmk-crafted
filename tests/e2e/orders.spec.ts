@@ -196,6 +196,20 @@ test('complete a pre-paid order bypasses payment modal', async ({ page }) => {
   await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
 });
 
+test('mark all paid — venmo path clears unpaid badges', async ({ page }) => {
+  await goToOrders(page);
+  const name = `${TAG} MarkPaidVenmo`;
+  await createOrder(page, name, 'unpaid');
+
+  await expect(page.locator('#markPaidBtn')).toBeVisible({ timeout: 10000 });
+  await page.click('#markPaidBtn');
+
+  await page.waitForSelector('#markPaidModal.open');
+  await page.locator('#markPaidModal button:has-text("Venmo")').click();
+
+  await expect(page.locator('.order-card').filter({ hasText: name }).locator('.badge-unpaid')).toHaveCount(0, { timeout: 10000 });
+});
+
 test('mark all paid — cash path clears unpaid badges', async ({ page }) => {
   await goToOrders(page);
   const name1 = `${TAG} MarkPaid 1`;

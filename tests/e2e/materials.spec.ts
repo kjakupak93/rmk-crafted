@@ -114,6 +114,29 @@ test('edit purchase updates the store name', async ({ page }) => {
   await expect(page.locator('#purchaseBody tr').filter({ hasText: storeName }).filter({ hasNotText: 'Updated' })).toHaveCount(0);
 });
 
+test('re-saving a loaded cut list updates the existing record (not a new insert)', async ({ page }) => {
+  await goToMaterials(page);
+  const originalName = `${TAG} UpdateCL`;
+  const renamedName = `${TAG} UpdateCL Renamed`;
+
+  await addPartAndRunCutList(page, originalName);
+  await page.click('button[onclick="saveCutList()"]');
+  await expect(page.locator('#cl-saved-list tr').filter({ hasText: originalName })).toBeVisible({ timeout: 10000 });
+
+  // Load it — sets savedId so next save will UPDATE
+  const savedRow = page.locator('#cl-saved-list tr').filter({ hasText: originalName });
+  await savedRow.locator('button:has-text("Load")').click();
+  await expect(page.locator('#cl-name')).toHaveValue(originalName, { timeout: 5000 });
+
+  // Rename and save — should UPDATE, not INSERT a second row
+  await page.fill('#cl-name', renamedName);
+  await page.click('button[onclick="saveCutList()"]');
+
+  // Exactly one entry with the new name; old name gone
+  await expect(page.locator('#cl-saved-list tr').filter({ hasText: renamedName })).toHaveCount(1, { timeout: 10000 });
+  await expect(page.locator('#cl-saved-list tr').filter({ hasText: originalName }).filter({ hasNotText: 'Renamed' })).toHaveCount(0);
+});
+
 test('load cut list restores name; delete removes it from saved list', async ({ page }) => {
   await goToMaterials(page);
   const cutListName = `${TAG} Load CL`;
