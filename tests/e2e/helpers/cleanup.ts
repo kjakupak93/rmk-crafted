@@ -4,13 +4,6 @@ const SUPABASE_URL = 'https://mfsejmfmyuvhuclzuitc.supabase.co';
 const ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc2VqbWZteXV2aHVjbHp1aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTgzODksImV4cCI6MjA4NzYzNDM4OX0.Ve8dY-CvGqCMSWfifd6HvrDvmrJo4J00auhos8aezpY';
 
-const HEADERS = {
-  apikey: ANON_KEY,
-  Authorization: `Bearer ${ANON_KEY}`,
-  'Content-Type': 'application/json',
-  Prefer: 'return=minimal',
-};
-
 /** Maps table name → column used for [TEST]% pattern matching */
 const TAG_COLUMN: Record<string, string> = {
   orders: 'name',
@@ -23,6 +16,33 @@ const TAG_COLUMN: Record<string, string> = {
   activity_log: 'name',
 };
 
+/** Sign in and return an authenticated Bearer token for cleanup operations */
+async function getAuthToken(): Promise<string> {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: {
+      apikey: ANON_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email: 'ryan@rmkcrafted.com', password: 'RMK_ChangeMe_2026!' }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`cleanup: auth failed — ${res.status} ${text}`);
+  }
+  const { access_token } = await res.json();
+  return access_token;
+}
+
+function makeHeaders(token: string) {
+  return {
+    apikey: ANON_KEY,
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    Prefer: 'return=minimal',
+  };
+}
+
 /**
  * Delete all rows where the tag column starts with '[TEST'.
  * Matches both '[TEST] ...' and '[TEST-...] ...' formats from any prior test run format.
@@ -30,6 +50,9 @@ const TAG_COLUMN: Record<string, string> = {
  * URL encoding: '[TEST%' → '%5BTEST%25'
  */
 export async function cleanupTestData(tables: string[]): Promise<void> {
+  const token = await getAuthToken();
+  const headers = makeHeaders(token);
+
   for (const table of tables) {
     const col = TAG_COLUMN[table];
     if (!col) {
@@ -38,7 +61,7 @@ export async function cleanupTestData(tables: string[]): Promise<void> {
     }
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/${table}?${col}=like.%5BTEST%25`,
-      { method: 'DELETE', headers: HEADERS },
+      { method: 'DELETE', headers },
     );
     if (!res.ok) {
       const text = await res.text();
@@ -52,9 +75,10 @@ export async function cleanupTestData(tables: string[]): Promise<void> {
  * (e.g. availability_windows).
  */
 export async function cleanupById(table: string, id: string): Promise<void> {
+  const token = await getAuthToken();
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`,
-    { method: 'DELETE', headers: HEADERS },
+    { method: 'DELETE', headers: makeHeaders(token) },
   );
   if (!res.ok) {
     const text = await res.text();

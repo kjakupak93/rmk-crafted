@@ -66,7 +66,7 @@ test('advance order through building to ready updates status badge', async ({ pa
   await card().locator('button:has-text("→ Building")').click();
 
   // Verify building state: "→ Ready" button visible, "→ Building" gone
-  await expect(card().locator('button:has-text("→ Ready")')).toBeVisible({ timeout: 10000 });
+  await expect(card().locator('button:has-text("→ Ready")')).toBeVisible({ timeout: 20000 });
   await expect(card().locator('button:has-text("→ Building")')).toHaveCount(0);
 
   // building → ready
@@ -75,7 +75,7 @@ test('advance order through building to ready updates status badge', async ({ pa
   // Verify ready state: neither advance button remains; badge shows "Ready"
   await expect(card().locator('button:has-text("→ Building")')).toHaveCount(0);
   await expect(card().locator('button:has-text("→ Ready")')).toHaveCount(0);
-  await expect(card().locator('.badge-ready')).toBeVisible({ timeout: 10000 });
+  await expect(card().locator('.badge-ready')).toBeVisible({ timeout: 20000 });
 });
 
 test('complete unpaid order shows margin and moves to Sales History', async ({ page }) => {

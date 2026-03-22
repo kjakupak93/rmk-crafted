@@ -1,8 +1,15 @@
 import { Page } from '@playwright/test';
 
+/**
+ * Navigates to the app and ensures the user is authenticated.
+ *
+ * For e2e tests: the browser context starts with a pre-authenticated session
+ * (via storageState from global-setup.ts), so the gate is usually already hidden.
+ *
+ * For smoke tests: no storageState is set, so we sign in with email/password.
+ */
 export async function login(page: Page): Promise<void> {
   await page.goto('/');
-  // If already authenticated (session cookie present), gate may already be hidden
   const gate = page.locator('#pin-gate');
   const gateVisible = await gate.isVisible().catch(() => false);
   if (gateVisible) {

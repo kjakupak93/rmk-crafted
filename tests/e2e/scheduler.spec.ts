@@ -213,14 +213,11 @@ test('delete availability window removes it from Share & Book tab', async ({ pag
 
   // Record IDs before adding
   const beforeIds = await page.evaluate(
-    async ({ url, key }: { url: string; key: string }) => {
-      const r = await fetch(`${url}/rest/v1/availability_windows?select=id`, {
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
-      });
-      const data = (await r.json()) as { id: string }[];
-      return data.map((row: { id: string }) => row.id);
+    async () => {
+      const sb = (window as any).sb;
+      const { data } = await sb.from('availability_windows').select('id');
+      return (data || []).map((row: { id: string }) => row.id);
     },
-    { url: SUPABASE_URL, key: ANON_KEY },
   );
 
   await page.click('button:has-text("+ Add Window")');
@@ -235,14 +232,11 @@ test('delete availability window removes it from Share & Book tab', async ({ pag
 
   // Track new ID for safety cleanup
   const afterIds = await page.evaluate(
-    async ({ url, key }: { url: string; key: string }) => {
-      const r = await fetch(`${url}/rest/v1/availability_windows?select=id`, {
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
-      });
-      const data = (await r.json()) as { id: string }[];
-      return data.map((row: { id: string }) => row.id);
+    async () => {
+      const sb = (window as any).sb;
+      const { data } = await sb.from('availability_windows').select('id');
+      return (data || []).map((row: { id: string }) => row.id);
     },
-    { url: SUPABASE_URL, key: ANON_KEY },
   );
   const newIds = afterIds.filter((id: string) => !beforeIds.includes(id));
   createdAvailabilityIds.push(...newIds);
@@ -266,44 +260,32 @@ test('editing a linked booking syncs pickup time to the order', async ({ page })
   const bookingYear = parseInt(by);
   const bookingMonthIdx = parseInt(bm) - 1;
 
-  // Insert order and booking directly via API
-  const { orderId } = await page.evaluate(
-    async ({ url, key, tag, date }: { url: string; key: string; tag: string; date: string }) => {
-      const headers = {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=representation',
-      };
-      const ordRes = await fetch(`${url}/rest/v1/orders`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          name: `${tag} SyncOrder`,
-          payment: 'unpaid',
-          status: 'pending',
-          price: 60,
-          size: '36×16×16',
-          style: 'Standard',
-          contact: '',
-          notes: '',
-          items: { rows: [{ size: '36×16×16', style: 'Standard', price: 60 }], add_ons: [], add_on_total: 0, add_on_prices: {} },
-        }),
-      });
-      const ordJson = await ordRes.json();
-      if (!Array.isArray(ordJson) || !ordJson[0]) throw new Error(`Order insert failed: ${JSON.stringify(ordJson)}`);
-      const [order] = ordJson;
-      await fetch(`${url}/rest/v1/schedule_bookings`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ name: `${tag} SyncOrder`, booking_date: date, pickup_time: '10:00', order_id: order.id }),
-      });
-      return { orderId: order.id };
-    },
-    { url: SUPABASE_URL, key: ANON_KEY, tag: TAG, date: bookingDate },
-  );
-
+  // Login first so sb has an authenticated session for the inserts below
   await goToScheduler(page);
+
+  // Insert order and booking using the authenticated sb client from the browser context
+  const { orderId } = await page.evaluate(
+    async ({ tag, date }: { tag: string; date: string }) => {
+      const sb = (window as any).sb;
+      const { data: orderData, error: ordErr } = await sb.from('orders').insert({
+        name: `${tag} SyncOrder`,
+        payment: 'unpaid',
+        status: 'pending',
+        price: 60,
+        size: '36×16×16',
+        style: 'Standard',
+        contact: '',
+        notes: '',
+        items: { rows: [{ size: '36×16×16', style: 'Standard', price: 60 }], add_ons: [], add_on_total: 0, add_on_prices: {} },
+      }).select().single();
+      if (ordErr || !orderData) throw new Error(`Order insert failed: ${JSON.stringify(ordErr)}`);
+      await sb.from('schedule_bookings').insert({
+        name: `${tag} SyncOrder`, booking_date: date, pickup_time: '10:00', order_id: orderData.id,
+      });
+      return { orderId: orderData.id };
+    },
+    { tag: TAG, date: bookingDate },
+  );
 
   // Navigate to the correct month
   const MONTHS_ARR = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -329,14 +311,12 @@ test('editing a linked booking syncs pickup time to the order', async ({ page })
 
   // Verify the linked order's pickup_time was synced
   const updatedOrder = await page.evaluate(
-    async ({ url, key, id }: { url: string; key: string; id: string }) => {
-      const r = await fetch(`${url}/rest/v1/orders?id=eq.${id}&select=pickup_time`, {
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
-      });
-      const [row] = await r.json();
-      return row;
+    async ({ id }: { id: string }) => {
+      const sb = (window as any).sb;
+      const { data } = await sb.from('orders').select('pickup_time').eq('id', id).single();
+      return data;
     },
-    { url: SUPABASE_URL, key: ANON_KEY, id: orderId },
+    { id: orderId },
   );
 
   expect(updatedOrder.pickup_time).toBe('14:00');
@@ -349,14 +329,11 @@ test('add availability window updates Share & Book message', async ({ page }) =>
 
   // Record existing IDs before adding
   const beforeIds = await page.evaluate(
-    async ({ url, key }: { url: string; key: string }) => {
-      const r = await fetch(`${url}/rest/v1/availability_windows?select=id`, {
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
-      });
-      const data = (await r.json()) as { id: string }[];
-      return data.map((row: { id: string }) => row.id);
+    async () => {
+      const sb = (window as any).sb;
+      const { data } = await sb.from('availability_windows').select('id');
+      return (data || []).map((row: { id: string }) => row.id);
     },
-    { url: SUPABASE_URL, key: ANON_KEY },
   );
 
   await page.click('button:has-text("+ Add Window")');
@@ -369,14 +346,11 @@ test('add availability window updates Share & Book message', async ({ page }) =>
 
   // Find newly created IDs
   const afterIds = await page.evaluate(
-    async ({ url, key }: { url: string; key: string }) => {
-      const r = await fetch(`${url}/rest/v1/availability_windows?select=id`, {
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
-      });
-      const data = (await r.json()) as { id: string }[];
-      return data.map((row: { id: string }) => row.id);
+    async () => {
+      const sb = (window as any).sb;
+      const { data } = await sb.from('availability_windows').select('id');
+      return (data || []).map((row: { id: string }) => row.id);
     },
-    { url: SUPABASE_URL, key: ANON_KEY },
   );
 
   const newIds = afterIds.filter((id: string) => !beforeIds.includes(id));

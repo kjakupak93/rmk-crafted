@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
+  globalSetup: './tests/global-setup.ts',
+  workers: 2,
   use: {
     baseURL: 'http://localhost:8080',
   },
@@ -25,6 +27,8 @@ export default defineConfig({
         actionTimeout: 30000,
         navigationTimeout: 30000,
         serviceWorkers: 'block',
+        // Reuse the authenticated session saved by global-setup.ts
+        storageState: 'tests/.auth-state.json',
       },
     },
   ],
