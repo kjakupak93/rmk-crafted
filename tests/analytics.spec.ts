@@ -21,6 +21,10 @@ test('margin by size chart canvas is present', async ({ page }) => {
   await expect(page.locator('#chart-margin-by-size')).toBeVisible();
 });
 
+test('revenue vs spend chart canvas is present', async ({ page }) => {
+  await expect(page.locator('#chart-revenue-spend')).toBeVisible();
+});
+
 test('range filter buttons toggle active class', async ({ page }) => {
   // 'This Year' is active by default
   await expect(page.locator('#range-btn-year')).toHaveClass(/active/);
