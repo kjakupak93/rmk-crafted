@@ -132,17 +132,18 @@ test('order filter buttons narrow visible cards', async ({ page }) => {
   await expect(buildingCard().locator('button:has-text("→ Ready")')).toBeVisible({ timeout: 10000 });
 
   // Filter by Pending — only pending card should be visible
-  await page.locator('#page-orders button:has-text("Pending")').click();
+  // Use onclick attr to target filter buttons, not the "→ Building" advance buttons on cards
+  await page.locator('button[onclick*="filterOrders(\'pending\'"]').click();
   await expect(page.locator('.order-card').filter({ hasText: pendingName })).toBeVisible({ timeout: 5000 });
   await expect(page.locator('.order-card').filter({ hasText: buildingName })).not.toBeVisible();
 
   // Filter by Building — only building card should be visible
-  await page.locator('#page-orders button:has-text("Building")').click();
+  await page.locator('button[onclick*="filterOrders(\'building\'"]').click();
   await expect(page.locator('.order-card').filter({ hasText: buildingName })).toBeVisible({ timeout: 5000 });
   await expect(page.locator('.order-card').filter({ hasText: pendingName })).not.toBeVisible();
 
   // Filter by All — both cards visible again
-  await page.locator('#page-orders button:has-text("All")').click();
+  await page.locator('button[onclick*="filterOrders(\'all\'"]').click();
   await expect(page.locator('.order-card').filter({ hasText: pendingName })).toBeVisible({ timeout: 5000 });
   await expect(page.locator('.order-card').filter({ hasText: buildingName })).toBeVisible({ timeout: 5000 });
 });
