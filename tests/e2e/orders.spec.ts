@@ -227,8 +227,8 @@ test('multi-item order — total reflects both items', async ({ page }) => {
   await page.locator('#oItemsContainer .item-size').first().fill('36×16×16');
   await page.locator('#oItemsContainer .item-price').first().fill('60');
 
-  // Add second item row
-  await page.click('button:has-text("+ Add Item")');
+  // Add second item row — scope to orderModal to avoid matching the inventory tab's "+ Add Item" button
+  await page.locator('#orderModal button[onclick="addOrderItem()"]').click();
 
   // Fill second item
   await page.locator('#oItemsContainer .item-size').last().fill('48×16×16');
