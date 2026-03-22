@@ -39,14 +39,15 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ## E2E Suite (`tests/e2e/*.spec.ts`)
 
-18 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
+42 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
 
 | File | Tests | Coverage |
 |---|---|---|
-| `orders.spec.ts` | 5 | Create, edit, advance status, complete unpaid (Cash), delete |
+| `orders.spec.ts` | 12 | Create, edit, advance status (pending→building→ready), complete unpaid (Cash + Venmo), skip payment, prepaid bypass, delete, filter, multi-item, mark all paid (Cash + Venmo) |
 | `cutlist-quotes.spec.ts` | 5 | Quote button enables after run, modal pre-fill, save quote, convert to order, delete |
-| `materials.spec.ts` | 5 | Add purchase, delete purchase, run cut list, save cut list, load + delete cut list |
-| `scheduler.spec.ts` | 3 | Add calendar slot, book a pickup, add availability window |
+| `materials.spec.ts` | 8 | Add/edit/delete purchase, run cut list, save cut list, re-save updates existing record, load + delete cut list, stock +/− buttons |
+| `scheduler.spec.ts` | 10 | Add/edit/delete slot, book/edit/delete pickup, quick book, booking edit syncs order pickup time, add/delete availability window |
+| `inventory-sales.spec.ts` | 7 | Add inventory, adjust qty (+/−), qty → 0 removes item, delete inventory, log/edit/delete sale |
 
 ### Authentication
 
@@ -65,7 +66,7 @@ Tables cleaned up per suite:
 | `orders.spec.ts` | `orders`, `sales` |
 | `cutlist-quotes.spec.ts` | `quotes`, `orders`, `cut_lists` |
 | `materials.spec.ts` | `purchases`, `cut_lists` |
-| `scheduler.spec.ts` | `schedule_slots`, `schedule_bookings`, `availability_windows` (by ID) |
+| `scheduler.spec.ts` | `schedule_slots`, `schedule_bookings`, `orders`, `activity_log`, `availability_windows` (by ID) |
 
 `availability_windows` has no tag column — those rows are cleaned up by ID diff (record IDs before/after each test).
 

@@ -36,11 +36,11 @@ async function clickFirstAvailableDay(page: Page): Promise<void> {
 }
 
 test.beforeAll(async () => {
-  await cleanupTestData(['schedule_slots', 'schedule_bookings', 'activity_log']);
+  await cleanupTestData(['schedule_slots', 'schedule_bookings', 'orders', 'activity_log']);
 });
 
 test.afterAll(async () => {
-  await cleanupTestData(['schedule_slots', 'schedule_bookings', 'activity_log']);
+  await cleanupTestData(['schedule_slots', 'schedule_bookings', 'orders', 'activity_log']);
   for (const id of createdAvailabilityIds) {
     await cleanupById('availability_windows', id);
   }
@@ -255,6 +255,91 @@ test('delete availability window removes it from Share & Book tab', async ({ pag
   await page.click('#confirmOkBtn');
 
   await expect(page.locator('#windowsList .window-item')).toHaveCount(countBefore - 1, { timeout: 10000 });
+});
+
+test('editing a linked booking syncs pickup time to the order', async ({ page }) => {
+  // Use a date 10 days out to avoid month-end edge cases
+  const target = new Date();
+  target.setDate(target.getDate() + 10);
+  const bookingDate = target.toISOString().split('T')[0];
+  const [by, bm] = bookingDate.split('-');
+  const bookingYear = parseInt(by);
+  const bookingMonthIdx = parseInt(bm) - 1;
+
+  // Insert order and booking directly via API
+  const { orderId } = await page.evaluate(
+    async ({ url, key, tag, date }: { url: string; key: string; tag: string; date: string }) => {
+      const headers = {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      };
+      const ordRes = await fetch(`${url}/rest/v1/orders`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          name: `${tag} SyncOrder`,
+          payment: 'unpaid',
+          status: 'pending',
+          price: 60,
+          size: '36×16×16',
+          style: 'Standard',
+          contact: '',
+          notes: '',
+          items: { rows: [{ size: '36×16×16', style: 'Standard', price: 60 }], add_ons: [], add_on_total: 0, add_on_prices: {} },
+        }),
+      });
+      const ordJson = await ordRes.json();
+      if (!Array.isArray(ordJson) || !ordJson[0]) throw new Error(`Order insert failed: ${JSON.stringify(ordJson)}`);
+      const [order] = ordJson;
+      await fetch(`${url}/rest/v1/schedule_bookings`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: `${tag} SyncOrder`, booking_date: date, pickup_time: '10:00', order_id: order.id }),
+      });
+      return { orderId: order.id };
+    },
+    { url: SUPABASE_URL, key: ANON_KEY, tag: TAG, date: bookingDate },
+  );
+
+  await goToScheduler(page);
+
+  // Navigate to the correct month
+  const MONTHS_ARR = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const targetLabel = `${MONTHS_ARR[bookingMonthIdx]} ${bookingYear}`;
+  let attempts = 0;
+  while (!(await page.locator('#calLabel').innerText()).includes(targetLabel) && attempts < 12) {
+    await page.click('button:has-text("Next →")');
+    await page.waitForSelector('#calGrid .cal-day', { timeout: 5000 });
+    attempts++;
+  }
+
+  // Click on the specific day
+  await page.locator(`.cal-day[onclick="selectDay('${bookingDate}')"]`).click();
+  await page.waitForSelector('#dayDetail', { state: 'visible', timeout: 5000 });
+
+  // Edit the booking and change the pickup time
+  const bookingCard = page.locator('#daySlotsList .slot-card').filter({ hasText: `${TAG} SyncOrder` });
+  await bookingCard.locator('button[title="Edit"]').click();
+  await page.waitForSelector('#bookingModal.open');
+  await page.fill('#bkTime', '14:00');
+  await page.click('#bookingModalSaveBtn');
+  await expect(page.locator('#bookingModal')).not.toHaveClass(/open/, { timeout: 5000 });
+
+  // Verify the linked order's pickup_time was synced
+  const updatedOrder = await page.evaluate(
+    async ({ url, key, id }: { url: string; key: string; id: string }) => {
+      const r = await fetch(`${url}/rest/v1/orders?id=eq.${id}&select=pickup_time`, {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+      });
+      const [row] = await r.json();
+      return row;
+    },
+    { url: SUPABASE_URL, key: ANON_KEY, id: orderId },
+  );
+
+  expect(updatedOrder.pickup_time).toBe('14:00');
 });
 
 test('add availability window updates Share & Book message', async ({ page }) => {

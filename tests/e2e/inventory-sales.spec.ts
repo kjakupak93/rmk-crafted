@@ -114,6 +114,20 @@ test('delete inventory item removes it from the grid', async ({ page }) => {
   await expect(page.locator('#invGrid .inv-card').filter({ hasText: `${TAG} Inv Del` })).toHaveCount(0, { timeout: 10000 });
 });
 
+test('decrementing qty to zero prompts removal and removes the item', async ({ page }) => {
+  await goToInventoryTab(page);
+  await addInventoryItem(page, { size: '36×12×16', price: '55', qty: '1', notes: `${TAG} Inv Zero` });
+
+  const card = page.locator('#invGrid .inv-card').filter({ hasText: `${TAG} Inv Zero` });
+  await card.locator('button.qty-btn', { hasText: '−' }).click();
+
+  // Custom confirm modal — not native browser dialog
+  await page.waitForSelector('#confirmModal', { state: 'visible' });
+  await page.click('#confirmOkBtn');
+
+  await expect(page.locator('#invGrid .inv-card').filter({ hasText: `${TAG} Inv Zero` })).toHaveCount(0, { timeout: 10000 });
+});
+
 // ─── Sales tests ─────────────────────────────────────────────────────────────
 
 test('log a sale manually appears in Sales History', async ({ page }) => {
