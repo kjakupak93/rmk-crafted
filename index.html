@@ -2614,17 +2614,6 @@ async function loadAnalytics() {
   ]);
   analyticsSales = sRes.data || [];
   analyticsPurchases = pRes.data || [];
-  // ── P&L summary cards (current calendar month) ──
-  const _now = new Date();
-  const _curKey = `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}`;
-  const _pnlRev = analyticsSales.filter(s => s.sale_date?.slice(0,7) === _curKey).reduce((sum,s) => sum+(s.price||0), 0);
-  const _pnlCost = analyticsPurchases.filter(p => p.purchase_date?.slice(0,7) === _curKey).reduce((sum,p) => sum+(p.total||0), 0);
-  const _pnlNet = _pnlRev - _pnlCost;
-  document.getElementById('pnl-revenue').textContent = '$'+Math.round(_pnlRev);
-  document.getElementById('pnl-cost').textContent = '$'+Math.round(_pnlCost);
-  const _pnlEl = document.getElementById('pnl-profit');
-  _pnlEl.textContent = (_pnlNet >= 0 ? '$' : '-$') + Math.abs(Math.round(_pnlNet));
-  _pnlEl.style.color = _pnlNet >= 0 ? 'var(--green)' : 'var(--red)';
   renderAnalyticsCharts();
 }
 
@@ -2706,55 +2695,68 @@ function renderAnalyticsCharts() {
   const gridColor = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
   const legendColor = dark ? '#6B8A99' : '#666';
 
-  const months = getAnalyticsMonths();
-  const labels = months.map(m => {
-    const [y, mo] = m.split('-');
-    return new Date(parseInt(y), parseInt(mo)-1, 1).toLocaleDateString('en-US', {month:'short', year:'2-digit'});
-  });
+  const buckets = getAnalyticsBuckets();
+  const keys = buckets.map(b => b.key);
+  const bucketLabels = buckets.map(b => b.label);
+  const isWeekly = analyticsRange === 'month' || analyticsRange === 'lastmonth';
 
-  const revByMonth = {};
+  // ── P&L summary cards ──
+  const bounds = getAnalyticsDateBounds();
+  const inBounds = date => !date ? false : (!bounds.start || date >= bounds.start) && (!bounds.end || date <= bounds.end);
+  const pnlRev = analyticsSales.filter(s => inBounds(s.sale_date)).reduce((sum,s) => sum+(s.price||0), 0);
+  const pnlCost = analyticsPurchases.filter(p => inBounds(p.purchase_date)).reduce((sum,p) => sum+(p.total||0), 0);
+  const pnlNet = pnlRev - pnlCost;
+  document.getElementById('pnl-revenue').textContent = '$'+Math.round(pnlRev);
+  document.getElementById('pnl-cost').textContent = '$'+Math.round(pnlCost);
+  const pnlEl = document.getElementById('pnl-profit');
+  pnlEl.textContent = (pnlNet >= 0 ? '$' : '-$') + Math.abs(Math.round(pnlNet));
+  pnlEl.style.color = pnlNet >= 0 ? 'var(--green)' : 'var(--red)';
+  const pnlLabels = {
+    month: ['This Month Revenue','Material Spend','Est. Net Profit'],
+    lastmonth: ['Last Month Revenue','Material Spend','Est. Net Profit'],
+    '3m': ['3-Month Revenue','Material Spend','Est. Net Profit'],
+    '6m': ['6-Month Revenue','Material Spend','Est. Net Profit'],
+    year: ['This Year Revenue','Material Spend','Est. Net Profit'],
+    '12m': ['12-Month Revenue','Material Spend','Est. Net Profit'],
+    all: ['All-Time Revenue','Material Spend','Est. Net Profit'],
+  }[analyticsRange] || ['Revenue','Material Spend','Est. Net Profit'];
+  document.getElementById('pnl-revenue-lbl').textContent = pnlLabels[0];
+  document.getElementById('pnl-cost-lbl').textContent = pnlLabels[1];
+  document.getElementById('pnl-profit-lbl').textContent = pnlLabels[2];
+
+  // ── Bucket aggregation helper ──
+  function getBucketKey(dateStr) {
+    if (!dateStr) return null;
+    if (!isWeekly) return dateStr.slice(0, 7);
+    for (let i = 0; i < buckets.length; i++) {
+      const next = i + 1 < buckets.length ? buckets[i+1].key : '9999-99-99';
+      if (dateStr >= buckets[i].key && dateStr < next) return buckets[i].key;
+    }
+    return null;
+  }
+
+  const revByBucket = {}, costByBucket = {};
   analyticsSales.forEach(s => {
     if (!s.sale_date) return;
-    const key = s.sale_date.slice(0, 7);
-    revByMonth[key] = (revByMonth[key] || 0) + (s.price || 0);
+    const k = getBucketKey(s.sale_date);
+    if (k) revByBucket[k] = (revByBucket[k]||0) + (s.price||0);
   });
-
-  const costByMonth = {};
   analyticsPurchases.forEach(p => {
     if (!p.purchase_date) return;
-    const key = p.purchase_date.slice(0, 7);
-    costByMonth[key] = (costByMonth[key] || 0) + (p.total || 0);
+    const k = getBucketKey(p.purchase_date);
+    if (k) costByBucket[k] = (costByBucket[k]||0) + (p.total||0);
   });
 
-  const revenueData = months.map(m => revByMonth[m] || 0);
-  const costData = months.map(m => costByMonth[m] || 0);
-  const profitData = months.map((m, i) => revenueData[i] - costData[i]);
+  const revenueData = keys.map(k => revByBucket[k]||0);
+  const costData = keys.map(k => costByBucket[k]||0);
+  const profitData = keys.map((_,i) => revenueData[i] - costData[i]);
 
-  if (chartRevenue) chartRevenue.destroy();
-  chartRevenue = new Chart(document.getElementById('chart-revenue'), {
+  // ── Revenue vs. Spend (merged chart) ──
+  if (chartRevenueSpend) chartRevenueSpend.destroy();
+  chartRevenueSpend = new Chart(document.getElementById('chart-revenue-spend'), {
     type: 'bar',
     data: {
-      labels,
-      datasets: [{
-        label: 'Revenue',
-        data: revenueData,
-        backgroundColor: '#4A86A8',
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { ticks: { callback: v => '$'+v, color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
-                x: { ticks: { color: tickColor }, grid: { color: gridColor } } }
-    }
-  });
-
-  if (chartProfit) chartProfit.destroy();
-  chartProfit = new Chart(document.getElementById('chart-profit'), {
-    type: 'bar',
-    data: {
-      labels,
+      labels: bucketLabels,
       datasets: [
         { label: 'Revenue', data: revenueData, backgroundColor: '#3A7D5C', borderRadius: 4 },
         { label: 'Material Cost', data: costData, backgroundColor: '#D4782A', borderRadius: 4 },
@@ -2769,76 +2771,60 @@ function renderAnalyticsCharts() {
     }
   });
 
+  // ── Best Sellers (filter by range) ──
   const sizeCnt = {};
   analyticsSales.forEach(s => {
     if (!s.size) return;
     if (s.sale_date) {
-      const key = s.sale_date.slice(0, 7);
-      if (months.length && !months.includes(key)) return;
+      const k = isWeekly ? getBucketKey(s.sale_date) : s.sale_date.slice(0,7);
+      if (keys.length && !keys.includes(k)) return;
     }
-    sizeCnt[s.size] = (sizeCnt[s.size] || 0) + 1;
+    sizeCnt[s.size] = (sizeCnt[s.size]||0) + 1;
   });
-  const sorted = Object.entries(sizeCnt).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const sorted = Object.entries(sizeCnt).sort((a,b) => b[1]-a[1]).slice(0,10);
 
   if (chartSizes) chartSizes.destroy();
   chartSizes = new Chart(document.getElementById('chart-sizes'), {
     type: 'bar',
     data: {
       labels: sorted.map(([size]) => size),
-      datasets: [{
-        label: 'Units Sold',
-        data: sorted.map(([, cnt]) => cnt),
-        backgroundColor: '#C9A55A',
-        borderRadius: 4
-      }]
+      datasets: [{ label:'Units Sold', data: sorted.map(([,cnt]) => cnt), backgroundColor:'#C9A55A', borderRadius:4 }]
     },
     options: {
-      indexAxis: 'y',
-      responsive: true,
+      indexAxis: 'y', responsive: true,
       plugins: { legend: { display: false } },
-      scales: { x: { ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
-                y: { ticks: { color: tickColor }, grid: { color: gridColor } } }
+      scales: { x: { ticks: { stepSize:1, color:tickColor }, grid:{color:gridColor}, beginAtZero:true },
+                y: { ticks:{color:tickColor}, grid:{color:gridColor} } }
     }
   });
 
-  // ── Margin Trend (average margin % per month, respects range toggle) ──
+  // ── Margin Trend ──
   const _mrgSum = {}, _mrgCnt = {};
   analyticsSales.forEach(s => {
     if (!s.sale_date || !s.price) return;
-    const key = s.sale_date.slice(0, 7);
+    const k = isWeekly ? getBucketKey(s.sale_date) : s.sale_date.slice(0,7);
+    if (!k || !keys.includes(k)) return;
     const cost = estimateOrderCost({ size: s.size, price: s.price });
-    _mrgSum[key] = (_mrgSum[key] || 0) + ((s.price - cost) / s.price * 100);
-    _mrgCnt[key] = (_mrgCnt[key] || 0) + 1;
+    _mrgSum[k] = (_mrgSum[k]||0) + ((s.price - cost) / s.price * 100);
+    _mrgCnt[k] = (_mrgCnt[k]||0) + 1;
   });
-  const marginTrendData = months.map(m => _mrgCnt[m] ? Math.round(_mrgSum[m] / _mrgCnt[m]) : null);
+  const marginTrendData = keys.map(k => _mrgCnt[k] ? Math.round(_mrgSum[k] / _mrgCnt[k]) : null);
 
   if (chartMarginTrend) chartMarginTrend.destroy();
   chartMarginTrend = new Chart(document.getElementById('chart-margin-trend'), {
     type: 'line',
     data: {
-      labels,
-      datasets: [{
-        label: 'Avg Margin %',
-        data: marginTrendData,
-        borderColor: '#C9A55A',
-        backgroundColor: 'transparent',
-        tension: 0.3,
-        pointRadius: 3,
-        fill: false,
-        spanGaps: false
-      }]
+      labels: bucketLabels,
+      datasets: [{ label:'Avg Margin %', data:marginTrendData, borderColor:'#C9A55A', backgroundColor:'transparent', tension:0.3, pointRadius:3, fill:false, spanGaps:false }]
     },
     options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { min: 0, max: 100, ticks: { callback: v => v + '%', color: tickColor }, grid: { color: gridColor } },
-        x: { ticks: { color: tickColor }, grid: { color: gridColor } }
-      }
+      responsive: true, plugins: { legend: { display: false } },
+      scales: { y: { min:0, max:100, ticks:{callback:v=>v+'%',color:tickColor}, grid:{color:gridColor} },
+                x: { ticks:{color:tickColor}, grid:{color:gridColor} } }
     }
   });
 
-  // ── Margin by Size (all-time data, multi-planter rows excluded) ──
+  // ── Margin by Size (all-time, unchanged) ──
   const _szMrgSum = {}, _szMrgCnt = {}, _szProfSum = {};
   analyticsSales.forEach(s => {
     if (!s.size || s.size.includes('+') || !s.price) return;
