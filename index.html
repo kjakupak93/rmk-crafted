@@ -3628,11 +3628,17 @@ async function saveOrder() {
   document.querySelectorAll('#orderAddonGrid .addon-chip.selected').forEach(chip => {
     addonPrices[chip.dataset.id] = parseFloat(chip.querySelector('.chip-price-input').value) || 0;
   });
+  const venmoFee = document.getElementById('oPayment').value === 'venmo'
+    ? (parseFloat(document.getElementById('oVenmoFee').value) || 0)
+    : 0;
+  if (document.getElementById('oPayment').value === 'venmo') {
+    localStorage.setItem('rmk_venmo_fee', venmoFee);
+  }
   const baseTotal = itemRows.reduce((s,i)=>s+(i.qty*i.price),0);
   const total = baseTotal + addonTotal;
   const itemsPayload = {rows: itemRows, add_ons: selectedAddons, add_on_total: addonTotal, add_on_prices: addonPrices};
   const items = itemsPayload;
-  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:itemRows[0].size,style:itemRows[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value};
+  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:itemRows[0].size,style:itemRows[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value,venmo_fee:venmoFee};
   const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
   if (error) {_pendingQuoteId=null;showToast('Error saving order','error');console.error(error);return;}
   if (_pendingQuoteId) {
@@ -3645,7 +3651,7 @@ async function saveOrder() {
     const saleItemRows=payload.items?.rows||[];
     const saleQty=saleItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
     const saleSizeStr=saleItemRows.length>1?saleItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(payload.size||'');
-    await sb.from('sales').insert({name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||''});
+    await sb.from('sales').insert({name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||'',venmo_fee:payload.venmo_fee||0});
   }
   // Sync pickup date+time → schedule_bookings and block off slot
   const pickupDate = payload.pickup_date;
