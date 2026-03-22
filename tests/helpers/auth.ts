@@ -1,17 +1,14 @@
 import { Page } from '@playwright/test';
 
-/**
- * Logs into the app by entering the current PIN.
- *
- * IMPORTANT: The app IIFE always shows #pin-gate on every page load
- * regardless of sessionStorage. Every test must call login() via UI —
- * pre-seeding sessionStorage will NOT bypass the gate.
- */
 export async function login(page: Page): Promise<void> {
   await page.goto('/');
-  await page.fill('#pin-input', '9518');
-  await page.press('#pin-input', 'Enter');
-  // Use waitFor({state:'hidden'}) not expect().not.toBeVisible() —
-  // the gate uses inline style.display='none', and waitFor has a built-in timeout.
-  await page.locator('#pin-gate').waitFor({ state: 'hidden', timeout: 5000 });
+  // If already authenticated (session cookie present), gate may already be hidden
+  const gate = page.locator('#pin-gate');
+  const gateVisible = await gate.isVisible().catch(() => false);
+  if (gateVisible) {
+    await page.fill('#auth-email', 'ryan@rmkcrafted.com');
+    await page.fill('#auth-password', 'RMK_ChangeMe_2026!');
+    await page.press('#auth-password', 'Enter');
+    await gate.waitFor({ state: 'hidden', timeout: 15000 });
+  }
 }

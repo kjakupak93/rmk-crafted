@@ -1,17 +1,18 @@
 import { test, expect } from '@playwright/test';
 
-test('wrong PIN shows error and clears input', async ({ page }) => {
+test('wrong credentials show error', async ({ page }) => {
   await page.goto('/');
-  await page.fill('#pin-input', '9999');
-  await page.press('#pin-input', 'Enter');
-  await expect(page.locator('#pin-error')).toBeVisible();
-  await expect(page.locator('#pin-input')).toHaveValue('');
+  await page.fill('#auth-email', 'wrong@example.com');
+  await page.fill('#auth-password', 'wrongpassword');
+  await page.press('#auth-password', 'Enter');
+  await expect(page.locator('#auth-error')).toBeVisible({ timeout: 8000 });
 });
 
-test('correct PIN dismisses gate and shows home page', async ({ page }) => {
+test('correct credentials dismiss gate and show home page', async ({ page }) => {
   await page.goto('/');
-  await page.fill('#pin-input', '9518');
-  await page.press('#pin-input', 'Enter');
-  await page.locator('#pin-gate').waitFor({ state: 'hidden' });
+  await page.fill('#auth-email', 'ryan@rmkcrafted.com');
+  await page.fill('#auth-password', 'RMK_ChangeMe_2026!');
+  await page.press('#auth-password', 'Enter');
+  await page.locator('#pin-gate').waitFor({ state: 'hidden', timeout: 15000 });
   await expect(page.locator('#page-home')).toBeVisible();
 });

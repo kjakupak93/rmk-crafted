@@ -1462,60 +1462,24 @@ body {
 </style>
 </head>
 <body>
-<div id="pin-gate" style="display:none;position:fixed;inset:0;background:#1E4D6B;z-index:99999;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
-  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z'/%3E%3C/svg%3E" style="width:48px;opacity:0.6;">
-  <div style="font-family:'Playfair Display',serif;font-size:24px;color:white;font-weight:700;">RMK Crafted</div>
-  <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;">Dashboard Access</div>
-  <input id="pin-input" type="password" placeholder="Enter PIN" maxlength="10"
-    style="padding:12px 20px;border:2px solid rgba(255,255,255,0.3);border-radius:10px;background:rgba(255,255,255,0.1);color:white;font-size:18px;font-family:'DM Mono',monospace;text-align:center;outline:none;letter-spacing:4px;width:200px;"
-    onkeydown="if(event.key==='Enter')checkPin()">
-  <button onclick="checkPin()" style="padding:12px 32px;background:#C9A55A;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Unlock</button>
-  <div id="pin-error" style="color:#ff8a8a;font-size:13px;font-family:'DM Mono',monospace;display:none;">Incorrect PIN</div>
+<div id="pin-gate" style="display:none;position:fixed;inset:0;background:#1E4D6B;z-index:99999;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <img src="icon.png" alt="RMK Crafted" style="width:72px;height:72px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.3)">
+  <div style="color:white;font-family:'Playfair Display',serif;font-size:22px;font-weight:700">RMK Crafted</div>
+  <div style="display:flex;flex-direction:column;gap:10px;width:280px">
+    <input id="auth-email" type="email" autocomplete="email" placeholder="Email"
+      style="padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:white;font-size:15px;outline:none;font-family:'DM Sans',sans-serif;"
+      onkeydown="if(event.key==='Enter')signIn()">
+    <input id="auth-password" type="password" autocomplete="current-password" placeholder="Password"
+      style="padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:white;font-size:15px;outline:none;font-family:'DM Sans',sans-serif;"
+      onkeydown="if(event.key==='Enter')signIn()">
+  </div>
+  <button onclick="signIn()" style="padding:12px 40px;background:#C9A55A;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Sign In</button>
+  <div id="auth-error" style="display:none;color:#ffcdd2;font-size:13px;font-family:'DM Sans',sans-serif;text-align:center;max-width:260px"></div>
 </div>
 <script>
-  (function() {
-    // Always require PIN on every page load/refresh
-    document.getElementById('pin-gate').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-  })();
-  let _pinAttempts = 0;
-  let _pinLockedUntil = 0;
-  function checkPin() {
-    // NOTE: visible in page source — real security is Supabase RLS
-    const PIN = '9518';
-    const errEl = document.getElementById('pin-error');
-    const now = Date.now();
-    if (now < _pinLockedUntil) {
-      const secs = Math.ceil((_pinLockedUntil - now) / 1000);
-      errEl.textContent = 'Too many attempts. Try again in ' + secs + 's.';
-      errEl.style.display = 'block';
-      return;
-    }
-    const val = document.getElementById('pin-input').value;
-    if (val === PIN) {
-      _pinAttempts = 0;
-      sessionStorage.setItem('rmk_auth', 'true');
-      document.getElementById('pin-gate').style.display = 'none';
-      document.body.style.overflow = '';
-    } else {
-      _pinAttempts++;
-      const delays = [0, 0, 0, 5000, 15000, 30000, 60000];
-      const delay = delays[Math.min(_pinAttempts, 6)];
-      if (delay > 0) {
-        _pinLockedUntil = Date.now() + delay;
-        const secs = delay / 1000;
-        errEl.textContent = 'Too many attempts. Try again in ' + secs + 's.';
-      } else {
-        const remaining = 3 - _pinAttempts;
-        errEl.textContent = remaining > 0
-          ? 'Incorrect PIN. ' + remaining + ' attempt' + (remaining === 1 ? '' : 's') + ' remaining.'
-          : 'Incorrect PIN.';
-      }
-      errEl.style.display = 'block';
-      document.getElementById('pin-input').value = '';
-      document.getElementById('pin-input').focus();
-    }
-  }
+  // Show gate immediately — sb not yet initialized here, auth wired up after sb init below
+  document.getElementById('pin-gate').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 </script>
 
 
@@ -1528,6 +1492,9 @@ body {
   </div>
   <button class="header-back-btn" id="backBtn" onclick="goHome()">← Home</button>
   <button id="dark-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+  <button onclick="sb.auth.signOut()" title="Sign out"
+    style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;padding:8px;border-radius:8px;line-height:1;"
+    aria-label="Sign out">⏏</button>
 </header>
 
 <!-- CONNECTION STATUS -->
@@ -2474,6 +2441,44 @@ const sb = createClient(
   'https://mfsejmfmyuvhuclzuitc.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc2VqbWZteXV2aHVjbHp1aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTgzODksImV4cCI6MjA4NzYzNDM4OX0.Ve8dY-CvGqCMSWfifd6HvrDvmrJo4J00auhos8aezpY'
 );
+
+// ===== AUTH GATE =====
+(function initAuth() {
+  function showGate() {
+    document.getElementById('pin-gate').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function hideGate() {
+    document.getElementById('pin-gate').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) hideGate();
+  });
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session) hideGate(); else showGate();
+  });
+})();
+
+window.signIn = async function signIn() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.style.display = 'none';
+  if (!email || !password) {
+    errEl.textContent = 'Email and password are required.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    errEl.textContent = error.message || 'Sign in failed.';
+    errEl.style.display = 'block';
+    document.getElementById('auth-password').value = '';
+  }
+};
 
 function esc(s) {
   return String(s == null ? '' : s)
