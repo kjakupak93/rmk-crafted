@@ -4056,6 +4056,7 @@ let allSales = [];
 let salesFilter = 'all';
 let allPurchases = [];
 let purchasesFilter = 'all';
+let allCutLists = [];
 
 function setSalesFilter(period, btn) {
   salesFilter = period;
@@ -4599,7 +4600,10 @@ function runCutList() {
           const sub = document.createElement('div');
           sub.style.cssText = `flex:1;background:${color};display:flex;align-items:center;padding:0 6px;overflow:hidden;min-height:0;${ri < ripCount - 1 ? 'border-bottom:1.5px solid rgba(255,255,255,0.45);' : ''}`;
           sub.title = c.label ? `${c.label} (${dimStr})` : dimStr;
-          sub.innerHTML = `<span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:white;max-width:100%">${singleLine}</span>`;
+          const labelSpan = document.createElement('span');
+          labelSpan.style.cssText = "font-size:11px;font-family:'DM Mono',monospace;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:white;max-width:100%";
+          labelSpan.textContent = singleLine;
+          sub.appendChild(labelSpan);
           pieceBlock.appendChild(sub);
         }
 
@@ -4735,6 +4739,7 @@ async function saveCutList() {
 
 async function loadSavedCutLists() {
   const { data } = await sb.from('cut_lists').select('*').order('updated_at', { ascending: false });
+  allCutLists = data || [];
   const container = document.getElementById('cl-saved-list');
   if (!data || !data.length) {
     container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>';
@@ -4743,14 +4748,13 @@ async function loadSavedCutLists() {
   const rows = data.map(cl => {
     const modified = new Date(cl.updated_at || cl.created_at);
     const dateStr = modified.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const safeData = JSON.stringify(cl).replace(/"/g, '&quot;');
     return `<tr>
       <td style="font-weight:600;color:var(--navy)">${esc(cl.name)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap">${dateStr}</td>
       <td style="color:var(--text-muted);font-size:12px">${esc(cl.notes) || '—'}</td>
       <td style="white-space:nowrap">
         <div style="display:flex;gap:6px;justify-content:flex-end">
-          <button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="loadCutList(${safeData})">Load</button>
+          <button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="loadCutList('${cl.id}')">Load</button>
           <button class="icon-btn" style="color:var(--red)" onclick="deleteCutList('${cl.id}')" title="Delete">🗑</button>
         </div>
       </td>
@@ -4765,7 +4769,11 @@ async function loadSavedCutLists() {
     </div>`;
 }
 
-function loadCutList(cl) {
+function loadCutList(idOrObj) {
+  const cl = typeof idOrObj === 'string'
+    ? allCutLists.find(x => x.id === idOrObj)
+    : idOrObj;
+  if (!cl) { showToast('Cut list not found', 'error'); return; }
   const nameEl = document.getElementById('cl-name');
   nameEl.value = cl.name;
   nameEl.dataset.savedId = cl.id;
@@ -4869,7 +4877,7 @@ function renderPurchaseList() {
     <td style="font-family:'DM Mono',monospace;color:var(--navy);font-weight:500">$${(p.total||0).toFixed(2)}</td>
     <td style="color:var(--text-muted);font-size:12px">${esc(p.notes)||''}</td>
     <td style="display:flex;gap:4px">
-      <button type="button" class="icon-btn" onclick="editPurchase(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
+      <button type="button" class="icon-btn" onclick="editPurchase('${p.id}')">✏️</button>
       <button type="button" class="icon-btn" onclick="deletePurchase('${p.id}')">🗑️</button>
     </td>
   </tr>`).join('');
@@ -4905,7 +4913,11 @@ function openPurchaseModal(item=null) {
   openModal('purchaseModal');
 }
 
-function editPurchase(item) {
+function editPurchase(idOrItem) {
+  const item = typeof idOrItem === 'string'
+    ? allPurchases.find(p => p.id === idOrItem)
+    : idOrItem;
+  if (!item) { showToast('Purchase not found', 'error'); return; }
   openPurchaseModal(item);
 }
 
