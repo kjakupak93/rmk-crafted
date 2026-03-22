@@ -108,7 +108,8 @@ test('edit slot changes the end time', async ({ page }) => {
   await page.fill('#slotEnd', '14:00');
   await page.click('#slotModalSaveBtn');
   await expect(page.locator('#slotModal')).not.toHaveClass(/open/, { timeout: 5000 });
-  await expect(page.locator('#daySlotsList')).toContainText('14:00', { timeout: 10000 });
+  // App renders times in 12h format via fmtTime() — 14:00 → "2:00 PM"
+  await expect(page.locator('#daySlotsList')).toContainText('2:00 PM', { timeout: 10000 });
 });
 
 test('delete slot removes it from the day detail', async ({ page }) => {
@@ -123,7 +124,8 @@ test('delete slot removes it from the day detail', async ({ page }) => {
   await page.fill('#slotEnd', '11:00');
   await page.click('#slotModalSaveBtn');
   await expect(page.locator('#slotModal')).not.toHaveClass(/open/, { timeout: 5000 });
-  await expect(page.locator('#daySlotsList')).toContainText('09:00', { timeout: 10000 });
+  // fmtTime renders 24h → 12h: '09:00' → '9:00 AM'
+  await expect(page.locator('#daySlotsList')).toContainText('9:00 AM', { timeout: 10000 });
 
   const slotCard = page.locator('#daySlotsList .slot-card').filter({ hasText: `${TAG} DelSlot` });
   await slotCard.locator('button.icon-btn:not([title])').click();
@@ -228,7 +230,8 @@ test('delete availability window removes it from Share & Book tab', async ({ pag
   await page.fill('#wEnd', '10:00');
   await page.click('button:has-text("Save Window")');
   await expect(page.locator('#windowModal')).not.toHaveClass(/open/, { timeout: 5000 });
-  await expect(page.locator('#windowsList .window-item')).toContainText('08:00', { timeout: 10000 });
+  // fmtTime renders '08:00' → '8:00 AM'
+  await expect(page.locator('#windowsList .window-item')).toContainText('8:00 AM', { timeout: 10000 });
 
   // Track new ID for safety cleanup
   const afterIds = await page.evaluate(
@@ -245,7 +248,7 @@ test('delete availability window removes it from Share & Book tab', async ({ pag
   createdAvailabilityIds.push(...newIds);
 
   // Delete via UI
-  const windowItem = page.locator('#windowsList .window-item').filter({ hasText: '08:00' });
+  const windowItem = page.locator('#windowsList .window-item').filter({ hasText: '8:00 AM' });
   const countBefore = await page.locator('#windowsList .window-item').count();
   await windowItem.locator('button.icon-btn').click();
   await page.waitForSelector('#confirmModal', { state: 'visible' });
