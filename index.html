@@ -3809,7 +3809,7 @@ async function _doCompleteOrder(data, payment) {
     const compItemRows=data.items?.rows||[];
     const compQty=compItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
     const compSizeStr=compItemRows.length>1?compItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(data.size||'');
-    await sb.from('sales').insert({name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes});
+    await sb.from('sales').insert({name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes,venmo_fee:data.venmo_fee||0});
     const _cost = estimateOrderCost(data);
     const _profit = data.price - _cost;
     const _margin = data.price > 0 ? Math.round((_profit / data.price) * 100) : 0;
