@@ -2635,29 +2635,69 @@ function setAnalyticsRange(range, btn) {
   renderAnalyticsCharts();
 }
 
-function getAnalyticsMonths() {
+function getAnalyticsBuckets() {
   const now = new Date();
-  if (analyticsRange === 'year') {
-    const months = [];
-    for (let m = 0; m <= now.getMonth(); m++) {
-      months.push(`${now.getFullYear()}-${String(m+1).padStart(2,'0')}`);
+  function mKey(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+  function mLabel(d) { return d.toLocaleDateString('en-US', {month:'short', year:'2-digit'}); }
+
+  if (analyticsRange === 'month' || analyticsRange === 'lastmonth') {
+    const base = analyticsRange === 'month'
+      ? new Date(now.getFullYear(), now.getMonth(), 1)
+      : new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDay = new Date(base.getFullYear(), base.getMonth() + 1, 0);
+    const buckets = [];
+    let cur = new Date(base);
+    while (cur <= lastDay) {
+      const key = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+      const label = cur.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+      buckets.push({ key, label });
+      cur = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 7);
     }
-    return months;
-  } else if (analyticsRange === '12m') {
-    const months = [];
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
-    }
-    return months;
-  } else {
-    const keys = new Set();
-    [...analyticsSales, ...analyticsPurchases].forEach(r => {
-      const d = r.sale_date || r.purchase_date;
-      if (d) keys.add(d.slice(0, 7));
-    });
-    return [...keys].sort();
+    return buckets;
   }
+  if (analyticsRange === 'year') {
+    const r = [];
+    for (let m = 0; m <= now.getMonth(); m++) { const d = new Date(now.getFullYear(), m, 1); r.push({key:mKey(d),label:mLabel(d)}); }
+    return r;
+  }
+  const steps = analyticsRange === '3m' ? 2 : analyticsRange === '6m' ? 5 : 11;
+  if (analyticsRange === '3m' || analyticsRange === '6m' || analyticsRange === '12m') {
+    const r = [];
+    for (let i = steps; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); r.push({key:mKey(d),label:mLabel(d)}); }
+    return r;
+  }
+  // 'all'
+  const keys = new Set();
+  [...analyticsSales, ...analyticsPurchases].forEach(r => { const d = r.sale_date || r.purchase_date; if (d) keys.add(d.slice(0,7)); });
+  return [...keys].sort().map(k => { const [y,mo] = k.split('-'); return {key:k, label:new Date(+y,+mo-1,1).toLocaleDateString('en-US',{month:'short',year:'2-digit'})}; });
+}
+
+function getAnalyticsDateBounds() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const today = fmt(now);
+  if (analyticsRange === 'month') {
+    return { start: `${now.getFullYear()}-${pad(now.getMonth()+1)}-01`, end: today };
+  }
+  if (analyticsRange === 'lastmonth') {
+    const first = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const last = new Date(now.getFullYear(), now.getMonth(), 0);
+    return { start: fmt(first), end: fmt(last) };
+  }
+  if (analyticsRange === '3m') {
+    return { start: fmt(new Date(now.getFullYear(), now.getMonth() - 2, 1)), end: today };
+  }
+  if (analyticsRange === '6m') {
+    return { start: fmt(new Date(now.getFullYear(), now.getMonth() - 5, 1)), end: today };
+  }
+  if (analyticsRange === 'year') {
+    return { start: `${now.getFullYear()}-01-01`, end: today };
+  }
+  if (analyticsRange === '12m') {
+    return { start: fmt(new Date(now.getFullYear(), now.getMonth() - 11, 1)), end: today };
+  }
+  return { start: null, end: null }; // 'all'
 }
 
 function renderAnalyticsCharts() {
