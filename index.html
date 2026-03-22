@@ -4118,7 +4118,7 @@ async function saveSale() {
     if (error) {showToast('Error saving','error');return;}
     showToast('Sale updated!','success');
   } else {
-    const {error}=await sb.from('sales').insert(payload);
+    const {error}=await sb.from('sales').insert({...payload,venmo_fee:0});
     if (error) {showToast('Error saving','error');return;}
     showToast('Sale logged!','success');
   }
