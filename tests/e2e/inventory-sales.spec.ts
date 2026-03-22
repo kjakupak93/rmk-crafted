@@ -1,0 +1,152 @@
+import { test, expect, Page } from '@playwright/test';
+import { login } from '../helpers/auth';
+import { cleanupTestData } from './helpers/cleanup';
+
+test.describe.configure({ mode: 'serial' });
+
+const TAG = `[TEST] ${Date.now()}`;
+const SUPABASE_URL = 'https://mfsejmfmyuvhuclzuitc.supabase.co';
+const ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc2VqbWZteXV2aHVjbHp1aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTgzODksImV4cCI6MjA4NzYzNDM4OX0.Ve8dY-CvGqCMSWfifd6HvrDvmrJo4J00auhos8aezpY';
+
+async function goToInventoryTab(page: Page) {
+  await login(page);
+  await page.click('.app-tile--orders');
+  await page.waitForSelector('#page-orders.active');
+  await page.click('#orders-tabs button:has-text("Ready to Sell")');
+  await page.waitForSelector('#otab-inventory', { state: 'visible' });
+}
+
+async function goToSalesTab(page: Page) {
+  await login(page);
+  await page.click('.app-tile--orders');
+  await page.waitForSelector('#page-orders.active');
+  await page.click('#orders-tabs button:has-text("Sales History")');
+  await page.waitForSelector('#otab-sales', { state: 'visible' });
+}
+
+async function addInventoryItem(
+  page: Page,
+  opts: { size: string; price: string; qty: string; notes: string },
+): Promise<void> {
+  await page.click('button:has-text("+ Add Item")');
+  await page.waitForSelector('#invModal.open');
+  await page.fill('#iSize', opts.size);
+  await page.fill('#iPrice', opts.price);
+  await page.fill('#iQty', opts.qty);
+  await page.fill('#iNotes', opts.notes);
+  await page.click('button[onclick="saveInvItem()"]');
+  await expect(page.locator('#invGrid .inv-card').filter({ hasText: opts.size })).toBeVisible({ timeout: 10000 });
+}
+
+async function logSale(page: Page, opts: { name: string; size: string; price: string }): Promise<void> {
+  await page.click('button:has-text("+ Log Sale")');
+  await page.waitForSelector('#saleModal.open');
+  await page.fill('#sName', opts.name);
+  await page.fill('#sDate', new Date().toISOString().split('T')[0]);
+  await page.fill('#sSize', opts.size);
+  await page.fill('#sPrice', opts.price);
+  await page.click('button[onclick="saveSale()"]');
+  await expect(page.locator('#salesBody tr').filter({ hasText: opts.name })).toBeVisible({ timeout: 10000 });
+}
+
+test.beforeAll(async () => {
+  await cleanupTestData(['sales']);
+  // Inventory does not have a tag column — clean up via notes field
+  await fetch(`${SUPABASE_URL}/rest/v1/inventory?notes=like.%5BTEST%25`, {
+    method: 'DELETE',
+    headers: {
+      apikey: ANON_KEY,
+      Authorization: `Bearer ${ANON_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+  });
+});
+
+test.afterAll(async () => {
+  await cleanupTestData(['sales']);
+  await fetch(`${SUPABASE_URL}/rest/v1/inventory?notes=like.%5BTEST%25`, {
+    method: 'DELETE',
+    headers: {
+      apikey: ANON_KEY,
+      Authorization: `Bearer ${ANON_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+  });
+});
+
+// ─── Inventory tests ─────────────────────────────────────────────────────────
+
+test('add inventory item appears in Ready to Sell grid', async ({ page }) => {
+  await goToInventoryTab(page);
+  await addInventoryItem(page, { size: '36×16×16', price: '60', qty: '2', notes: `${TAG} Inv Add` });
+  await expect(page.locator('#invGrid .inv-card .inv-size', { hasText: '36×16×16' })).toBeVisible();
+});
+
+test('adjust inventory qty increments and decrements the displayed count', async ({ page }) => {
+  await goToInventoryTab(page);
+  await addInventoryItem(page, { size: '48×16×16', price: '85', qty: '3', notes: `${TAG} Inv Qty` });
+
+  const card = page.locator('#invGrid .inv-card').filter({ hasText: '48×16×16' }).filter({ hasText: `${TAG} Inv Qty` });
+
+  // Click + once → expect 4
+  await card.locator('button.qty-btn', { hasText: '+' }).click();
+  await expect(card.locator('.qty-num')).toHaveText('4', { timeout: 10000 });
+
+  // Click − twice → expect 2
+  await card.locator('button.qty-btn', { hasText: '−' }).click();
+  await expect(card.locator('.qty-num')).toHaveText('3', { timeout: 10000 });
+  await card.locator('button.qty-btn', { hasText: '−' }).click();
+  await expect(card.locator('.qty-num')).toHaveText('2', { timeout: 10000 });
+});
+
+test('delete inventory item removes it from the grid', async ({ page }) => {
+  await goToInventoryTab(page);
+  await addInventoryItem(page, { size: '48×24×16', price: '100', qty: '1', notes: `${TAG} Inv Del` });
+
+  const card = page.locator('#invGrid .inv-card').filter({ hasText: `${TAG} Inv Del` });
+  await card.locator('button.icon-btn:has-text("🗑️")').click();
+  await page.waitForSelector('#confirmModal', { state: 'visible' });
+  await page.click('#confirmOkBtn');
+
+  await expect(page.locator('#invGrid .inv-card').filter({ hasText: `${TAG} Inv Del` })).toHaveCount(0, { timeout: 10000 });
+});
+
+// ─── Sales tests ─────────────────────────────────────────────────────────────
+
+test('log a sale manually appears in Sales History', async ({ page }) => {
+  await goToSalesTab(page);
+  await logSale(page, { name: `${TAG} Sale`, size: '36×16×16', price: '60' });
+  await expect(page.locator('#salesBody tr').filter({ hasText: `${TAG} Sale` })).toBeVisible();
+});
+
+test('edit a sale updates the buyer name', async ({ page }) => {
+  await goToSalesTab(page);
+  const name = `${TAG} EditSale`;
+  await logSale(page, { name, size: '48×16×16', price: '85' });
+
+  const row = page.locator('#salesBody tr').filter({ hasText: name });
+  await row.locator('button:has-text("✏️")').click();
+  await page.waitForSelector('#saleModal.open');
+  await expect(page.locator('#saleModalTitle')).toContainText('Edit', { timeout: 5000 });
+
+  await page.fill('#sName', `${name} Updated`);
+  await page.click('button[onclick="saveSale()"]');
+
+  await expect(page.locator('#salesBody tr').filter({ hasText: `${name} Updated` })).toBeVisible({ timeout: 10000 });
+});
+
+test('delete a sale removes it from the table', async ({ page }) => {
+  await goToSalesTab(page);
+  const name = `${TAG} DelSale`;
+  await logSale(page, { name, size: '36×16×16', price: '60' });
+
+  const row = page.locator('#salesBody tr').filter({ hasText: name });
+  // deleteSale uses native confirm() — accept the dialog
+  page.once('dialog', dialog => dialog.accept());
+  await row.locator('button:has-text("🗑️")').click();
+
+  await expect(page.locator('#salesBody tr').filter({ hasText: name })).toHaveCount(0, { timeout: 10000 });
+});
