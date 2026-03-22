@@ -2100,32 +2100,32 @@ body {
     <div class="analytics-pnl">
       <div class="summary-card c-green">
         <div class="val" id="pnl-revenue">—</div>
-        <div class="lbl">This Month Revenue</div>
+        <div class="lbl" id="pnl-revenue-lbl">This Month Revenue</div>
       </div>
       <div class="summary-card c-orange">
         <div class="val" id="pnl-cost">—</div>
-        <div class="lbl">Material Spend</div>
+        <div class="lbl" id="pnl-cost-lbl">Material Spend</div>
       </div>
       <div class="summary-card c-blue">
         <div class="val" id="pnl-profit">—</div>
-        <div class="lbl">Est. Net Profit</div>
+        <div class="lbl" id="pnl-profit-lbl">Est. Net Profit</div>
       </div>
     </div>
 
     <div class="analytics-range-toggle">
+      <button id="range-btn-month" onclick="setAnalyticsRange('month',this)">This Month</button>
+      <button id="range-btn-lastmonth" onclick="setAnalyticsRange('lastmonth',this)">Last Month</button>
+      <button id="range-btn-3m" onclick="setAnalyticsRange('3m',this)">Last 3M</button>
+      <button id="range-btn-6m" onclick="setAnalyticsRange('6m',this)">Last 6M</button>
       <button id="range-btn-year" class="active" onclick="setAnalyticsRange('year',this)">This Year</button>
       <button id="range-btn-12m" onclick="setAnalyticsRange('12m',this)">Last 12M</button>
       <button id="range-btn-all" onclick="setAnalyticsRange('all',this)">All Time</button>
     </div>
 
     <div class="analytics-grid">
-      <div class="chart-card">
-        <h3>Revenue by Month</h3>
-        <canvas id="chart-revenue"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>Profit Overview</h3>
-        <canvas id="chart-profit"></canvas>
+      <div class="chart-card chart-card--full">
+        <h3>Revenue vs. Spend</h3>
+        <canvas id="chart-revenue-spend"></canvas>
       </div>
       <div class="chart-card chart-card--full">
         <h3>Best Sellers</h3>
