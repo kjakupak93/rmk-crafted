@@ -8,58 +8,71 @@
 The analytics page has three gaps:
 1. The P&L summary cards are hardcoded to "this month" and do not update when the date range filter changes.
 2. The "Revenue by Month" chart shows revenue only — material costs and profit are buried in a separate "Profit Overview" chart.
-3. The date range filter only offers "This Year", "Last 12M", and "All Time" — no short-term options like This Month or Last Month.
+3. The date range filter only offers "This Year", "Last 12M", and "All Time" — no short-term options.
 
 ## Requirements
 
 - Add 4 new date range filter buttons: This Month, Last Month, Last 3M, Last 6M.
-- P&L summary cards (Revenue, Material Spend, Est. Net Profit) must reflect the selected range. Card labels must update to match the selected period.
+- P&L summary cards (Revenue, Material Spend, Est. Net Profit) must reflect the selected range. Card labels update to match the selected period.
 - Merge "Revenue by Month" and "Profit Overview" into a single full-width "Revenue vs. Spend" chart.
-- For single-month ranges (This Month, Last Month), the chart buckets data by **week** instead of by month.
-- All other charts (Best Sellers, Margin Trend, Margin by Size) are unchanged.
+- For single-month ranges (This Month, Last Month), the chart buckets data by week instead of by month.
+- All other charts (Best Sellers, Margin Trend, Margin by Size) are unchanged in behavior but must be updated to use the new bucket format (see JS Changes below).
 
 ## Date Range Filters
 
 **New button order (left to right):**
 This Month · Last Month · Last 3M · Last 6M · This Year · Last 12M · All Time
 
-**New range keys** (added to `analyticsRange`):
-- `'month'` — current calendar month (Jan 1–today for current month)
-- `'lastmonth'` — previous full calendar month
-- `'3m'` — rolling 3 months (today back 3 months)
-- `'6m'` — rolling 6 months (today back 6 months)
+**Range keys** (new ones added to `analyticsRange`):
+- `'month'` — current calendar month: `sale_date >= YYYY-MM-01` AND `sale_date <= today`
+- `'lastmonth'` — previous full calendar month: `sale_date >= first day of last month` AND `sale_date <= last day of last month`
+- `'3m'` — rolling 3 calendar months: same bounded-loop approach as `'12m'`, generating 3 monthly keys ending at the current month
+- `'6m'` — rolling 6 calendar months: same bounded-loop approach as `'12m'`, generating 6 monthly keys ending at the current month
 
 **Default range** remains `'year'` (This Year).
 
-## Bucketing Logic
+## Bucketing Logic — `getAnalyticsBuckets()`
 
-`getAnalyticsMonths()` is replaced by a more general `getAnalyticsBuckets()` that returns an array of bucket descriptors:
+`getAnalyticsMonths()` is **renamed** to `getAnalyticsBuckets()`. It returns `{ key: string, label: string }[]`.
 
-```js
-// Each bucket:
-{ key: string, label: string }
-```
+**For multi-month ranges** (`'3m'`, `'6m'`, `'year'`, `'12m'`, `'all'`):
+- `key` is `"YYYY-MM"` (e.g. `"2026-03"`)
+- `label` is `"Mar '26"`
+- Same generation logic as today (bounded loop for `'3m'`/`'6m'`/`'year'`/`'12m'`; dynamic from data for `'all'`)
 
-**Monthly buckets** (all ranges except `'month'` and `'lastmonth'`): same as today — `key` is `"YYYY-MM"`, label is `"Jan '26"`.
+**For single-month ranges** (`'month'`, `'lastmonth'`):
+- Determine the month's first and last day (e.g. 2026-03-01 to 2026-03-31)
+- Generate weekly buckets: iterate from the month's first day to its last day, advancing by 7 days per bucket. Each bucket starts on the first day of the week (Monday), but the bucket is clipped to the month boundary for display purposes.
+- `key`: the ISO date of the bucket's start day (clamped to the first day of the month for the first bucket), formatted as `"YYYY-MM-DD"` (e.g. `"2026-03-03"`)
+- `label`: `"Mar 3"` (short month name + day of the bucket start)
+- A sale or purchase record belongs to a bucket if its date falls on or after the bucket's start day AND before the next bucket's start day (or the end of the month for the last bucket). Records outside the month's date range are excluded entirely.
 
-**Weekly buckets** (`'month'` and `'lastmonth'`): 4–5 buckets. Each bucket covers Mon–Sun (or partial week at start/end of month). `key` is `"YYYY-Www"` (ISO week), label is `"Mar 3"` (start date of week).
-
-Revenue and cost aggregation maps use the `key` from each bucket. Sales records are matched by computing their bucket key from `sale_date`. Purchase records matched by `purchase_date`.
+**Callers of the old `getAnalyticsMonths()` that used `months` as a string array** must be updated to extract keys: `const keys = buckets.map(b => b.key)`. This applies to:
+- The Best Sellers chart filter (`months.includes(key)` → `keys.includes(key)`)
+- The Margin Trend and Margin by Size x-axis labels (use `buckets.map(b => b.label)` for labels, `buckets.map(b => b.key)` for data matching)
 
 ## P&L Summary Cards
 
-Cards currently show hardcoded "this month" data from `loadAnalytics()`. After this change:
+**DOM:** Add IDs to the three label elements (`.lbl` divs inside each `.summary-card`):
+- `id="pnl-revenue-lbl"` on the "This Month Revenue" label
+- `id="pnl-cost-lbl"` on the "Material Spend" label
+- `id="pnl-profit-lbl"` on the "Est. Net Profit" label
 
-- The P&L calculation is moved out of `loadAnalytics()` into `renderAnalyticsCharts()`, so it reruns on every range change.
-- Card labels update to describe the selected period:
-  - `'month'` → "This Month Revenue" / "Material Spend" / "Est. Net Profit"
-  - `'lastmonth'` → "Last Month Revenue" / "Material Spend" / "Est. Net Profit"
-  - `'3m'` → "3-Month Revenue" / "Material Spend" / "Est. Net Profit"
-  - `'6m'` → "6-Month Revenue" / "Material Spend" / "Est. Net Profit"
-  - `'year'` → "This Year Revenue" / "Material Spend" / "Est. Net Profit"
-  - `'12m'` → "12-Month Revenue" / "Material Spend" / "Est. Net Profit"
-  - `'all'` → "All-Time Revenue" / "Material Spend" / "Est. Net Profit"
-- P&L values are summed across all buckets in the current range.
+**Behavior:** Move P&L calculation from `loadAnalytics()` into `renderAnalyticsCharts()` so it reruns on every range change.
+
+**P&L values:** Sum revenue/cost across all records within the current range's date bounds (not just the bucket keys — use inclusive date range filtering for accuracy).
+
+**Label text per range:**
+
+| Range | Revenue label | Cost label | Profit label |
+|---|---|---|---|
+| `'month'` | This Month Revenue | Material Spend | Est. Net Profit |
+| `'lastmonth'` | Last Month Revenue | Material Spend | Est. Net Profit |
+| `'3m'` | 3-Month Revenue | Material Spend | Est. Net Profit |
+| `'6m'` | 6-Month Revenue | Material Spend | Est. Net Profit |
+| `'year'` | This Year Revenue | Material Spend | Est. Net Profit |
+| `'12m'` | 12-Month Revenue | Material Spend | Est. Net Profit |
+| `'all'` | All-Time Revenue | Material Spend | Est. Net Profit |
 
 ## Merged Chart: "Revenue vs. Spend"
 
@@ -74,11 +87,11 @@ Cards currently show hardcoded "this month" data from `loadAnalytics()`. After t
 
 **Legend:** Bottom, font size 11.
 
-**Chart.js variables:** `chartRevenue` and `chartProfit` are replaced by a single `chartRevenueSpend`. Both old canvases are removed from the HTML.
+**Chart.js variable:** `chartRevenue` and `chartProfit` module-level vars are replaced by `chartRevenueSpend`. Both are destroyed on re-render.
 
 ## HTML Changes
 
-**Range toggle** (`#page-analytics`): Add 4 new buttons before "This Year":
+**Range toggle:** Add 4 new buttons before the existing "This Year" button:
 ```html
 <button id="range-btn-month" onclick="setAnalyticsRange('month',this)">This Month</button>
 <button id="range-btn-lastmonth" onclick="setAnalyticsRange('lastmonth',this)">Last Month</button>
@@ -86,31 +99,30 @@ Cards currently show hardcoded "this month" data from `loadAnalytics()`. After t
 <button id="range-btn-6m" onclick="setAnalyticsRange('6m',this)">Last 6M</button>
 ```
 
-**Charts grid:** Remove the two existing `chart-card` divs for "Revenue by Month" and "Profit Overview". Add one new full-width card:
-```html
-<div class="chart-card chart-card--full">
-  <h3>Revenue vs. Spend</h3>
-  <canvas id="chart-revenue-spend"></canvas>
-</div>
-```
+**P&L label IDs:** Add `id` attributes to the three `.lbl` elements (see P&L section above).
+
+**Charts grid:** Remove the `chart-card` divs for "Revenue by Month" (canvas `chart-revenue`) and "Profit Overview" (canvas `chart-profit`). Add one new full-width card with canvas `chart-revenue-spend` as the first item in the grid.
 
 ## JS Changes Summary
 
-| Function | Change |
+| Symbol | Change |
 |---|---|
-| `analyticsRange` init | stays `'year'` |
-| `chartRevenue`, `chartProfit` vars | replaced by `chartRevenueSpend` |
-| `loadAnalytics()` | remove P&L card update; add `select('price,sale_date,size,qty,venmo_fee')` (for future use, no change to existing logic) |
-| `getAnalyticsMonths()` | renamed to `getAnalyticsBuckets()`, returns `{key, label}[]`, handles weekly buckets |
-| `renderAnalyticsCharts()` | update P&L cards here instead; use buckets from `getAnalyticsBuckets()`; replace two chart renders with one `chartRevenueSpend` render |
-| `setAnalyticsRange()` | no change needed |
+| `chartRevenue`, `chartProfit` | Replaced by `chartRevenueSpend` |
+| `getAnalyticsMonths()` | Renamed to `getAnalyticsBuckets()`, returns `{key, label}[]` |
+| `loadAnalytics()` | Remove P&L card update block; no other changes |
+| `renderAnalyticsCharts()` | Add P&L update here; use `getAnalyticsBuckets()` for all charts; replace `chartRevenue`+`chartProfit` render with single `chartRevenueSpend` render; update Best Sellers / Margin charts to use `keys` extracted from buckets |
+| `setAnalyticsRange()` | No change |
+
+## Schema Note
+
+`sales.venmo_fee` exists (added in a prior migration). The `loadAnalytics()` select does not need to fetch it — it is out of scope for this feature.
 
 ## Dark Mode
 
-The new chart uses existing color variables. `chartRevenueSpend` must be destroyed/recreated on re-render (same pattern as existing charts).
+The new chart uses existing color variables. `chartRevenueSpend` is destroyed and recreated on every `renderAnalyticsCharts()` call, matching the existing pattern.
 
 ## Out of Scope
 
-- Venmo fee in analytics (tracked in `sales.venmo_fee` but not surfaced here yet).
-- Any changes to Best Sellers, Margin Trend, or Margin by Size charts.
+- Venmo fee in analytics.
+- Changes to Best Sellers, Margin Trend, or Margin by Size chart designs (only bucket key extraction is updated).
 - Export or download of chart data.
