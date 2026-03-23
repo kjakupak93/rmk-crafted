@@ -2551,6 +2551,22 @@ function renderStylesTab() {
     '</div>'
   ).join('');
 }
+function onClStyleChange(sel) {
+  if (sel.value !== '__new__') return;
+  const prev = sel.dataset.prev || '';
+  const name = prompt('New style name:');
+  if (!name || !name.trim()) {
+    sel.value = prev;
+    return;
+  }
+  if (!addStyle(name)) {
+    sel.value = prev;
+    return;
+  }
+  renderStylesTab();
+  sel.value = name.trim();
+  showToast('Style added!');
+}
 let currentPage = 'home';
 let analyticsRange = 'year';
 let chartRevenueSpend = null, chartSizes = null;
