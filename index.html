@@ -1703,6 +1703,7 @@ body {
     <button class="tab-btn active" onclick="showMaterialsTab('stock',this)">📦 Stock</button>
     <button class="tab-btn" onclick="showMaterialsTab('purchases',this)">🛒 Purchases</button>
     <button class="tab-btn" onclick="showMaterialsTab('cutlist',this)">🪵 Cut List</button>
+    <button class="tab-btn" onclick="showMaterialsTab('styles',this)">🎨 Styles</button>
   </div>
   <div class="app-container">
     <div class="tab-panel active" id="mtab-stock">
@@ -1843,6 +1844,12 @@ body {
           <label>Cut list name</label>
           <input class="std-input" type="text" id="cl-name" placeholder="e.g. 36×16×16 Standard">
         </div>
+        <div class="input-group" style="margin-bottom:14px">
+          <label>Style</label>
+          <select class="std-input" id="cl-style" onfocus="this.dataset.prev=this.value" onchange="onClStyleChange(this)">
+            <option value="">— No style —</option>
+          </select>
+        </div>
 
         <!-- Cut rows -->
         <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Parts</div>
@@ -1877,6 +1884,13 @@ body {
           <p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>
         </div>
       </div>
+    </div>
+
+    <!-- Styles tab -->
+    <div class="tab-panel" id="mtab-styles">
+      <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Planter Styles</h2>
+      <div id="styles-list" style="margin-bottom:20px"></div>
+      <button class="btn-primary" onclick="promptAddStyle()">+ Add Style</button>
     </div>
   </div>
 </div>
