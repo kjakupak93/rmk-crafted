@@ -31,14 +31,16 @@ All data is stored in Supabase (cloud) so it works across any device. The dashbo
 Calculates selling price and material cost for any planter box.
 
 **Planter Styles**
-- `Standard` — Classic horizontal cedar picket build
-- `Vertical Style` — Deeper planters using 2×2s and 2×4s
+
+Styles are user-configurable. Defaults: Standard, Vertical, Tiered, Dog Bowl. Tap **✏️ Manage styles** on the Quote Calculator page to add or remove styles.
+
+All three material inputs (Cedar Pickets, 2×2 Lumber, 2×4 Lumber) are always shown. The cost breakdown only includes materials with a quantity > 0.
 
 **How to use:**
 1. Select a style
 2. Enter Length × Width × Height (inches)
 3. If a standard size match is found, a green banner appears — tap **Use This Size**
-4. Enter number of pickets (or let it auto-calculate)
+4. Enter material quantities (pickets, 2×2s, 2×4s — fill what applies to your style)
 5. Tap **Calculate Quote**
 
 **Results include:** Selling price · Material cost · Profit · Margin %

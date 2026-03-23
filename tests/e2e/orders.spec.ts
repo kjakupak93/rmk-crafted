@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { login } from '../helpers/auth';
-import { cleanupTestData } from './helpers/cleanup';
+import { cleanupTestData, snapshotUnpaidOrders, restoreOrderPayments } from './helpers/cleanup';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -196,37 +196,51 @@ test('complete a pre-paid order bypasses payment modal', async ({ page }) => {
   await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
 });
 
-test('mark all paid — venmo path clears unpaid badges', async ({ page }) => {
-  await goToOrders(page);
-  const name = `${TAG} MarkPaidVenmo`;
-  await createOrder(page, name, 'unpaid');
+// markAllPaid affects ALL unpaid orders in the DB (not just test rows).
+// Snapshot real unpaid order IDs before each test, restore them after.
+test.describe('mark all paid', () => {
+  let realUnpaidIds: string[] = [];
 
-  await expect(page.locator('#markPaidBtn')).toBeVisible({ timeout: 10000 });
-  await page.click('#markPaidBtn');
+  test.beforeEach(async () => {
+    realUnpaidIds = await snapshotUnpaidOrders();
+  });
 
-  await page.waitForSelector('#markPaidModal.open');
-  await page.locator('#markPaidModal button:has-text("Venmo")').click();
+  test.afterEach(async () => {
+    await restoreOrderPayments(realUnpaidIds);
+  });
 
-  await expect(page.locator('.order-card').filter({ hasText: name }).locator('.badge-unpaid')).toHaveCount(0, { timeout: 10000 });
-});
+  test('mark all paid — venmo path clears unpaid badges', async ({ page }) => {
+    await goToOrders(page);
+    const name = `${TAG} MarkPaidVenmo`;
+    await createOrder(page, name, 'unpaid');
 
-test('mark all paid — cash path clears unpaid badges', async ({ page }) => {
-  await goToOrders(page);
-  const name1 = `${TAG} MarkPaid 1`;
-  const name2 = `${TAG} MarkPaid 2`;
+    await expect(page.locator('#markPaidBtn')).toBeVisible({ timeout: 10000 });
+    await page.click('#markPaidBtn');
 
-  await createOrder(page, name1, 'unpaid');
-  await createOrder(page, name2, 'unpaid');
+    await page.waitForSelector('#markPaidModal.open');
+    await page.locator('#markPaidModal button:has-text("Venmo")').click();
 
-  await expect(page.locator('#markPaidBtn')).toBeVisible({ timeout: 10000 });
-  await page.click('#markPaidBtn');
+    await expect(page.locator('.order-card').filter({ hasText: name }).locator('.badge-unpaid')).toHaveCount(0, { timeout: 10000 });
+  });
 
-  await page.waitForSelector('#markPaidModal.open');
-  await page.locator('#markPaidModal button:has-text("Cash")').click();
+  test('mark all paid — cash path clears unpaid badges', async ({ page }) => {
+    await goToOrders(page);
+    const name1 = `${TAG} MarkPaid 1`;
+    const name2 = `${TAG} MarkPaid 2`;
 
-  // After marking paid, neither card should show an unpaid badge
-  await expect(page.locator('.order-card').filter({ hasText: name1 }).locator('.badge-unpaid')).toHaveCount(0);
-  await expect(page.locator('.order-card').filter({ hasText: name2 }).locator('.badge-unpaid')).toHaveCount(0);
+    await createOrder(page, name1, 'unpaid');
+    await createOrder(page, name2, 'unpaid');
+
+    await expect(page.locator('#markPaidBtn')).toBeVisible({ timeout: 10000 });
+    await page.click('#markPaidBtn');
+
+    await page.waitForSelector('#markPaidModal.open');
+    await page.locator('#markPaidModal button:has-text("Cash")').click();
+
+    // After marking paid, neither card should show an unpaid badge
+    await expect(page.locator('.order-card').filter({ hasText: name1 }).locator('.badge-unpaid')).toHaveCount(0);
+    await expect(page.locator('.order-card').filter({ hasText: name2 }).locator('.badge-unpaid')).toHaveCount(0);
+  });
 });
 
 test('multi-item order — total reflects both items', async ({ page }) => {

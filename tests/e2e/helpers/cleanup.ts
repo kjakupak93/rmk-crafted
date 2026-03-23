@@ -71,6 +71,42 @@ export async function cleanupTestData(tables: string[]): Promise<void> {
 }
 
 /**
+ * Return IDs of all non-test active orders with payment = 'unpaid'.
+ * Used to snapshot state before markAllPaid tests so it can be restored after.
+ */
+export async function snapshotUnpaidOrders(): Promise<string[]> {
+  const token = await getAuthToken();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/orders?payment=eq.unpaid&status=neq.completed&name=not.like.%5BTEST%25&select=id`,
+    { headers: makeHeaders(token) },
+  );
+  if (!res.ok) return [];
+  const rows: { id: string }[] = await res.json();
+  return rows.map(r => r.id);
+}
+
+/**
+ * Restore orders back to payment = 'unpaid' by ID list.
+ * Used after markAllPaid tests to undo collateral changes to real orders.
+ */
+export async function restoreOrderPayments(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const token = await getAuthToken();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/orders?id=in.(${ids.join(',')})`,
+    {
+      method: 'PATCH',
+      headers: makeHeaders(token),
+      body: JSON.stringify({ payment: 'unpaid' }),
+    },
+  );
+  if (!res.ok) {
+    const text = await res.text();
+    console.warn(`cleanup: PATCH orders payment failed — ${res.status} ${text}`);
+  }
+}
+
+/**
  * Delete a specific row by ID. Used for tables without a tag column
  * (e.g. availability_windows).
  */

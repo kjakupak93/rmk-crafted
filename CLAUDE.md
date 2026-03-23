@@ -47,7 +47,7 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 
 ### Pages
 - **Home** (`page-home`) — KPI cards, low-stock alert, activity feed, tile nav grid
-- **Quote Calculator** (`page-quote`) — Price estimator based on picket count
+- **Quote Calculator** (`page-quote`) — Price estimator; shows all three material inputs (pickets, 2×2s, 2×4s) for any style. Styles are dynamic — see `PRODUCT_STYLES` in Business/Pricing.
 - **Orders** (`page-orders`) — 4 tabs: Active → Ready to Sell → Sales History → Quotes
 - **Materials** (`page-materials`) — Stock levels + Lowes purchase log + Cut List Calculator tab
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
@@ -83,7 +83,7 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
   - Pickets: $3.38 → **$3.66**
   - 2×2s: $2.98 → **$3.23**
   - 2×4s: $3.85 → **$4.17**
-- **Planter styles**: Standard (pickets only) and Vertical (deeper, uses 2×2s + 2×4s for support)
+- **Planter styles**: Dynamic — stored in `PRODUCT_STYLES` (localStorage key `rmk_styles`). Defaults: Standard, Vertical, Tiered, Dog Bowl. Managed via "✏️ Manage styles" button on the quote page. All three material inputs (pickets, 2×2s, 2×4s) are always visible for any style; breakdown only renders rows for materials with qty > 0.
 
 ## Standard Planter Sizes & Prices
 Stored in `STANDARD_SIZES`. 8 sizes have hardcoded `pickets`; 16×16×16 and 36×12×16 use formula fallback.
