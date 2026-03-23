@@ -4553,6 +4553,8 @@ async function saveCutList() {
   const cuts = collectCutGroups();
   if (!cuts.length) { showToast('Add at least one cut first', 'error'); return; }
   const notes = (document.getElementById('cl-notes').value || '').trim();
+  const styleVal = document.getElementById('cl-style').value;
+  const style = (styleVal && styleVal !== '__new__') ? styleVal : null;
   const stock_types = clStockTypes;
   const picket_len = 72;
 
@@ -4560,9 +4562,9 @@ async function saveCutList() {
   const existingId = document.getElementById('cl-name').dataset.savedId || null;
   let error;
   if (existingId) {
-    ({ error } = await sb.from('cut_lists').update({ name, kerf, cuts, stock_types, notes, updated_at: new Date().toISOString() }).eq('id', existingId));
+    ({ error } = await sb.from('cut_lists').update({ name, kerf, cuts, stock_types, notes, style, updated_at: new Date().toISOString() }).eq('id', existingId));
   } else {
-    ({ error } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types, notes }));
+    ({ error } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types, notes, style }));
   }
   if (error) { showToast('Save failed', 'error'); console.error(error); return; }
   showToast('Cut list saved!');
@@ -4611,6 +4613,11 @@ function loadCutList(idOrObj) {
   nameEl.dataset.savedId = cl.id;
   document.getElementById('cl-kerf').value = cl.kerf;
   document.getElementById('cl-notes').value = cl.notes || '';
+  const clStyleEl = document.getElementById('cl-style');
+  if (clStyleEl) {
+    const storedStyle = cl.style || '';
+    clStyleEl.value = (storedStyle && PRODUCT_STYLES.includes(storedStyle)) ? storedStyle : '';
+  }
   document.getElementById('cl-rows').innerHTML = '';
   document.getElementById('cl-results').style.display = 'none';
   clRowId = 0;
