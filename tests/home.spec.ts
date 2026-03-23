@@ -10,8 +10,8 @@ test('KPI summary cards render on home page', async ({ page }) => {
   await expect(page.locator('.home-kpi-row .summary-card').first()).toBeVisible();
 });
 
-test('5 nav tiles are present', async ({ page }) => {
-  await expect(page.locator('.app-tile')).toHaveCount(5);
+test('4 nav tiles are present', async ({ page }) => {
+  await expect(page.locator('.app-tile')).toHaveCount(4);
 });
 
 test('dark mode toggle sets and clears data-theme on <html>', async ({ page }) => {

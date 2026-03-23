@@ -14,7 +14,7 @@ test('stock counts load from Supabase', async ({ page }) => {
   await expect(page.locator('#sq-twobyfour')).not.toHaveText('—');
 });
 
-test('all 3 materials tabs switch the active panel', async ({ page }) => {
+test('all 4 materials tabs switch the active panel', async ({ page }) => {
   const tabs = page.locator('#page-materials .tab-btn');
 
   // Switch to Purchases (index 1)
@@ -25,6 +25,10 @@ test('all 3 materials tabs switch the active panel', async ({ page }) => {
   // Switch to Cut List (index 2)
   await tabs.nth(2).click();
   await expect(page.locator('#mtab-cutlist')).toHaveClass(/active/);
+
+  // Switch to Styles (index 3)
+  await tabs.nth(3).click();
+  await expect(page.locator('#mtab-styles')).toHaveClass(/active/);
 
   // Switch back to Stock (index 0)
   await tabs.nth(0).click();
@@ -38,4 +42,11 @@ test('Cut List quote button starts disabled', async ({ page }) => {
   await expect(page.locator('#mtab-cutlist')).toHaveClass(/active/);
   // Quote button should be disabled until runCutList() is called
   await expect(page.locator('#cl-quote-btn')).toBeDisabled();
+});
+
+test('Styles tab renders style list with at least one style', async ({ page }) => {
+  const tabs = page.locator('#page-materials .tab-btn');
+  await tabs.nth(3).click();
+  await expect(page.locator('#mtab-styles')).toHaveClass(/active/);
+  await expect(page.locator('#styles-list div').first()).toBeVisible();
 });
