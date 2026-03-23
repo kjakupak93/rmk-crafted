@@ -4579,28 +4579,49 @@ async function loadSavedCutLists() {
     container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>';
     return;
   }
-  const rows = data.map(cl => {
-    const modified = new Date(cl.updated_at || cl.created_at);
-    const dateStr = modified.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    return `<tr>
-      <td style="font-weight:600;color:var(--navy)">${esc(cl.name)}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap">${dateStr}</td>
-      <td style="color:var(--text-muted);font-size:12px">${esc(cl.notes) || '—'}</td>
-      <td style="white-space:nowrap">
-        <div style="display:flex;gap:6px;justify-content:flex-end">
-          <button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="loadCutList('${cl.id}')">Load</button>
-          <button class="icon-btn" style="color:var(--red)" onclick="deleteCutList('${cl.id}')" title="Delete">🗑</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-  container.innerHTML = `
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th style="font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0;font-weight:600">Name</th><th style="font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0;font-weight:600;width:140px;white-space:nowrap">Last Modified</th><th style="font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0;font-weight:600">Notes</th><th style="width:100px"></th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
+
+  // Group by style
+  const groups = {};
+  PRODUCT_STYLES.forEach(s => { groups[s] = []; });
+  groups['__uncategorized__'] = [];
+  data.forEach(cl => {
+    const key = (cl.style && PRODUCT_STYLES.includes(cl.style)) ? cl.style : '__uncategorized__';
+    groups[key].push(cl);
+  });
+
+  function renderRows(items) {
+    return items.map(cl => {
+      const modified = new Date(cl.updated_at || cl.created_at);
+      const dateStr = modified.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return '<tr>' +
+        '<td style="font-weight:600;color:var(--navy)">' + esc(cl.name) + '</td>' +
+        '<td style="font-family:\'DM Mono\',monospace;font-size:12px;white-space:nowrap">' + dateStr + '</td>' +
+        '<td style="color:var(--text-muted);font-size:12px">' + (esc(cl.notes) || '—') + '</td>' +
+        '<td style="white-space:nowrap"><div style="display:flex;gap:6px;justify-content:flex-end">' +
+          '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="loadCutList(\'' + cl.id + '\')">Load</button>' +
+          '<button class="icon-btn" style="color:var(--red)" onclick="deleteCutList(\'' + cl.id + '\')" title="Delete">🗑</button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function renderGroup(label, items) {
+    if (!items.length) return '';
+    const thStyle = 'font-family:\'DM Sans\',sans-serif;font-size:12px;letter-spacing:0;font-weight:600';
+    return '<div style="margin-bottom:20px">' +
+      '<div class="section-label" style="margin-bottom:8px">' + esc(label) +
+        ' <span style="font-weight:400;color:var(--text-muted)">(' + items.length + ')</span></div>' +
+      '<div class="table-wrap"><table class="data-table"><thead><tr>' +
+        '<th style="' + thStyle + '">Name</th>' +
+        '<th style="' + thStyle + ';width:140px;white-space:nowrap">Last Modified</th>' +
+        '<th style="' + thStyle + '">Notes</th>' +
+        '<th style="width:100px"></th>' +
+      '</tr></thead><tbody>' + renderRows(items) + '</tbody></table></div></div>';
+  }
+
+  let html = PRODUCT_STYLES.map(s => renderGroup(s, groups[s])).join('');
+  html += renderGroup('Uncategorized', groups['__uncategorized__']);
+  container.innerHTML = html;
 }
 
 function loadCutList(idOrObj) {
