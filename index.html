@@ -3134,6 +3134,7 @@ function toggleStdTable() {
 
 function buildStdTable() {
   const tbody = document.getElementById('stdTbody');
+  if (!tbody) return;
   tbody.innerHTML = STANDARD_SIZES.map(s => {
     const est = s.pickets || estPickets(s.l,s.w,s.h);
     const mat = (est*UNIT_COSTS.pickets).toFixed(2);
