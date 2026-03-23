@@ -2469,6 +2469,15 @@ function loadStyleSettings() {
     }
   } catch(e) { localStorage.removeItem('rmk_styles'); }
 }
+function populateStyleSelects(selectedVal) {
+  const opts = PRODUCT_STYLES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
+  ['iStyle', 'sStyle'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = opts;
+    if (selectedVal && PRODUCT_STYLES.includes(selectedVal)) el.value = selectedVal;
+  });
+}
 let currentPage = 'home';
 let analyticsRange = 'year';
 let chartRevenueSpend = null, chartSizes = null;
@@ -3156,12 +3165,7 @@ function toggleAddon(el, context) {
     if (a) {
       let price = a.base;
       if (a.scales) {
-        if (context==='quote') {
-          const l=parseInt(document.getElementById('dimL').value)||16;
-          const w=parseInt(document.getElementById('dimW').value)||16;
-          const h=parseInt(document.getElementById('dimH').value)||16;
-          price = addonPrice(id, l, w, h);
-        } else if (context==='order') {
+        if (context==='order') {
           const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
           const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
           price = addonPrice(id, dims.l, dims.w, dims.h);
