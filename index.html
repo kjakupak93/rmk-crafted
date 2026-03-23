@@ -2499,7 +2499,9 @@ function promptAddStyle() {
     showToast('Style added!');
   }
 }
-function renameStyle(oldName) {
+function renameStyle(idx) {
+  const oldName = PRODUCT_STYLES[idx];
+  if (oldName === undefined) return;
   const newName = prompt('New name:', oldName);
   if (!newName || !newName.trim()) return;
   const trimmed = newName.trim();
@@ -2508,15 +2510,15 @@ function renameStyle(oldName) {
     showToast('A style with that name already exists', 'error');
     return;
   }
-  const idx = PRODUCT_STYLES.indexOf(oldName);
-  if (idx === -1) return;
   PRODUCT_STYLES[idx] = trimmed;
   localStorage.setItem('rmk_styles', JSON.stringify(PRODUCT_STYLES));
   populateStyleSelects();
   renderStylesTab();
   showToast('Style renamed!');
 }
-async function deleteStyle(name) {
+async function deleteStyle(idx) {
+  const name = PRODUCT_STYLES[idx];
+  if (name === undefined) return;
   if (PRODUCT_STYLES.length <= 1) {
     showToast('At least one style is required', 'error');
     return;
@@ -2543,11 +2545,11 @@ function renderStylesTab() {
     container.textContent = 'No styles yet.';
     return;
   }
-  container.innerHTML = PRODUCT_STYLES.map(s =>
+  container.innerHTML = PRODUCT_STYLES.map((s, i) =>
     '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
       '<span style="flex:1;font-size:15px;font-weight:600;color:var(--navy)">' + esc(s) + '</span>' +
-      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="renameStyle(\'' + esc(s).replace(/'/g,"&#39;") + '\')">Rename</button>' +
-      '<button class="icon-btn" style="color:var(--red)" onclick="deleteStyle(\'' + esc(s).replace(/'/g,"&#39;") + '\')" title="Delete">🗑</button>' +
+      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="renameStyle(' + i + ')">Rename</button>' +
+      '<button class="icon-btn" style="color:var(--red)" onclick="deleteStyle(' + i + ')" title="Delete">🗑</button>' +
     '</div>'
   ).join('');
 }
