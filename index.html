@@ -1692,22 +1692,17 @@ body {
 
     <div class="section-label">Materials</div>
     <div class="picket-section">
-      <h3>Cedar Pickets</h3>
-      <p>Price = pickets × <span id="qHelperPPP">$10</span>. Material cost = pickets × $3.66.</p>
       <div class="input-row" style="margin-bottom:14px">
-        <div class="input-group"><label>Number of pickets</label><input class="std-input" type="number" id="qPickets" placeholder="0" min="0" oninput="updateQCalc()"></div>
-        <div class="input-group"><label>$ per picket charge</label><input class="std-input" type="number" id="qPPP" value="10" min="0" step="0.5" oninput="updateQCalc()"></div>
+        <div class="input-group"><label>Cedar pickets (qty)</label><input class="std-input" type="number" id="qPickets" placeholder="0" min="0" oninput="updateQCalc()"></div>
+        <div class="input-group"><label>Charge per picket ($)</label><input class="std-input" type="number" id="qPPP" value="10" min="0" step="0.5" oninput="updateQCalc()"></div>
       </div>
-      <div id="verticalMats" style="display:none; margin-bottom:14px; padding-top:12px; border-top:1px dashed var(--warm-gray);">
-        <div style="font-size:12px; color:var(--text-muted); font-weight:500; margin-bottom:10px;">Vertical Style — Extra Materials</div>
-        <div class="input-row" style="margin-bottom:10px">
-          <div class="input-group"><label>2×2s (qty)</label><input class="std-input" type="number" id="q22" placeholder="0" min="0" oninput="updateQCalc()"></div>
-          <div class="input-group"><label>Cost per 2×2 ($)</label><input class="std-input" type="number" id="q22c" value="3.23" min="0" step="0.25" oninput="updateQCalc()"></div>
-        </div>
-        <div class="input-row">
-          <div class="input-group"><label>2×4s (qty)</label><input class="std-input" type="number" id="q24" placeholder="0" min="0" oninput="updateQCalc()"></div>
-          <div class="input-group"><label>Cost per 2×4 ($)</label><input class="std-input" type="number" id="q24c" value="4.17" min="0" step="0.25" oninput="updateQCalc()"></div>
-        </div>
+      <div class="input-row" style="margin-bottom:14px">
+        <div class="input-group"><label>2×2s (qty)</label><input class="std-input" type="number" id="q22" placeholder="0" min="0" oninput="updateQCalc()"></div>
+        <div class="input-group"><label>Cost per 2×2 ($)</label><input class="std-input" type="number" id="q22c" value="3.23" min="0" step="0.25" oninput="updateQCalc()"></div>
+      </div>
+      <div class="input-row" style="margin-bottom:14px">
+        <div class="input-group"><label>2×4s (qty)</label><input class="std-input" type="number" id="q24" placeholder="0" min="0" oninput="updateQCalc()"></div>
+        <div class="input-group"><label>Cost per 2×4 ($)</label><input class="std-input" type="number" id="q24c" value="4.17" min="0" step="0.25" oninput="updateQCalc()"></div>
       </div>
       <div class="input-group"><label>Override final price ($) — optional</label><input class="std-input" type="number" id="qOverride" placeholder="auto-calculated" min="0" step="5" oninput="updateQCalc()"></div>
     </div>
@@ -3180,7 +3175,6 @@ async function loadRecentActivity() {
 function selectStyle(btn) {
   currentStyle = btn.dataset.style;
   document.querySelectorAll('.style-btn').forEach(b => b.classList.toggle('active', b===btn));
-  document.getElementById('verticalMats').style.display = currentStyle==='Vertical' ? 'block' : 'none';
 }
 
 function toggleStdTable() {
@@ -3255,11 +3249,9 @@ function getQuotePrice() {
     const p = parseInt(document.getElementById('qPickets').value)||0;
     const ppp = parseFloat(document.getElementById('qPPP').value)||10;
     let price = p*ppp;
-    if (currentStyle==='Vertical') {
-      const t22=(parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
-      const t24=(parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
-      price += (t22+t24)*2.5;
-    }
+    const t22=(parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
+    const t24=(parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
+    price += (t22+t24)*2.5;
     basePrice = Math.round(price/5)*5;
   }
   const addonTotal = getAddonTotalFromGrid('quoteAddonGrid');
@@ -3271,21 +3263,17 @@ function getQuoteBasePrice() {
   const p = parseInt(document.getElementById('qPickets').value)||0;
   const ppp = parseFloat(document.getElementById('qPPP').value)||10;
   let price = p*ppp;
-  if (currentStyle==='Vertical') {
-    const t22=(parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
-    const t24=(parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
-    price += (t22+t24)*2.5;
-  }
+  const t22=(parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
+  const t24=(parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
+  price += (t22+t24)*2.5;
   return Math.round(price/5)*5;
 }
 
 function getQuoteMatCost() {
   const p = parseInt(document.getElementById('qPickets').value)||0;
   let mat = p*UNIT_COSTS.pickets;
-  if (currentStyle==='Vertical') {
-    mat += (parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
-    mat += (parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
-  }
+  mat += (parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
+  mat += (parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
   return mat;
 }
 
@@ -3433,7 +3421,6 @@ function renderStyleButtons() {
     </button>`;
   }).join('');
   currentStyle = PRODUCT_STYLES[0] || 'Standard';
-  document.getElementById('verticalMats').style.display = currentStyle === 'Vertical' ? 'block' : 'none';
 }
 function populateStyleSelects(selectedVal) {
   const opts = PRODUCT_STYLES.map(s => `<option>${esc(s)}</option>`).join('');
@@ -3513,8 +3500,10 @@ function calculateQuote() {
   const w=parseInt(document.getElementById('dimW').value);
   const h=parseInt(document.getElementById('dimH').value);
   const p=parseInt(document.getElementById('qPickets').value)||0;
+  const t22q=parseInt(document.getElementById('q22').value)||0;
+  const t24q=parseInt(document.getElementById('q24').value)||0;
   if (!l||!w||!h) { showToast('Please enter all dimensions','error'); return; }
-  if (!p) { showToast('Please enter picket count','error'); return; }
+  if (!p && !t22q && !t24q) { showToast('Please enter at least one material quantity','error'); return; }
   const price=getQuotePrice();
   const mat=getQuoteMatCost();
   const profit=price-mat;
@@ -3525,16 +3514,13 @@ function calculateQuote() {
   document.getElementById('qProfit').textContent='$'+profit.toFixed(2);
   document.getElementById('qMargin').textContent=margin+'%';
   const ppp=parseFloat(document.getElementById('qPPP').value)||10;
-  let brows=`<div class="brow"><span class="blbl">Cedar pickets (${p} × $${UNIT_COSTS.pickets})</span><span class="bval">$${(p*UNIT_COSTS.pickets).toFixed(2)}</span></div>
+  const t22c=parseFloat(document.getElementById('q22c').value)||3.23;
+  const t24c=parseFloat(document.getElementById('q24c').value)||4.17;
+  let brows='';
+  if (p) brows+=`<div class="brow"><span class="blbl">Cedar pickets (${p} × $${UNIT_COSTS.pickets})</span><span class="bval">$${(p*UNIT_COSTS.pickets).toFixed(2)}</span></div>
   <div class="brow"><span class="blbl">Charge rate (${p} pickets × $${ppp})</span><span class="bval">$${(p*ppp).toFixed(0)}</span></div>`;
-  if (currentStyle==='Vertical') {
-    const t22q=parseInt(document.getElementById('q22').value)||0;
-    const t24q=parseInt(document.getElementById('q24').value)||0;
-    const t22c=parseFloat(document.getElementById('q22c').value)||3.23;
-    const t24c=parseFloat(document.getElementById('q24c').value)||4.17;
-    if (t22q) brows+=`<div class="brow"><span class="blbl">2×2s (${t22q} × $${t22c})</span><span class="bval">$${(t22q*t22c).toFixed(2)}</span></div>`;
-    if (t24q) brows+=`<div class="brow"><span class="blbl">2×4s (${t24q} × $${t24c})</span><span class="bval">$${(t24q*t24c).toFixed(2)}</span></div>`;
-  }
+  if (t22q) brows+=`<div class="brow"><span class="blbl">2×2s (${t22q} × $${t22c})</span><span class="bval">$${(t22q*t22c).toFixed(2)}</span></div>`;
+  if (t24q) brows+=`<div class="brow"><span class="blbl">2×4s (${t24q} × $${t24c})</span><span class="bval">$${(t24q*t24c).toFixed(2)}</span></div>`;
   const selectedAddonIds = getSelectedAddonIds('quoteAddonGrid');
   const addonTotal = getAddonTotalFromGrid('quoteAddonGrid');
   const basePrice = getQuoteBasePrice();
@@ -3549,14 +3535,13 @@ function calculateQuote() {
   }
   brows+=`<div class="brow total-row"><span class="blbl">Quoted Price</span><span class="bval">$${price}</span></div>`;
   document.getElementById('qBreakdown').innerHTML=brows;
-  const styleNote=currentStyle==='Vertical'?' (Vertical Style — great for deeper plantings!)':'';
   const addonLine = selectedAddonIds.length ? '\n✨ Add-ons: '+selectedAddonIds.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?a.label:id;}).join(', ') : '';
   document.getElementById('qMsgText').textContent=`Hi! Here's your quote! 🪵
 
-📐 Size: ${l}" × ${w}" × ${h}"${styleNote}
+📐 Size: ${l}" × ${w}" × ${h}" — ${currentStyle}
 💵 Price: $${price}${addonLine}
 
-Built from cedar pickets — natural, durable, beautiful outdoors.
+Handcrafted from cedar — natural, durable, beautiful outdoors.
 
 Payment: Cash or Venmo (@RMKCrafted)
 Pickup only — I'll reach out to schedule a time!
