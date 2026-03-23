@@ -309,17 +309,22 @@ test('editing a linked booking syncs pickup time to the order', async ({ page })
   await page.click('#bookingModalSaveBtn');
   await expect(page.locator('#bookingModal')).not.toHaveClass(/open/, { timeout: 5000 });
 
-  // Verify the linked order's pickup_time was synced
-  const updatedOrder = await page.evaluate(
-    async ({ id }: { id: string }) => {
-      const sb = (window as any).sb;
-      const { data } = await sb.from('orders').select('pickup_time').eq('id', id).single();
-      return data;
+  // Poll until the linked order's pickup_time is synced — Supabase writes can
+  // have brief replication lag in CI that a single immediate read may miss.
+  await expect.poll(
+    async () => {
+      const data = await page.evaluate(
+        async ({ id }: { id: string }) => {
+          const sb = (window as any).sb;
+          const { data } = await sb.from('orders').select('pickup_time').eq('id', id).single();
+          return data;
+        },
+        { id: orderId },
+      );
+      return data?.pickup_time;
     },
-    { id: orderId },
-  );
-
-  expect(updatedOrder.pickup_time).toBe('14:00');
+    { timeout: 10000, intervals: [500, 1000, 2000, 3000] },
+  ).toBe('14:00');
 });
 
 test('add availability window updates Share & Book message', async ({ page }) => {

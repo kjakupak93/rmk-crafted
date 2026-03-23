@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -25,6 +28,25 @@ jobs:
 
       - name: Run smoke tests
         run: npx playwright test --project=smoke
+
+      # Visual snapshot baselines are platform-specific (darwin vs linux).
+      # When linux baselines are missing (first run after new visual tests are
+      # added on macOS), generate them here and commit back so future runs do
+      # real diff-based regression testing.
+      - name: Bootstrap linux visual snapshots if missing
+        run: |
+          SNAP_DIR="tests/e2e/visual-coverage.spec.ts-snapshots"
+          if ! ls "${SNAP_DIR}"/*-linux.png 2>/dev/null | grep -q .; then
+            echo "No linux baselines found — generating..."
+            npx playwright test --project=e2e tests/e2e/visual-coverage.spec.ts --update-snapshots || true
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add "${SNAP_DIR}/"
+            if ! git diff --staged --quiet; then
+              git commit -m "chore: add linux playwright snapshot baselines [skip actions]"
+              git push
+            fi
+          fi
 
       - name: Run e2e tests
         run: npx playwright test --project=e2e
