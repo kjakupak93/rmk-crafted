@@ -134,3 +134,23 @@ test('delete quote removes it from Quotes tab', async ({ page }) => {
 
   await expect(page.locator('#otab-quotes tr').filter({ hasText: quoteName })).toHaveCount(0);
 });
+
+test('save cut list with a style groups it under that style in saved list', async ({ page }) => {
+  const cutListName = `${TAG} Styled CL`;
+  await goToCutList(page);
+  await addPartRowAndRun(page, cutListName);
+  // Select the first real style (index 1 — index 0 is the blank "— No style —" option)
+  await page.locator('#cl-style').selectOption({ index: 1 });
+  const selectedStyle = await page.locator('#cl-style').inputValue();
+  await page.locator('#mtab-cutlist button:has-text("Save")').click();
+  await expect(page.locator('#cl-saved-list')).toContainText(selectedStyle, { timeout: 10000 });
+  await expect(page.locator('#cl-saved-list')).toContainText(cutListName);
+});
+
+test('creating new style from cut list dropdown adds it and selects it', async ({ page }) => {
+  const newStyleName = `${TAG} NewStyle`;
+  await goToCutList(page);
+  page.once('dialog', d => d.accept(newStyleName));
+  await page.selectOption('#cl-style', '__new__');
+  await expect(page.locator('#cl-style')).toHaveValue(newStyleName, { timeout: 5000 });
+});
