@@ -512,23 +512,6 @@ body {
 .data-table tr:hover td { background: var(--cream); }
 
 /* ===== QUOTE CALCULATOR ===== */
-.style-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-.style-btn {
-  padding: 18px;
-  border: 2px solid var(--warm-gray);
-  border-radius: 12px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
-}
-.style-btn:hover { border-color: var(--ocean); }
-.style-btn.active { border-color: var(--navy); background: var(--navy); color: white; }
-.style-btn .sname { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; display: block; margin-bottom: 3px; }
-.style-btn .sdesc { font-size: 12px; color: var(--text-muted); }
-.style-btn.active .sdesc { color: rgba(255,255,255,0.6); }
-.style-btn .sicon { font-size: 26px; display: block; margin-bottom: 8px; }
-
 .dims-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
 .dim-group { display: flex; flex-direction: column; gap: 6px; }
 .dim-label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
@@ -1045,13 +1028,7 @@ body {
   .chart-card { padding: 14px; }
   .chart-card h3 { margin-bottom: 10px; font-size: 12px; }
 
-  /* ── Style toggle (quote page) ── */
-  .style-toggle { gap: 8px; }
-  .style-btn { padding: 14px 12px; }
-  .style-btn .sicon { font-size: 22px; }
-  .style-btn .sname { font-size: 14px; }
-
-  /* ── Input row (quote page material section) ── */
+/* ── Input row (quote page material section) ── */
   .input-row { grid-template-columns: 1fr; }
 
   /* ── Mat price row ── */
@@ -1405,12 +1382,10 @@ body {
 
 /* ===== TILE COLOR VARIANTS ===== */
 .app-tile { border-left: 4px solid var(--warm-gray); }
-.app-tile--quote  { border-left: 4px solid var(--sand); }
 .app-tile--orders { border-left: 4px solid var(--orange); }
 .app-tile--inv    { border-left: 4px solid var(--green); }
 .app-tile--mats   { border-left: 4px solid var(--ocean); }
 .app-tile--sched  { border-left: 4px solid var(--navy-dark); }
-.app-tile--quote:hover  { border-left-color: var(--sand); }
 .app-tile--orders:hover { border-left-color: var(--orange); }
 .app-tile--inv:hover    { border-left-color: var(--green); }
 .app-tile--mats:hover   { border-left-color: var(--ocean); }
@@ -1773,7 +1748,7 @@ body {
         <label style="font-size:13px; font-weight:600; color:var(--text); white-space:nowrap;">Selling Price per Picket</label>
         <input class="std-input" type="number" id="matPicketPrice" min="0" step="0.5" placeholder="10" style="width:90px; margin:0;">
         <button class="btn-primary" style="padding:8px 16px; font-size:13px;" onclick="savePicketPrice()">Save</button>
-        <span style="font-size:12px; color:var(--text-muted);">Sets the default $ per picket in the Quote Calculator.</span>
+        <span style="font-size:12px; color:var(--text-muted);">Sets the default $ per picket for pricing.</span>
       </div>
 
       <div class="summary-bar">
