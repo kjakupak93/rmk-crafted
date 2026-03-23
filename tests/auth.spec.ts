@@ -10,8 +10,8 @@ test('wrong credentials show error', async ({ page }) => {
 
 test('correct credentials dismiss gate and show home page', async ({ page }) => {
   await page.goto('/');
-  await page.fill('#auth-email', 'ryan@rmkcrafted.com');
-  await page.fill('#auth-password', 'RMK_ChangeMe_2026!');
+  await page.fill('#auth-email', 'kristen@rmkcrafted.com');
+  await page.fill('#auth-password', 'REDACTED_PASSWORD');
   await page.press('#auth-password', 'Enter');
   await page.locator('#pin-gate').waitFor({ state: 'hidden', timeout: 15000 });
   await expect(page.locator('#page-home')).toBeVisible();

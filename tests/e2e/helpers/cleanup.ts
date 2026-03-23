@@ -24,7 +24,7 @@ async function getAuthToken(): Promise<string> {
       apikey: ANON_KEY,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email: 'ryan@rmkcrafted.com', password: 'RMK_ChangeMe_2026!' }),
+    body: JSON.stringify({ email: 'kristen@rmkcrafted.com', password: 'REDACTED_PASSWORD' }),
   });
   if (!res.ok) {
     const text = await res.text();

@@ -13,8 +13,8 @@ async function globalSetup(config: FullConfig) {
 
   await page.goto(baseURL!);
   await page.waitForSelector('#auth-email', { timeout: 10000 });
-  await page.fill('#auth-email', 'ryan@rmkcrafted.com');
-  await page.fill('#auth-password', 'RMK_ChangeMe_2026!');
+  await page.fill('#auth-email', 'kristen@rmkcrafted.com');
+  await page.fill('#auth-password', 'REDACTED_PASSWORD');
   await page.press('#auth-password', 'Enter');
   await page.locator('#pin-gate').waitFor({ state: 'hidden', timeout: 15000 });
 
