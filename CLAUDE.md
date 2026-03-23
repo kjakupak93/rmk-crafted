@@ -34,7 +34,7 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 | `schedule_slots` | Open pickup time slots on the calendar |
 | `schedule_bookings` | Booked customer pickups |
 | `availability_windows` | Recurring availability windows for the share message |
-| `cut_lists` | Saved cut lists — columns: `id`, `name`, `kerf`, `cuts` (JSONB), `stock_types` (JSONB), `notes`, `created_at`, `updated_at` |
+| `cut_lists` | Saved cut lists — columns: `id`, `name`, `kerf`, `cuts` (JSONB), `stock_types` (JSONB), `notes`, `style` (text, nullable), `created_at`, `updated_at` |
 | `quotes` | Quotes generated from cut lists — columns: `id`, `name`, `price`, `cut_list_id`, `cut_list_name`, `picket_count`, `notes`, `created_at` |
 
 RLS is enabled on all tables. All business tables require `authenticated` role. Anon has SELECT + UPDATE on `orders` (for `schedule.html` booking flow) and INSERT on `schedule_bookings`. The `orders` table also has a `booking_token` UUID column (indexed) — `schedule.html` resolves orders by `?token=<uuid>`, not `?order=<id>`.
@@ -47,9 +47,8 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 
 ### Pages
 - **Home** (`page-home`) — KPI cards, low-stock alert, activity feed, tile nav grid
-- **Quote Calculator** (`page-quote`) — Price estimator; shows all three material inputs (pickets, 2×2s, 2×4s) for any style. Styles are dynamic — see `PRODUCT_STYLES` in Business/Pricing.
 - **Orders** (`page-orders`) — 4 tabs: Active → Ready to Sell → Sales History → Quotes
-- **Materials** (`page-materials`) — Stock levels + Lowes purchase log + Cut List Calculator tab
+- **Materials** (`page-materials`) — Stock levels + Lowes purchase log + Cut List Calculator tab + Styles tab
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
 - **Analytics** (`page-analytics`) — P&L cards + revenue/profit/best-seller charts
 
@@ -61,6 +60,8 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - Recent Activity feed shows booking *creation* time, not pickup date (avoids future timestamps showing as "just now")
 - `_pendingQuoteId` — module-level var set when converting a quote to an order. `saveOrder()` clears it (and deletes the source quote) on both success and error paths to prevent leaks.
 - `openOrderModal(order, prefill)` — optional second param lets `convertQuoteToOrder()` pre-populate the order modal from a quote without an existing order object
+- Style management lives in Materials → Styles tab. `addStyle()`, `renameStyle(idx)`, `deleteStyle(idx)` are the management functions. `populateStyleSelects()` refreshes all style dropdowns (`iStyle`, `sStyle`, `cl-style`) app-wide.
+- Saved cut lists are grouped by style in `loadSavedCutLists()`. `cl.style = null` renders in Uncategorized group.
 
 ### Cut List Calculator (Materials → Cut List tab)
 Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
@@ -83,7 +84,7 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
   - Pickets: $3.38 → **$3.66**
   - 2×2s: $2.98 → **$3.23**
   - 2×4s: $3.85 → **$4.17**
-- **Planter styles**: Dynamic — stored in `PRODUCT_STYLES` (localStorage key `rmk_styles`). Defaults: Standard, Vertical, Tiered, Dog Bowl. Managed via "✏️ Manage styles" button on the quote page. All three material inputs (pickets, 2×2s, 2×4s) are always visible for any style; breakdown only renders rows for materials with qty > 0.
+- **Planter styles**: Dynamic — stored in `PRODUCT_STYLES` (localStorage key `rmk_styles`). Defaults: Standard, Vertical, Tiered, Dog Bowl. Managed via the Styles tab on the Materials page. All three material inputs (pickets, 2×2s, 2×4s) are always visible for any style; breakdown only renders rows for materials with qty > 0.
 
 ## Standard Planter Sizes & Prices
 Stored in `STANDARD_SIZES`. 8 sizes have hardcoded `pickets`; 16×16×16 and 36×12×16 use formula fallback.

@@ -13,7 +13,6 @@
 A single-page web app that manages every part of the RMK Crafted workflow:
 
 - **Home Dashboard** — at-a-glance KPI cards (this month's revenue, YTD, ready-to-sell count, amount owed) with trend badges showing ▲/▼ % vs prior period, plus a tile grid linking to every section
-- **Quote Calculator** — price any planter box instantly and generate a Facebook message
 - **Order & Inventory Tracker** — manage active orders, ready-to-sell stock, and sales history
 - **Material Cost Tracker** — track cedar stock levels and Lowes purchases
 - **Pickup Scheduler** — manage availability, view upcoming pickups, sync with customer bookings
@@ -26,30 +25,7 @@ All data is stored in Supabase (cloud) so it works across any device. The dashbo
 
 ## The Five Modules
 
-### 1 — Quote Calculator
-
-Calculates selling price and material cost for any planter box.
-
-**Planter Styles**
-
-Styles are user-configurable. Defaults: Standard, Vertical, Tiered, Dog Bowl. Tap **✏️ Manage styles** on the Quote Calculator page to add or remove styles.
-
-All three material inputs (Cedar Pickets, 2×2 Lumber, 2×4 Lumber) are always shown. The cost breakdown only includes materials with a quantity > 0.
-
-**How to use:**
-1. Select a style
-2. Enter Length × Width × Height (inches)
-3. If a standard size match is found, a green banner appears — tap **Use This Size**
-4. Enter material quantities (pickets, 2×2s, 2×4s — fill what applies to your style)
-5. Tap **Calculate Quote**
-
-**Results include:** Selling price · Material cost · Profit · Margin %
-
-A pre-written **Facebook message** is generated at the bottom — tap **Copy** and paste directly into a customer conversation.
-
----
-
-### 2 — Order & Inventory Tracker
+### 1 — Order & Inventory Tracker
 
 **Active Orders tab** — all in-progress orders, each showing:
 
@@ -232,7 +208,6 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 
 | Task | How |
 |---|---|
-| Quote a customer | Quote Calculator → enter dimensions → Calculate → copy Facebook message |
 | Add a new order | Orders → Active tab → + New Order |
 | Mark an order ready | Edit order → Status: Ready for Pickup → Save |
 | Complete an order | Tap ✅ on order card — toast shows estimated profit & margin |
@@ -283,7 +258,7 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | `schedule_slots` | Open availability slots |
 | `schedule_bookings` | Confirmed bookings, linked to orders via `order_id` |
 | `availability_windows` | Recurring availability settings |
-| `cut_lists` | Saved cut lists — name, kerf, cuts (JSONB), stock types (JSONB), notes, updated_at |
+| `cut_lists` | Saved cut lists — name, kerf, cuts (JSONB), stock types (JSONB), notes, style (text nullable), updated_at |
 | `quotes` | Quotes saved from the Cut List Calculator — name, price, picket count, linked cut list |
 
 ---

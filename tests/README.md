@@ -29,9 +29,8 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 |---|---|
 | `auth.spec.ts` | PIN gate: wrong PIN shows error, correct PIN dismisses gate |
 | `home.spec.ts` | KPI cards present, nav tiles visible, dark mode toggle |
-| `quote.spec.ts` | Quote Calculator page navigates and calculates |
 | `orders.spec.ts` | Orders page tabs, New Order modal, Quotes tab visibility, Sales History margin badges |
-| `materials.spec.ts` | Stock counts load, tab switching, Cut List quote button starts disabled |
+| `materials.spec.ts` | Stock counts load, tab switching, Cut List quote button starts disabled, Styles tab renders |
 | `scheduler.spec.ts` | Calendar renders, tab switching |
 | `analytics.spec.ts` | P&L cards, charts, range toggle |
 
@@ -44,8 +43,8 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 | File | Tests | Coverage |
 |---|---|---|
 | `orders.spec.ts` | 12 | Create, edit, advance status (pending→building→ready), complete unpaid (Cash + Venmo), skip payment, prepaid bypass, delete, filter, multi-item, mark all paid (Cash + Venmo) |
-| `cutlist-quotes.spec.ts` | 5 | Quote button enables after run, modal pre-fill, save quote, convert to order, delete |
-| `materials.spec.ts` | 8 | Add/edit/delete purchase, run cut list, save cut list, re-save updates existing record, load + delete cut list, stock +/− buttons |
+| `cutlist-quotes.spec.ts` | 7 | Quote button enables after run, modal pre-fill, save quote, convert to order, delete, style saved with cut list, style grouping in saved list |
+| `materials.spec.ts` | 12 | Add/edit/delete purchase, run cut list, save cut list, re-save updates existing record, load + delete cut list, stock +/− buttons, add style, rename style, delete style, style persists across reload |
 | `scheduler.spec.ts` | 10 | Add/edit/delete slot, book/edit/delete pickup, quick book, booking edit syncs order pickup time, add/delete availability window |
 | `inventory-sales.spec.ts` | 7 | Add inventory, adjust qty (+/−), qty → 0 removes item, delete inventory, log/edit/delete sale |
 
