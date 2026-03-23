@@ -1577,17 +1577,6 @@ body {
     <div id="home-activity"></div>
 
     <div class="app-grid">
-      <!-- Quote -->
-      <div>
-        <div class="app-tile app-tile--quote" onclick="goTo('quote')">
-          <div class="tile-head">
-            <span class="tile-tag">Calculator</span>
-            <span class="tile-icon" style="font-size:20px">🪵</span>
-          </div>
-          <div class="tile-name">Quote</div>
-          <div class="tile-desc">Price any size planter instantly</div>
-        </div>
-      </div>
 
       <!-- Orders -->
       <div>
@@ -1657,101 +1646,6 @@ body {
   </div>
 </div>
 
-<!-- ===== QUOTE CALCULATOR ===== -->
-<div class="page" id="page-quote">
-  <div class="app-container">
-    <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Quote Calculator</h2>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div class="section-label" style="margin-bottom:0">Style</div>
-      <button class="addon-manage-btn" onclick="openStyleSettings()">✏️ Manage styles</button>
-    </div>
-    <div class="style-toggle" id="styleToggle"></div>
-
-    <div class="std-sizes-toggle" onclick="toggleStdTable()">
-      <span id="stdArrow">▶</span> View standard sizes & pricing
-    </div>
-    <div class="std-table-wrap" id="stdTableWrap">
-      <table class="data-table" style="min-width:400px">
-        <thead><tr><th>Size (L×W×H)</th><th>Price</th><th>Est. Pickets</th><th>Mat. Cost</th><th></th></tr></thead>
-        <tbody id="stdTbody"></tbody>
-      </table>
-    </div>
-
-    <div class="section-label">Dimensions</div>
-    <div class="dims-grid" style="margin-bottom:16px">
-      <div class="dim-group"><div class="dim-label">Length (in)</div><input class="dim-input" type="number" id="dimL" placeholder="36" min="1" oninput="onDimChange()"></div>
-      <div class="dim-group"><div class="dim-label">Width (in)</div><input class="dim-input" type="number" id="dimW" placeholder="16" min="1" oninput="onDimChange()"></div>
-      <div class="dim-group"><div class="dim-label">Height (in)</div><input class="dim-input" type="number" id="dimH" placeholder="16" min="1" oninput="onDimChange()"></div>
-    </div>
-
-    <div class="size-match" id="sizeMatch">
-      <span style="font-size:18px">✅</span>
-      <div style="flex:1"><strong id="matchTxt"></strong><br><span id="matchSub"></span></div>
-      <button class="use-match-btn" onclick="applyMatch()">Use standard price</button>
-    </div>
-
-    <div class="section-label">Materials</div>
-    <div class="picket-section">
-      <div class="input-row" style="margin-bottom:14px">
-        <div class="input-group"><label>Cedar pickets (qty)</label><input class="std-input" type="number" id="qPickets" placeholder="0" min="0" oninput="updateQCalc()"></div>
-        <div class="input-group"><label>Charge per picket ($)</label><input class="std-input" type="number" id="qPPP" value="10" min="0" step="0.5" oninput="updateQCalc()"></div>
-      </div>
-      <div class="input-row" style="margin-bottom:14px">
-        <div class="input-group"><label>2×2s (qty)</label><input class="std-input" type="number" id="q22" placeholder="0" min="0" oninput="updateQCalc()"></div>
-        <div class="input-group"><label>Cost per 2×2 ($)</label><input class="std-input" type="number" id="q22c" value="3.23" min="0" step="0.25" oninput="updateQCalc()"></div>
-      </div>
-      <div class="input-row" style="margin-bottom:14px">
-        <div class="input-group"><label>2×4s (qty)</label><input class="std-input" type="number" id="q24" placeholder="0" min="0" oninput="updateQCalc()"></div>
-        <div class="input-group"><label>Cost per 2×4 ($)</label><input class="std-input" type="number" id="q24c" value="4.17" min="0" step="0.25" oninput="updateQCalc()"></div>
-      </div>
-      <div class="input-group"><label>Override final price ($) — optional</label><input class="std-input" type="number" id="qOverride" placeholder="auto-calculated" min="0" step="5" oninput="updateQCalc()"></div>
-    </div>
-
-    <div class="addon-section">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div class="addon-section-label" style="margin-bottom:0">Optional Add-ons</div>
-        <button class="addon-manage-btn" onclick="openAddonSettings()">✏️ Manage add-ons</button>
-      </div>
-      <div class="addon-grid" id="quoteAddonGrid">
-        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price-static" id="qap-sealant">+$20</span><input class="chip-price-input" type="number" min="0" value="20" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
-        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price-static" id="qap-liner">+$15</span><input class="chip-price-input" type="number" min="0" value="15" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
-        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price-static" id="qap-casters">+$40</span><input class="chip-price-input" type="number" min="0" value="40" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
-        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'quote')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price-static" id="qap-shelf">+$30</span><input class="chip-price-input" type="number" min="0" value="30" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'quote')"></div>
-      </div>
-      <div class="addon-subtotal" id="quoteAddonSubtotal" style="display:none">
-        <span id="quoteAddonSubtotalLabel" class="addon-sub-label"></span>
-        <strong id="quoteAddonSubtotalAmt"></strong>
-      </div>
-    </div>
-
-    <button class="calc-btn" onclick="calculateQuote()">Calculate Quote →</button>
-
-    <div class="results" id="qResults">
-      <div class="price-hero">
-        <div class="price-label">Quoted Price</div>
-        <div class="price-amount"><sup>$</sup><span id="qPriceVal">0</span></div>
-        <div class="price-sub" id="qPriceSub"></div>
-      </div>
-      <div class="stats-grid3">
-        <div class="stat-card"><div class="stat-val" id="qMatCost">$0</div><div class="stat-lbl">Material Cost</div></div>
-        <div class="stat-card"><div class="stat-val" id="qProfit" style="color:var(--green)">$0</div><div class="stat-lbl">Profit</div></div>
-        <div class="stat-card"><div class="stat-val" id="qMargin">0%</div><div class="stat-lbl">Margin</div></div>
-      </div>
-      <div class="breakdown-card">
-        <h3>Cost Breakdown</h3>
-        <div id="qBreakdown"></div>
-      </div>
-      <div class="quote-out">
-        <h3>📋 Facebook Marketplace Message</h3>
-        <div class="quote-text" id="qMsgText"></div>
-        <button class="copy-btn" id="qCopyBtn" onclick="copyQuoteMsg()">Copy message</button>
-      </div>
-      <button style="width:100%;padding:12px;background:transparent;color:var(--text-muted);border:2px solid var(--warm-gray);border-radius:10px;font-size:14px;cursor:pointer;margin-top:4px" onclick="resetQuote()">← New quote</button>
-      <button class="btn-primary" style="width:100%;padding:13px;margin-top:8px;font-size:15px;justify-content:center" onclick="createOrderFromQuote()">📋 Create Order from This Quote</button>
-      <button class="btn-secondary" style="width:100%;padding:13px;margin-top:8px;font-size:15px;justify-content:center" onclick="openListingFromQuote()">📣 Post to Marketplace</button>
-    </div>
-  </div>
-</div>
 
 <!-- ===== ORDERS ===== -->
 <div class="page" id="page-orders">
@@ -2429,19 +2323,6 @@ body {
   </div>
 </div>
 
-<!-- Style Settings modal -->
-<div class="modal-overlay" id="styleSettingsModal">
-  <div class="modal" style="max-width:380px">
-    <h2>Manage Styles</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Add or remove product styles available across orders, inventory, and sales.</p>
-    <div id="styleSettingsRows"></div>
-    <button type="button" onclick="addStyleRow()" style="margin-top:10px;background:none;border:1px dashed var(--warm-gray);border-radius:8px;width:100%;padding:8px;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;">+ Add style</button>
-    <div class="modal-actions">
-      <button class="modal-btn-cancel" onclick="closeModal('styleSettingsModal')">Cancel</button>
-      <button class="modal-btn-primary" onclick="saveStyleSettings()">Save</button>
-    </div>
-  </div>
-</div>
 
 <div id="createQuoteModal" class="modal-overlay">
   <div class="modal" onclick="event.stopPropagation()">
