@@ -2474,7 +2474,6 @@ let analyticsRange = 'year';
 let chartRevenueSpend = null, chartSizes = null;
 let chartMarginTrend = null, chartMarginBySize = null;
 let analyticsSales = [], analyticsPurchases = [];
-let currentStyle = 'Standard';
 let matchedSize = null;
 let currentEditOrder = null;
 let orderFilter = 'all';
@@ -2882,43 +2881,16 @@ async function savePicketPrice() {
   showToast('Saved', 'success');
 }
 
-async function loadQuotePageData() {
-  try {
-    const settingsRes = await sb.from('settings').select('*');
-
-    if (settingsRes.error) console.warn('loadQuotePageData: settings fetch error', settingsRes.error);
-
-    // Update default picket price (falls back to 10 if row missing or value is NaN)
-    const priceSetting = (settingsRes.data || []).find(r => r.key === 'picket_price');
-    if (priceSetting) defaultPicketPrice = parseFloat(priceSetting.value) || 10;
-
-    // Pre-fill #qPPP with the global default
-    const qppp = document.getElementById('qPPP');
-    if (qppp) qppp.value = defaultPicketPrice;
-
-    // Sync helper text span
-    const helper = document.getElementById('qHelperPPP');
-    if (helper) helper.textContent = '$' + defaultPicketPrice;
-
-    renderStyleButtons();
-    // Sync addon chip prices with current ADDONS (handles localStorage overrides)
-    updateQuoteAddonPrices();
-  } catch(e) {
-    console.error('loadQuotePageData:', e);
-  }
-}
-
 function goTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   document.getElementById('backBtn').classList.add('visible');
-  const names = {quote:'Quote Calculator', orders:'Orders', inventory:'Inventory & Sales', materials:'Materials', scheduler:'Pickup Scheduler', analytics:'Analytics'};
+  const names = {orders:'Orders', inventory:'Inventory & Sales', materials:'Materials', scheduler:'Pickup Scheduler', analytics:'Analytics'};
   document.getElementById('header-subtitle').textContent = names[page] || page;
   currentPage = page;
   window.scrollTo(0,0);
   if (page==='orders') loadOrders();
   if (page==='materials') { loadStock(); }
-  if (page==='quote') { loadQuotePageData(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
   if (page==='analytics') loadAnalytics();
 }
@@ -3053,11 +3025,6 @@ async function loadRecentActivity() {
 }
 
 // ===== QUOTE CALCULATOR =====
-function selectStyle(btn) {
-  currentStyle = btn.dataset.style;
-  document.querySelectorAll('.style-btn').forEach(b => b.classList.toggle('active', b===btn));
-}
-
 function toggleStdTable() {
   const w = document.getElementById('stdTableWrap');
   const a = document.getElementById('stdArrow');
@@ -3111,7 +3078,6 @@ function onDimChange() {
     document.getElementById('sizeMatch').classList.remove('visible');
   }
   if (!document.getElementById('qPickets').value) document.getElementById('qPickets').value = estPickets(l,w,h);
-  updateQuoteAddonPrices();
 }
 
 function applyMatch() {
@@ -3120,50 +3086,6 @@ function applyMatch() {
     document.getElementById('qPickets').value = matchedSize.pickets || estPickets(matchedSize.l,matchedSize.w,matchedSize.h);
   }
 }
-
-function getQuotePrice() {
-  const ov = parseFloat(document.getElementById('qOverride').value);
-  let basePrice;
-  if (ov && !isNaN(ov)) {
-    basePrice = ov;
-  } else {
-    const p = parseInt(document.getElementById('qPickets').value)||0;
-    const ppp = parseFloat(document.getElementById('qPPP').value)||10;
-    let price = p*ppp;
-    const t22=(parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
-    const t24=(parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
-    price += (t22+t24)*2.5;
-    basePrice = Math.round(price/5)*5;
-  }
-  const addonTotal = getAddonTotalFromGrid('quoteAddonGrid');
-  return basePrice + addonTotal;
-}
-function getQuoteBasePrice() {
-  const ov = parseFloat(document.getElementById('qOverride').value);
-  if (ov && !isNaN(ov)) return ov;
-  const p = parseInt(document.getElementById('qPickets').value)||0;
-  const ppp = parseFloat(document.getElementById('qPPP').value)||10;
-  let price = p*ppp;
-  const t22=(parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
-  const t24=(parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
-  price += (t22+t24)*2.5;
-  return Math.round(price/5)*5;
-}
-
-function getQuoteMatCost() {
-  const p = parseInt(document.getElementById('qPickets').value)||0;
-  let mat = p*UNIT_COSTS.pickets;
-  mat += (parseInt(document.getElementById('q22').value)||0)*(parseFloat(document.getElementById('q22c').value)||3.23);
-  mat += (parseInt(document.getElementById('q24').value)||0)*(parseFloat(document.getElementById('q24c').value)||4.17);
-  return mat;
-}
-
-function updateQCalc() {
-    const ppp = parseFloat(document.getElementById('qPPP').value) || 10;
-    const helper = document.getElementById('qHelperPPP');
-    if (helper) helper.textContent = '$' + ppp;
-    calculateQuote();
-  }
 
 // ===== ADD-ONS =====
 function addonScaleFactor(l, w, h) {
@@ -3211,7 +3133,7 @@ function getAddonTotalFromGrid(gridId) {
 }
 function syncAddonChipLabels() {
   // Update chip label text for all grids when ADDONS changes
-  ['quoteAddonGrid','orderAddonGrid','invAddonGrid'].forEach(gridId => {
+  ['orderAddonGrid','invAddonGrid'].forEach(gridId => {
     ADDONS.forEach(a => {
       const chip = document.querySelector('#'+gridId+' [data-id="'+a.id+'"]');
       if (!chip) return;
@@ -3249,11 +3171,9 @@ function toggleAddon(el, context) {
     }
     setTimeout(() => input.focus(), 0);
   }
-  if (context==='quote') updateQuoteAddonPrices();
   if (context==='order') updateOrderTotal();
 }
 function onChipPriceInput(input, context) {
-  if (context==='quote') updateQuoteAddonPrices();
   if (context==='order') updateOrderTotal();
 }
 function openAddonSettings() {
@@ -3279,93 +3199,8 @@ function saveAddonSettings() {
   localStorage.setItem('rmk_addons', JSON.stringify(ADDONS));
   closeModal('addonSettingsModal');
   syncAddonChipLabels();
-  updateQuoteAddonPrices();
   updateOrderAddonPrices();
   showToast('Add-on settings saved!', 'success');
-}
-// ── Style settings ──
-const STYLE_META = {
-  'Standard': { icon: '🪵', desc: 'Classic horizontal build.' },
-  'Vertical': { icon: '📐', desc: 'Uses 2×2s & 2×4s for extra depth.' },
-  'Tiered':   { icon: '🪜', desc: 'Multi-level tiered design.' },
-  'Dog Bowl': { icon: '🐾', desc: 'Raised dog bowl stand.' },
-};
-function renderStyleButtons() {
-  const container = document.getElementById('styleToggle');
-  if (!container) return;
-  container.innerHTML = PRODUCT_STYLES.map((s, i) => {
-    const meta = STYLE_META[s] || { icon: '🪵', desc: '' };
-    return `<button class="style-btn${i===0?' active':''}" data-style="${esc(s)}" onclick="selectStyle(this)">
-      <span class="sicon">${meta.icon}</span>
-      <span class="sname">${esc(s)}</span>
-      ${meta.desc ? `<span class="sdesc">${esc(meta.desc)}</span>` : ''}
-    </button>`;
-  }).join('');
-  currentStyle = PRODUCT_STYLES[0] || 'Standard';
-}
-function populateStyleSelects(selectedVal) {
-  const opts = PRODUCT_STYLES.map(s => `<option>${esc(s)}</option>`).join('');
-  ['iStyle', 'sStyle'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = opts;
-    if (selectedVal && PRODUCT_STYLES.includes(selectedVal)) el.value = selectedVal;
-  });
-}
-function openStyleSettings() {
-  const rows = document.getElementById('styleSettingsRows');
-  rows.innerHTML = PRODUCT_STYLES.map((s, i) => `
-    <div class="addon-settings-row" style="grid-template-columns:1fr auto">
-      <input class="form-control" type="text" value="${esc(s)}" id="ss-name-${i}" style="font-size:13px;padding:7px 10px">
-      <button type="button" onclick="removeStyleRow(${i})" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1" title="Remove">×</button>
-    </div>`).join('');
-  openModal('styleSettingsModal');
-}
-function removeStyleRow(i) {
-  const row = document.getElementById('ss-name-'+i)?.closest('.addon-settings-row');
-  if (row) row.remove();
-}
-function addStyleRow() {
-  const rows = document.getElementById('styleSettingsRows');
-  const i = rows.children.length;
-  const div = document.createElement('div');
-  div.className = 'addon-settings-row';
-  div.style.gridTemplateColumns = '1fr auto';
-  div.innerHTML = `
-    <input class="form-control" type="text" id="ss-name-${i}" placeholder="Style name" style="font-size:13px;padding:7px 10px">
-    <button type="button" onclick="removeStyleRow(${i})" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1" title="Remove">×</button>`;
-  rows.appendChild(div);
-  div.querySelector('input').focus();
-}
-function saveStyleSettings() {
-  const inputs = document.querySelectorAll('#styleSettingsRows input[type="text"]');
-  const styles = Array.from(inputs).map(el => el.value.trim()).filter(Boolean);
-  if (styles.length === 0) { showToast('Add at least one style', 'error'); return; }
-  PRODUCT_STYLES = styles;
-  localStorage.setItem('rmk_styles', JSON.stringify(PRODUCT_STYLES));
-  closeModal('styleSettingsModal');
-  renderStyleButtons();
-  populateStyleSelects();
-  showToast('Styles saved!', 'success');
-}
-function updateQuoteAddonPrices() {
-  const l=parseInt(document.getElementById('dimL').value)||16;
-  const w=parseInt(document.getElementById('dimW').value)||16;
-  const h=parseInt(document.getElementById('dimH').value)||16;
-  ADDONS.forEach(a => {
-    const staticEl = document.getElementById('qap-'+a.id);
-    if (staticEl) staticEl.textContent = '+$'+addonPrice(a.id,l,w,h);
-  });
-  const ids = getSelectedAddonIds('quoteAddonGrid');
-  const total = getAddonTotalFromGrid('quoteAddonGrid');
-  const sub = document.getElementById('quoteAddonSubtotal');
-  if (ids.length) {
-    sub.style.display='';
-    document.getElementById('quoteAddonSubtotalLabel').textContent = ids.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?a.label:id;}).join(', ');
-    document.getElementById('quoteAddonSubtotalAmt').textContent = '+$'+total;
-  } else {
-    sub.style.display='none';
-  }
 }
 function updateOrderAddonPrices() {
   const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
@@ -3374,114 +3209,6 @@ function updateOrderAddonPrices() {
     const priceEl = document.getElementById('oap-'+a.id);
     if (priceEl) priceEl.textContent = a.scales ? '+$'+addonPrice(a.id,dims.l,dims.w,dims.h) : '+$'+a.base;
   });
-}
-
-function calculateQuote() {
-  const l=parseInt(document.getElementById('dimL').value);
-  const w=parseInt(document.getElementById('dimW').value);
-  const h=parseInt(document.getElementById('dimH').value);
-  const p=parseInt(document.getElementById('qPickets').value)||0;
-  const t22q=parseInt(document.getElementById('q22').value)||0;
-  const t24q=parseInt(document.getElementById('q24').value)||0;
-  if (!l||!w||!h) { showToast('Please enter all dimensions','error'); return; }
-  if (!p && !t22q && !t24q) { showToast('Please enter at least one material quantity','error'); return; }
-  const price=getQuotePrice();
-  const mat=getQuoteMatCost();
-  const profit=price-mat;
-  const margin=Math.round((profit/price)*100);
-  document.getElementById('qPriceVal').textContent=price;
-  document.getElementById('qPriceSub').textContent=`${l}" × ${w}" × ${h}" — ${currentStyle}`;
-  document.getElementById('qMatCost').textContent='$'+mat.toFixed(2);
-  document.getElementById('qProfit').textContent='$'+profit.toFixed(2);
-  document.getElementById('qMargin').textContent=margin+'%';
-  const ppp=parseFloat(document.getElementById('qPPP').value)||10;
-  const t22c=parseFloat(document.getElementById('q22c').value)||3.23;
-  const t24c=parseFloat(document.getElementById('q24c').value)||4.17;
-  let brows='';
-  if (p) brows+=`<div class="brow"><span class="blbl">Cedar pickets (${p} × $${UNIT_COSTS.pickets})</span><span class="bval">$${(p*UNIT_COSTS.pickets).toFixed(2)}</span></div>
-  <div class="brow"><span class="blbl">Charge rate (${p} pickets × $${ppp})</span><span class="bval">$${(p*ppp).toFixed(0)}</span></div>`;
-  if (t22q) brows+=`<div class="brow"><span class="blbl">2×2s (${t22q} × $${t22c})</span><span class="bval">$${(t22q*t22c).toFixed(2)}</span></div>`;
-  if (t24q) brows+=`<div class="brow"><span class="blbl">2×4s (${t24q} × $${t24c})</span><span class="bval">$${(t24q*t24c).toFixed(2)}</span></div>`;
-  const selectedAddonIds = getSelectedAddonIds('quoteAddonGrid');
-  const addonTotal = getAddonTotalFromGrid('quoteAddonGrid');
-  const basePrice = getQuoteBasePrice();
-  if (selectedAddonIds.length) {
-    brows+=`<div class="brow" style="border-top:1px dashed var(--warm-gray);margin-top:4px"><span class="blbl">Base price</span><span class="bval">$${basePrice}</span></div>`;
-    selectedAddonIds.forEach(id=>{
-      const a=ADDONS.find(x=>x.id===id);
-      const chip = document.querySelector('#quoteAddonGrid [data-id="'+id+'"]');
-      const chipVal = chip ? parseFloat(chip.querySelector('.chip-price-input').value)||0 : 0;
-      if (a) brows+=`<div class="brow"><span class="blbl">${esc(a.label)}</span><span class="bval">+$${chipVal}</span></div>`;
-    });
-  }
-  brows+=`<div class="brow total-row"><span class="blbl">Quoted Price</span><span class="bval">$${price}</span></div>`;
-  document.getElementById('qBreakdown').innerHTML=brows;
-  const addonLine = selectedAddonIds.length ? '\n✨ Add-ons: '+selectedAddonIds.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?a.label:id;}).join(', ') : '';
-  document.getElementById('qMsgText').textContent=`Hi! Here's your quote! 🪵
-
-📐 Size: ${l}" × ${w}" × ${h}" — ${currentStyle}
-💵 Price: $${price}${addonLine}
-
-Handcrafted from cedar — natural, durable, beautiful outdoors.
-
-Payment: Cash or Venmo (@RMKCrafted)
-Pickup only — I'll reach out to schedule a time!
-
-Questions? Just message me. Thanks for your interest! 🌿`;
-  document.getElementById('qResults').classList.add('show');
-  document.getElementById('qResults').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-function copyQuoteMsg() {
-  navigator.clipboard.writeText(document.getElementById('qMsgText').textContent).then(()=>{
-    const b=document.getElementById('qCopyBtn');
-    b.textContent='✓ Copied!'; b.classList.add('copied');
-    setTimeout(()=>{b.textContent='Copy message';b.classList.remove('copied');},2000);
-  });
-}
-
-function openListingFromQuote() {
-  const l = document.getElementById('dimL').value;
-  const w = document.getElementById('dimW').value;
-  const h = document.getElementById('dimH').value;
-  if (!l || !w || !h) { showToast('Please calculate a quote first', 'error'); return; }
-  const size = `${l}×${w}×${h}`;
-  const price = getQuotePrice();
-  openListingModal(size, currentStyle, price);
-}
-
-function createOrderFromQuote() {
-  const l = document.getElementById('dimL').value;
-  const w = document.getElementById('dimW').value;
-  const h = document.getElementById('dimH').value;
-  if (!l || !w || !h) { showToast('Please calculate a quote first', 'error'); return; }
-  const size = `${l}×${w}×${h}`;
-  const price = getQuotePrice();
-  const selectedAddons = getSelectedAddonIds('quoteAddonGrid');
-  document.getElementById('orderModalTitle').textContent = 'New Order';
-  document.getElementById('editOrderId').value = '';
-  ['oName','oContact','oNotes'].forEach(f => document.getElementById(f).value = '');
-  document.getElementById('oPickup').value = '';
-  document.getElementById('oPayment').value = 'unpaid';
-  document.getElementById('oStatus').value = 'pending';
-  document.getElementById('oItemsContainer').innerHTML = '';
-  resetAddonChips('orderAddonGrid');
-  selectedAddons.forEach(id => {
-    const chip = document.querySelector('#orderAddonGrid [data-id="'+id+'"]');
-    if (chip) chip.classList.add('selected');
-  });
-  addOrderItem(size, currentStyle, 1, getQuoteBasePrice());
-  updateOrderAddonPrices();
-  openModal('orderModal');
-}
-
-function resetQuote() {
-  ['dimL','dimW','dimH','qPickets','qOverride','q22','q24'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  resetAddonChips('quoteAddonGrid');
-  document.getElementById('quoteAddonSubtotal').style.display='none';
-  document.getElementById('qResults').classList.remove('show');
-  document.getElementById('sizeMatch').classList.remove('visible');
-  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ===== ORDERS =====
