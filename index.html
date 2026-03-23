@@ -1661,19 +1661,11 @@ body {
 <div class="page" id="page-quote">
   <div class="app-container">
     <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Quote Calculator</h2>
-    <div class="section-label" style="margin-bottom:16px">Planter Style</div>
-    <div class="style-toggle">
-      <button class="style-btn active" data-style="Standard" onclick="selectStyle(this)">
-        <span class="sicon">🪵</span>
-        <span class="sname">Standard</span>
-        <span class="sdesc">Cedar picket build. Classic horizontal planks.</span>
-      </button>
-      <button class="style-btn" data-style="Vertical" onclick="selectStyle(this)">
-        <span class="sicon">📐</span>
-        <span class="sname">Vertical Style</span>
-        <span class="sdesc">Deeper planters. Uses 2×2s & 2×4s.</span>
-      </button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="section-label" style="margin-bottom:0">Style</div>
+      <button class="addon-manage-btn" onclick="openStyleSettings()">✏️ Manage styles</button>
     </div>
+    <div class="style-toggle" id="styleToggle"></div>
 
     <div class="std-sizes-toggle" onclick="toggleStdTable()">
       <span id="stdArrow">▶</span> View standard sizes & pricing
@@ -2185,7 +2177,7 @@ body {
     <input type="hidden" id="editInvId">
     <div class="form-row">
       <div class="form-group"><label>Size (L×W×H)</label><input class="form-control" type="text" id="iSize" placeholder="36×16×16"></div>
-      <div class="form-group"><label>Style</label><select class="form-control" id="iStyle"><option>Standard</option><option>Vertical</option></select></div>
+      <div class="form-group"><label>Style</label><select class="form-control" id="iStyle"></select></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Asking Price ($)</label><input class="form-control" type="number" id="iPrice" placeholder="60"></div>
@@ -2219,7 +2211,7 @@ body {
     <div class="form-group"><label>Size(s)</label><input class="form-control" type="text" id="sSize" placeholder='48×16×16 or 36×16×16 + 48×24×16'></div>
     <div class="form-row">
       <div class="form-group"><label>Qty</label><input class="form-control" type="number" id="sQty" min="1" value="1"></div>
-      <div class="form-group"><label>Style</label><select class="form-control" id="sStyle"><option>Standard</option><option>Vertical</option></select></div>
+      <div class="form-group"><label>Style</label><select class="form-control" id="sStyle"></select></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Sale Price ($)</label><input class="form-control" type="number" id="sPrice" placeholder="85"></div>
@@ -2442,6 +2434,20 @@ body {
   </div>
 </div>
 
+<!-- Style Settings modal -->
+<div class="modal-overlay" id="styleSettingsModal">
+  <div class="modal" style="max-width:380px">
+    <h2>Manage Styles</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Add or remove product styles available across orders, inventory, and sales.</p>
+    <div id="styleSettingsRows"></div>
+    <button type="button" onclick="addStyleRow()" style="margin-top:10px;background:none;border:1px dashed var(--warm-gray);border-radius:8px;width:100%;padding:8px;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;">+ Add style</button>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeModal('styleSettingsModal')">Cancel</button>
+      <button class="modal-btn-primary" onclick="saveStyleSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
 <div id="createQuoteModal" class="modal-overlay">
   <div class="modal" onclick="event.stopPropagation()">
     <h3>Create Quote</h3>
@@ -2574,6 +2580,18 @@ function loadAddonSettings() {
     }
   } catch(e) { localStorage.removeItem('rmk_addons'); }
   syncAddonChipLabels();
+}
+const DEFAULT_STYLES = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
+let PRODUCT_STYLES = [...DEFAULT_STYLES];
+function loadStyleSettings() {
+  try {
+    const saved = localStorage.getItem('rmk_styles');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) PRODUCT_STYLES = parsed;
+      else localStorage.removeItem('rmk_styles');
+    }
+  } catch(e) { localStorage.removeItem('rmk_styles'); }
 }
 let currentPage = 'home';
 let analyticsRange = 'year';
@@ -3006,6 +3024,7 @@ async function loadQuotePageData() {
     const helper = document.getElementById('qHelperPPP');
     if (helper) helper.textContent = '$' + defaultPicketPrice;
 
+    renderStyleButtons();
     // Sync addon chip prices with current ADDONS (handles localStorage overrides)
     updateQuoteAddonPrices();
   } catch(e) {
@@ -3394,6 +3413,72 @@ function saveAddonSettings() {
   updateQuoteAddonPrices();
   updateOrderAddonPrices();
   showToast('Add-on settings saved!', 'success');
+}
+// ── Style settings ──
+const STYLE_META = {
+  'Standard': { icon: '🪵', desc: 'Classic horizontal build.' },
+  'Vertical': { icon: '📐', desc: 'Uses 2×2s & 2×4s for extra depth.' },
+  'Tiered':   { icon: '🪜', desc: 'Multi-level tiered design.' },
+  'Dog Bowl': { icon: '🐾', desc: 'Raised dog bowl stand.' },
+};
+function renderStyleButtons() {
+  const container = document.getElementById('styleToggle');
+  if (!container) return;
+  container.innerHTML = PRODUCT_STYLES.map((s, i) => {
+    const meta = STYLE_META[s] || { icon: '🪵', desc: '' };
+    return `<button class="style-btn${i===0?' active':''}" data-style="${esc(s)}" onclick="selectStyle(this)">
+      <span class="sicon">${meta.icon}</span>
+      <span class="sname">${esc(s)}</span>
+      ${meta.desc ? `<span class="sdesc">${esc(meta.desc)}</span>` : ''}
+    </button>`;
+  }).join('');
+  currentStyle = PRODUCT_STYLES[0] || 'Standard';
+  document.getElementById('verticalMats').style.display = currentStyle === 'Vertical' ? 'block' : 'none';
+}
+function populateStyleSelects(selectedVal) {
+  const opts = PRODUCT_STYLES.map(s => `<option>${esc(s)}</option>`).join('');
+  ['iStyle', 'sStyle'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = opts;
+    if (selectedVal && PRODUCT_STYLES.includes(selectedVal)) el.value = selectedVal;
+  });
+}
+function openStyleSettings() {
+  const rows = document.getElementById('styleSettingsRows');
+  rows.innerHTML = PRODUCT_STYLES.map((s, i) => `
+    <div class="addon-settings-row" style="grid-template-columns:1fr auto">
+      <input class="form-control" type="text" value="${esc(s)}" id="ss-name-${i}" style="font-size:13px;padding:7px 10px">
+      <button type="button" onclick="removeStyleRow(${i})" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1" title="Remove">×</button>
+    </div>`).join('');
+  openModal('styleSettingsModal');
+}
+function removeStyleRow(i) {
+  const row = document.getElementById('ss-name-'+i)?.closest('.addon-settings-row');
+  if (row) row.remove();
+}
+function addStyleRow() {
+  const rows = document.getElementById('styleSettingsRows');
+  const i = rows.children.length;
+  const div = document.createElement('div');
+  div.className = 'addon-settings-row';
+  div.style.gridTemplateColumns = '1fr auto';
+  div.innerHTML = `
+    <input class="form-control" type="text" id="ss-name-${i}" placeholder="Style name" style="font-size:13px;padding:7px 10px">
+    <button type="button" onclick="removeStyleRow(${i})" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1" title="Remove">×</button>`;
+  rows.appendChild(div);
+  div.querySelector('input').focus();
+}
+function saveStyleSettings() {
+  const inputs = document.querySelectorAll('#styleSettingsRows input[type="text"]');
+  const styles = Array.from(inputs).map(el => el.value.trim()).filter(Boolean);
+  if (styles.length === 0) { showToast('Add at least one style', 'error'); return; }
+  PRODUCT_STYLES = styles;
+  localStorage.setItem('rmk_styles', JSON.stringify(PRODUCT_STYLES));
+  closeModal('styleSettingsModal');
+  renderStyleButtons();
+  populateStyleSelects();
+  showToast('Styles saved!', 'success');
 }
 function updateQuoteAddonPrices() {
   const l=parseInt(document.getElementById('dimL').value)||16;
@@ -3975,8 +4060,7 @@ function addOrderItem(size='', style='Standard', qty=1, price='') {
   row.innerHTML = `
     <input class="form-control item-size" type="text" placeholder="36×16×16" value="${esc(size)}" style="flex:2;min-width:0" oninput="updateOrderTotal()">
     <select class="form-control item-style" style="flex:1;min-width:0" onchange="updateOrderTotal()">
-      <option${style==='Standard'?' selected':''}>Standard</option>
-      <option${style==='Vertical'?' selected':''}>Vertical</option>
+      ${PRODUCT_STYLES.map(s=>`<option${s===style?' selected':''}>${esc(s)}</option>`).join('')}
     </select>
     <input class="form-control item-qty" type="number" min="1" value="${qty}" placeholder="1" style="flex:0 0 54px" oninput="updateOrderTotal()">
     <input class="form-control item-price" type="number" min="0" value="${price}" placeholder="$" style="flex:0 0 72px" oninput="updateOrderTotal()">
@@ -4078,6 +4162,7 @@ function openInvModal() {
   document.getElementById('iPrice').value='';
   document.getElementById('iQty').value=1;
   resetAddonChips('invAddonGrid');
+  populateStyleSelects();
   openModal('invModal');
 }
 
@@ -4181,6 +4266,7 @@ function openSaleModal() {
   ['sName','sSize','sNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('sPrice').value='';
   document.getElementById('sQty').value='1';
+  populateStyleSelects();
   openModal('saleModal');
 }
 
@@ -4193,6 +4279,7 @@ function editSale(id) {
   document.getElementById('sDate').value = s.sale_date||'';
   document.getElementById('sSize').value = s.size||'';
   document.getElementById('sQty').value = s.qty||1;
+  populateStyleSelects(s.style||'Standard');
   document.getElementById('sStyle').value = s.style||'Standard';
   document.getElementById('sPrice').value = s.price||'';
   document.getElementById('sPayment').value = s.payment||'cash';
@@ -5393,6 +5480,8 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 // ===== INIT =====
 buildStdTable();
 loadAddonSettings();
+loadStyleSettings();
+populateStyleSelects();
 setHomeGreeting();
 // Apply saved dark mode preference
 if (localStorage.getItem('rmk_theme') === 'dark') applyDarkMode(true);
