@@ -2459,13 +2459,97 @@ function loadStyleSettings() {
   } catch(e) { localStorage.removeItem('rmk_styles'); }
 }
 function populateStyleSelects(selectedVal) {
-  const opts = PRODUCT_STYLES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
+  const styleOpts = PRODUCT_STYLES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
+  // iStyle and sStyle (inventory/sales modals) — required field, no blank option
   ['iStyle', 'sStyle'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.innerHTML = opts;
+    el.innerHTML = styleOpts;
     if (selectedVal && PRODUCT_STYLES.includes(selectedVal)) el.value = selectedVal;
   });
+  // cl-style (cut list) — optional, has blank + "New style..." options
+  const clStyleEl = document.getElementById('cl-style');
+  if (clStyleEl) {
+    const prev = clStyleEl.value;
+    clStyleEl.innerHTML = '<option value="">— No style —</option>' + styleOpts + '<option value="__new__">New style…</option>';
+    if (prev && prev !== '__new__' && PRODUCT_STYLES.includes(prev)) {
+      clStyleEl.value = prev;
+    } else {
+      clStyleEl.value = '';
+    }
+  }
+}
+function addStyle(name) {
+  const trimmed = name.trim();
+  if (!trimmed) return false;
+  if (PRODUCT_STYLES.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
+    showToast('A style with that name already exists', 'error');
+    return false;
+  }
+  PRODUCT_STYLES.push(trimmed);
+  localStorage.setItem('rmk_styles', JSON.stringify(PRODUCT_STYLES));
+  populateStyleSelects();
+  return true;
+}
+function promptAddStyle() {
+  const name = prompt('Style name:');
+  if (!name || !name.trim()) return;
+  if (addStyle(name)) {
+    renderStylesTab();
+    showToast('Style added!');
+  }
+}
+function renameStyle(oldName) {
+  const newName = prompt('New name:', oldName);
+  if (!newName || !newName.trim()) return;
+  const trimmed = newName.trim();
+  if (trimmed.toLowerCase() === oldName.toLowerCase()) return;
+  if (PRODUCT_STYLES.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
+    showToast('A style with that name already exists', 'error');
+    return;
+  }
+  const idx = PRODUCT_STYLES.indexOf(oldName);
+  if (idx === -1) return;
+  PRODUCT_STYLES[idx] = trimmed;
+  localStorage.setItem('rmk_styles', JSON.stringify(PRODUCT_STYLES));
+  populateStyleSelects();
+  renderStylesTab();
+  showToast('Style renamed!');
+}
+async function deleteStyle(name) {
+  if (PRODUCT_STYLES.length <= 1) {
+    showToast('At least one style is required', 'error');
+    return;
+  }
+  const { data: affected } = await sb.from('cut_lists').select('id').eq('style', name);
+  const count = affected ? affected.length : 0;
+  const msg = count > 0
+    ? count + ' cut list(s) use this style. They\'ll be moved to Uncategorized. Delete style "' + name + '"?'
+    : 'Delete style "' + name + '"?';
+  if (!confirm(msg)) return;
+  if (count > 0) {
+    await sb.from('cut_lists').update({ style: null }).eq('style', name);
+  }
+  PRODUCT_STYLES = PRODUCT_STYLES.filter(s => s !== name);
+  localStorage.setItem('rmk_styles', JSON.stringify(PRODUCT_STYLES));
+  populateStyleSelects();
+  renderStylesTab();
+  showToast('Style deleted');
+}
+function renderStylesTab() {
+  const container = document.getElementById('styles-list');
+  if (!container) return;
+  if (!PRODUCT_STYLES.length) {
+    container.textContent = 'No styles yet.';
+    return;
+  }
+  container.innerHTML = PRODUCT_STYLES.map(s =>
+    '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
+      '<span style="flex:1;font-size:15px;font-weight:600;color:var(--navy)">' + esc(s) + '</span>' +
+      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="renameStyle(\'' + esc(s).replace(/'/g,"&#39;") + '\')">Rename</button>' +
+      '<button class="icon-btn" style="color:var(--red)" onclick="deleteStyle(\'' + esc(s).replace(/'/g,"&#39;") + '\')" title="Delete">🗑</button>' +
+    '</div>'
+  ).join('');
 }
 let currentPage = 'home';
 let analyticsRange = 'year';
@@ -4538,6 +4622,7 @@ function showMaterialsTab(tab, btn) {
   btn.classList.add('active');
   if (tab==='purchases') loadPurchases();
   if (tab==='cutlist') loadSavedCutLists();
+  if (tab==='styles') renderStylesTab();
 }
 
 async function downloadPurchaseCSV() {
