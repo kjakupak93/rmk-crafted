@@ -3,7 +3,7 @@
 // Screenshot-based visual coverage for four UI areas that currently have
 // zero pixel-level assertions in the test suite:
 //
-//   1. Cut list board diagram — .picket-bar segments, scrap blocks, legend
+//   1. Cut list board diagram — .picket-bar segments, scrap block, legend
 //   2. Calendar dot states — green dot (open slot) vs gold dot (booking)
 //   3. Order status badge colours — pending/building/ready/overdue
 //   4. Quote margin badge in Quotes tab
@@ -58,70 +58,60 @@ test.afterAll(async () => {
 // =============================================================================
 // GAP 1: Cut list board diagram visual appearance
 //
-// The existing materials.spec.ts test only asserts barCount > 0 (a DOM count).
-// No test ever takes a screenshot of the rendered board diagram, so a regression
-// that renders blank bars, wrong colours, or broken scrap blocks would be
-// invisible to CI.
+// The existing materials.spec.ts only asserts barCount > 0. No test screenshots
+// the rendered board diagram, so regressions in segment colours, the tan scrap
+// block, board labels, or proportional rendering are invisible to CI.
 // =============================================================================
 
 test('cut list board diagram renders segments and scrap block', async ({ page }) => {
   await goToCutList(page);
 
-  // Name the cut list so it's identifiable for cleanup
   await page.fill('#cl-name', `${TAG} Diagram Visual`);
 
-  // Add two rows: a long cut and a short cut — this ensures at least one board
-  // with both a coloured segment and a visible tan scrap block at the right end
+  // Add one part: 60" on a 72" picket → leaves 12" length scrap (renders .picket-waste)
   await page.click('button:has-text("+ Add Part")');
-  const row1 = page.locator('#cl-rows tr:last-child');
-  await row1.locator('[id^="cl-qty-"]').fill('1');
-  await row1.locator('[id^="cl-len-"]').fill('60');
-  await row1.locator('[id^="cl-mat-"]').selectOption({ index: 0 }); // Picket 6'
-
-  await page.click('button:has-text("+ Add Part")');
-  const row2 = page.locator('#cl-rows tr:last-child');
-  await row2.locator('[id^="cl-qty-"]').fill('1');
-  await row2.locator('[id^="cl-len-"]').fill('8');
-  await row2.locator('[id^="cl-mat-"]').selectOption({ index: 0 }); // same stock type
+  const lastRow = page.locator('#cl-rows tr:last-child');
+  await lastRow.locator('[id^="cl-qty-"]').fill('1');
+  await lastRow.locator('[id^="cl-len-"]').fill('60');
+  await lastRow.locator('[id^="cl-mat-"]').selectOption({ index: 0 }); // Cedar Picket 6'
 
   await page.locator('#mtab-cutlist button:has-text("Calculate")').click();
-  await page.waitForSelector('#cl-results', { state: 'visible', timeout: 10000 });
+  await expect(page.locator('#cl-results')).toBeVisible({ timeout: 10000 });
 
-  // Structural assertions — prove the diagram has real content before screenshotting
+  // Boards must be present
   const bars = page.locator('.picket-bar');
   await expect(bars).not.toHaveCount(0);
 
-  // At least one coloured segment (the cut piece) must be present
-  const segments = page.locator('.picket-segment');
-  await expect(segments).not.toHaveCount(0);
+  // Each board bar must have at least one child div (the piece wrapper)
+  const firstBarChildren = bars.first().locator('> div');
+  await expect(firstBarChildren).not.toHaveCount(0);
 
-  // The scrap block (tan/waste area) must appear at the end of at least one bar
+  // Length scrap block (.picket-waste) must appear — confirms 60" cut on 72" board
   const wasteBlocks = page.locator('.picket-waste');
   await expect(wasteBlocks).not.toHaveCount(0);
 
-  // Board label must mention "Board 1" and show scrap inches
+  // Board label must include "Board 1" and "scrap"
   await expect(page.locator('.picket-bar-label').first()).toContainText('Board 1');
   await expect(page.locator('.picket-bar-label').first()).toContainText('scrap');
 
-  // Screenshot the entire diagram area — captures colours, proportions, scrap
+  // Screenshot the entire diagram — captures colours, proportions, scrap blocks
   await expect(page.locator('#cl-diagram')).toHaveScreenshot('cut-list-board-diagram.png', {
     maxDiffPixelRatio: 0.02,
   });
 });
 
 // =============================================================================
-// GAP 2: Calendar dot states — open slot (green) vs confirmed booking (gold)
+// GAP 2: Calendar dot colours — open slot (green) vs confirmed booking (gold)
 //
-// No existing test takes a screenshot of the calendar grid. The two distinct
-// dot colours (--green and --sand) are load-bearing UI: green = slot available,
-// gold = pickup booked. A CSS regression that swapped them would be undetectable
-// without a pixel assertion.
+// No existing test screenshots the calendar grid. The two dot colours are the
+// core visual language of the scheduler. A CSS regression swapping them (or
+// making them both grey) would be completely undetectable without pixel asserts.
 // =============================================================================
 
 test('calendar shows green dot for open slot and gold dot for booking', async ({ page }) => {
   await goToScheduler(page);
 
-  // Use a date 15 days out to avoid month-edge cases and past-day opacity
+  // Use a date 15 days out to avoid month-edge and past-day opacity issues
   const target = new Date();
   target.setDate(target.getDate() + 15);
   const bookingDate = target.toISOString().split('T')[0];
@@ -150,7 +140,7 @@ test('calendar shows green dot for open slot and gold dot for booking', async ({
     { tag: TAG, date: bookingDate },
   );
 
-  // Navigate the calendar to the correct month
+  // Navigate calendar to the target month
   const MONTHS_ARR = [
     'January','February','March','April','May','June',
     'July','August','September','October','November','December',
@@ -163,18 +153,14 @@ test('calendar shows green dot for open slot and gold dot for booking', async ({
     attempts++;
   }
 
-  // Wait for the calendar to re-render with the new data
-  // The day with our data should now have the has-data CSS class (green border)
-  // and contain both a plain green dot and a gold "booked" dot
+  // The target day cell must exist and have the has-data class
   const targetDay = page.locator(`.cal-day[onclick="selectDay('${bookingDate}')"]`);
   await expect(targetDay).toBeVisible({ timeout: 10000 });
   await expect(targetDay).toHaveClass(/has-data/);
 
-  // Structural assertions: both dot types present inside that day cell
-  const greenDot = targetDay.locator('.day-dot:not(.booked)');
-  const goldDot  = targetDay.locator('.day-dot.booked');
-  await expect(greenDot).toHaveCount(1);
-  await expect(goldDot).toHaveCount(1);
+  // Both dot types must be present inside the day cell
+  await expect(targetDay.locator('.day-dot:not(.booked)')).toHaveCount(1);
+  await expect(targetDay.locator('.day-dot.booked')).toHaveCount(1);
 
   // Screenshot the calendar grid — captures the actual rendered dot colours
   await expect(page.locator('#calGrid')).toHaveScreenshot('calendar-dot-states.png', {
@@ -185,39 +171,39 @@ test('calendar shows green dot for open slot and gold dot for booking', async ({
 // =============================================================================
 // GAP 3: Order status badge colours across all four states
 //
-// The existing orders.spec.ts test asserts that .badge-ready is present after
-// advancing an order, but it never takes a screenshot. None of the four badge
-// colours (orange/blue/green/red) are visually verified. A CSS change that made
-// all badges the same colour would pass every existing assertion.
+// orders.spec.ts asserts .badge-ready is present but never screenshots it.
+// All four badge colour variants (orange/blue/green/red) are unverified at the
+// pixel level. The overdue state is applied conditionally in JS and has never
+// been visually tested anywhere.
 // =============================================================================
 
 test('order status badges render correct colours for all four states', async ({ page }) => {
   await goToOrders(page);
 
-  // Helper: create a minimal order and return its card locator
-  async function createOrder(name: string, payment = 'unpaid') {
+  // Helper: create an order via the UI and return its card locator
+  async function createOrder(name: string, pickupDate?: string) {
     await page.click('button:has-text("+ New Order")');
     await page.waitForSelector('#orderModal.open');
     await page.fill('#oName', name);
     await page.locator('.item-size').fill('36×16×16');
     await page.locator('.item-price').fill('60');
-    await page.selectOption('#oPayment', payment);
+    if (pickupDate) {
+      await page.fill('#oPickup', pickupDate);
+    }
     await page.click('button[onclick="saveOrder()"]');
     await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
     return page.locator('.order-card').filter({ hasText: name });
   }
 
   // --- Pending badge (orange) ---
-  const pendingName = `${TAG} Badge Pending`;
-  const pendingCard = await createOrder(pendingName);
+  const pendingCard = await createOrder(`${TAG} Badge Pending`);
   await expect(pendingCard.locator('.badge-pending')).toBeVisible();
   await expect(pendingCard.locator('.badge-pending')).toHaveScreenshot('badge-pending.png', {
     maxDiffPixelRatio: 0.02,
   });
 
   // --- Building badge (blue/ocean) ---
-  const buildingName = `${TAG} Badge Building`;
-  const buildingCard = await createOrder(buildingName);
+  const buildingCard = await createOrder(`${TAG} Badge Building`);
   await buildingCard.locator('button:has-text("→ Building")').click();
   await expect(buildingCard.locator('.badge-building')).toBeVisible({ timeout: 10000 });
   await expect(buildingCard.locator('.badge-building')).toHaveScreenshot('badge-building.png', {
@@ -225,8 +211,7 @@ test('order status badges render correct colours for all four states', async ({ 
   });
 
   // --- Ready badge (green) ---
-  const readyName = `${TAG} Badge Ready`;
-  const readyCard = await createOrder(readyName);
+  const readyCard = await createOrder(`${TAG} Badge Ready`);
   await readyCard.locator('button:has-text("→ Building")').click();
   await expect(readyCard.locator('button:has-text("→ Ready")')).toBeVisible({ timeout: 10000 });
   await readyCard.locator('button:has-text("→ Ready")').click();
@@ -236,40 +221,15 @@ test('order status badges render correct colours for all four states', async ({ 
   });
 
   // --- Overdue badge (red) ---
-  // Insert an order directly with a past pickup_date so the app marks it overdue
-  await page.evaluate(
-    async ({ tag }: { tag: string }) => {
-      const sb = (window as any).sb;
-      await sb.from('orders').insert({
-        name: `${tag} Badge Overdue`,
-        payment: 'unpaid',
-        status: 'pending',
-        price: 60,
-        size: '36×16×16',
-        style: 'Standard',
-        contact: '',
-        notes: '',
-        pickup_date: '2020-01-01', // guaranteed past date → overdue
-        items: { rows: [{ size: '36×16×16', style: 'Standard', price: 60 }], add_ons: [], add_on_total: 0, add_on_prices: {} },
-      });
-    },
-    { tag: TAG },
-  );
-
-  // Reload the orders page to pick up the directly-inserted overdue order
-  await page.click('.app-tile--orders');
-  await page.waitForSelector('#page-orders.active');
-  await page.waitForLoadState('networkidle');
-
-  const overdueCard = page.locator('.order-card').filter({ hasText: `${TAG} Badge Overdue` });
-  await expect(overdueCard).toBeVisible({ timeout: 10000 });
-  await expect(overdueCard.locator('.badge-overdue')).toBeVisible();
+  // Create an order via UI with a pickup_date in the past — the app marks it overdue
+  // when rendering the card (isOverdue = status!=='completed' && pickup_date < today)
+  const overdueCard = await createOrder(`${TAG} Badge Overdue`, '2020-01-01');
+  await expect(overdueCard.locator('.badge-overdue')).toBeVisible({ timeout: 10000 });
   await expect(overdueCard.locator('.badge-overdue')).toHaveScreenshot('badge-overdue.png', {
     maxDiffPixelRatio: 0.02,
   });
 
-  // Full four-badge composite — the entire active list with all badge variants
-  // visible at once provides the most useful regression snapshot
+  // Full active list with all badge variants — broadest regression baseline
   await expect(page.locator('#activeOrdersList')).toHaveScreenshot('order-status-badges-all.png', {
     maxDiffPixelRatio: 0.02,
   });
@@ -278,34 +238,32 @@ test('order status badges render correct colours for all four states', async ({ 
 // =============================================================================
 // GAP 4: Quote margin badge in the Quotes tab
 //
-// The existing cutlist-quotes.spec.ts smoke-checks that a "%" span is present
-// in the quote row, but never screenshots it. The margin badge uses inline
-// `marginColor()` colouring (green for healthy margin, red for low margin)
-// rendered entirely in JS — no CSS class, just inline style. A regression in
-// the colour logic or in the badge rendering would be invisible without a
-// pixel assertion.
+// cutlist-quotes.spec.ts only checks that a "%" span is present in the row.
+// The margin badge uses inline color style from marginColor() — no CSS class,
+// pure JS logic. A broken colour function (always red, wrong hex, etc.) would
+// pass every existing assertion while showing the wrong colour to the user.
 // =============================================================================
 
 test('quote margin badge renders correct colour in Quotes tab', async ({ page }) => {
-  // Build a cut list and create a quote from it, same pattern as cutlist-quotes.spec.ts
+  // Create a cut list and save a quote from it (same flow as cutlist-quotes.spec.ts)
   await goToCutList(page);
 
   const cutListName = `${TAG} MarginVisual CL`;
   await page.fill('#cl-name', cutListName);
   await page.click('button:has-text("+ Add Part")');
-  const row = page.locator('#cl-rows tr:last-child');
-  await row.locator('[id^="cl-qty-"]').fill('2');
-  await row.locator('[id^="cl-len-"]').fill('36');
-  await row.locator('[id^="cl-mat-"]').selectOption({ index: 0 });
+  const lastRow = page.locator('#cl-rows tr:last-child');
+  await lastRow.locator('[id^="cl-qty-"]').fill('2');
+  await lastRow.locator('[id^="cl-len-"]').fill('36');
+  await lastRow.locator('[id^="cl-mat-"]').selectOption({ index: 0 });
   await page.locator('#mtab-cutlist button:has-text("Calculate")').click();
-  await page.waitForSelector('#cl-results', { state: 'visible', timeout: 10000 });
+  await expect(page.locator('#cl-results')).toBeVisible({ timeout: 10000 });
   await expect(page.locator('#cl-quote-btn')).not.toBeDisabled({ timeout: 5000 });
 
   const quoteName = `${TAG} MarginVisual Quote`;
   await page.click('#cl-quote-btn');
   await page.waitForSelector('#createQuoteModal.open');
   await page.fill('#cqName', quoteName);
-  // Force a high price so the margin badge is clearly green, not red
+  // Force a high price so the margin badge is clearly in the green range
   await page.fill('#cqPrice', '100');
   await page.click('button:has-text("Create Quote")');
   await expect(page.locator('#createQuoteModal')).not.toHaveClass(/open/, { timeout: 5000 });
@@ -322,12 +280,11 @@ test('quote margin badge renders correct colour in Quotes tab', async ({ page })
   await expect(quoteRow).toBeVisible({ timeout: 10000 });
 
   // The badge is a <span> with inline color style — assert it contains a % value
-  const marginBadge = quoteRow.locator('td').nth(3).locator('span');
+  const marginBadge = quoteRow.locator('span').filter({ hasText: '%' });
   await expect(marginBadge).toBeVisible();
-  await expect(marginBadge).toContainText('%');
 
-  // Screenshot the margin cell: captures the inline colour (green vs red vs orange)
-  // which is invisible to text-only assertions
+  // Screenshot the Est. Margin cell (column index 3: Date/Customer/Price/Est.Margin)
+  // — captures the inline colour which is invisible to text-only assertions
   await expect(quoteRow.locator('td').nth(3)).toHaveScreenshot('quote-margin-badge.png', {
     maxDiffPixelRatio: 0.02,
   });

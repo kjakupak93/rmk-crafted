@@ -11,6 +11,7 @@ const TAG_COLUMN: Record<string, string> = {
   quotes: 'name',
   purchases: 'store',
   cut_lists: 'name',
+  inventory: 'notes',
   schedule_slots: 'notes',
   schedule_bookings: 'name',
   activity_log: 'name',

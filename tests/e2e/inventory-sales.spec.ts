@@ -5,32 +5,6 @@ import { cleanupTestData } from './helpers/cleanup';
 test.describe.configure({ mode: 'serial' });
 
 const TAG = `[TEST] ${Date.now()}`;
-const SUPABASE_URL = 'https://mfsejmfmyuvhuclzuitc.supabase.co';
-const ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc2VqbWZteXV2aHVjbHp1aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTgzODksImV4cCI6MjA4NzYzNDM4OX0.Ve8dY-CvGqCMSWfifd6HvrDvmrJo4J00auhos8aezpY';
-
-async function getAuthToken(): Promise<string> {
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'ryan@rmkcrafted.com', password: 'RMK_ChangeMe_2026!' }),
-  });
-  const { access_token } = await res.json();
-  return access_token;
-}
-
-async function deleteTestInventory(): Promise<void> {
-  const token = await getAuthToken();
-  await fetch(`${SUPABASE_URL}/rest/v1/inventory?notes=like.%5BTEST%25`, {
-    method: 'DELETE',
-    headers: {
-      apikey: ANON_KEY,
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal',
-    },
-  });
-}
 
 async function goToInventoryTab(page: Page) {
   await login(page);
@@ -59,7 +33,8 @@ async function addInventoryItem(
   await page.fill('#iQty', opts.qty);
   await page.fill('#iNotes', opts.notes);
   await page.click('button[onclick="saveInvItem()"]');
-  await expect(page.locator('#invGrid .inv-card').filter({ hasText: opts.size })).toBeVisible({ timeout: 10000 });
+  // Filter by notes (contains TAG) not size — size is non-unique across runs
+  await expect(page.locator('#invGrid .inv-card').filter({ hasText: opts.notes })).toBeVisible({ timeout: 10000 });
 }
 
 async function logSale(page: Page, opts: { name: string; size: string; price: string }): Promise<void> {
@@ -74,13 +49,11 @@ async function logSale(page: Page, opts: { name: string; size: string; price: st
 }
 
 test.beforeAll(async () => {
-  await cleanupTestData(['sales']);
-  await deleteTestInventory();
+  await cleanupTestData(['sales', 'inventory']);
 });
 
 test.afterAll(async () => {
-  await cleanupTestData(['sales']);
-  await deleteTestInventory();
+  await cleanupTestData(['sales', 'inventory']);
 });
 
 // ─── Inventory tests ─────────────────────────────────────────────────────────
