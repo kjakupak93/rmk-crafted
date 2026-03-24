@@ -2769,11 +2769,29 @@ function goHome() {
 // ===== ANALYTICS =====
 async function loadAnalytics() {
   const [sRes, pRes] = await Promise.all([
-    sb.from('sales').select('price,sale_date,size,qty'),
+    sb.from('sales').select('price,sale_date,size,qty,style'),
     sb.from('purchases').select('total,purchase_date')
   ]);
   analyticsSales = sRes.data || [];
   analyticsPurchases = pRes.data || [];
+
+  // Populate best sellers product filter from PRODUCT_TYPES
+  const filterSel = document.getElementById('best-sellers-filter');
+  if (filterSel) {
+    filterSel.textContent = '';
+    const allOpt = document.createElement('option');
+    allOpt.value = 'all';
+    allOpt.textContent = 'All Products';
+    filterSel.appendChild(allOpt);
+    PRODUCT_TYPES.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      if (bestSellersProductFilter === p) opt.selected = true;
+      filterSel.appendChild(opt);
+    });
+  }
+
   renderAnalyticsCharts();
 }
 
@@ -2888,6 +2906,11 @@ function renderAnalyticsCharts() {
   document.getElementById('pnl-revenue-lbl').textContent = pnlLabels[0];
   document.getElementById('pnl-cost-lbl').textContent = pnlLabels[1];
   document.getElementById('pnl-profit-lbl').textContent = pnlLabels[2];
+  const salesInRange = analyticsSales.filter(s => inBounds(s.sale_date));
+  const unitsInRange = salesInRange.reduce((sum, s) => sum + (s.qty || 1), 0);
+  const avgOrderValue = salesInRange.length > 0 ? Math.round(pnlRev / salesInRange.length) : 0;
+  document.getElementById('pnl-units').textContent = unitsInRange;
+  document.getElementById('pnl-aov').textContent = '$' + avgOrderValue;
 
   // ── Bucket aggregation helper ──
   function getBucketKey(dateStr) {
@@ -2936,10 +2959,39 @@ function renderAnalyticsCharts() {
     }
   });
 
+  // ── Cumulative Revenue ──
+  if (chartCumulative) chartCumulative.destroy();
+  let cumSum = 0;
+  const cumulativeData = keys.map(k => { cumSum += revByBucket[k] || 0; return cumSum; });
+  chartCumulative = new Chart(document.getElementById('chart-cumulative'), {
+    type: 'line',
+    data: {
+      labels: bucketLabels,
+      datasets: [{
+        label: 'Cumulative Revenue',
+        data: cumulativeData,
+        borderColor: dark ? '#7BADC8' : '#1E4D6B',
+        backgroundColor: dark ? 'rgba(123,173,200,0.08)' : 'rgba(30,77,107,0.08)',
+        tension: 0.3,
+        pointRadius: 3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => '$'+v, color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
+        x: { ticks: { color: tickColor }, grid: { color: gridColor } }
+      }
+    }
+  });
+
   // ── Best Sellers (filter by range) ──
   const sizeCnt = {};
   analyticsSales.forEach(s => {
     if (!s.size) return;
+    if (bestSellersProductFilter !== 'all' && (s.style || 'Standard') !== bestSellersProductFilter) return;
     if (s.sale_date) {
       const k = isWeekly ? getBucketKey(s.sale_date) : s.sale_date.slice(0,7);
       if (keys.length && !keys.includes(k)) return;
@@ -2960,6 +3012,51 @@ function renderAnalyticsCharts() {
       plugins: { legend: { display: false } },
       scales: { x: { ticks: { stepSize:1, color:tickColor }, grid:{color:gridColor}, beginAtZero:true },
                 y: { ticks:{color:tickColor}, grid:{color:gridColor} } }
+    }
+  });
+
+  // ── Units by Product & Revenue by Product ──
+  const productUnits = {}, productRevenue = {};
+  analyticsSales.forEach(s => {
+    if (!inBounds(s.sale_date)) return;
+    const prod = s.style || 'Standard';
+    productUnits[prod] = (productUnits[prod] || 0) + (s.qty || 1);
+    productRevenue[prod] = (productRevenue[prod] || 0) + (s.price || 0);
+  });
+
+  const prodUnitEntries = Object.entries(productUnits).sort((a, b) => b[1] - a[1]);
+  if (chartUnitsByProduct) chartUnitsByProduct.destroy();
+  chartUnitsByProduct = new Chart(document.getElementById('chart-units-by-product'), {
+    type: 'bar',
+    data: {
+      labels: prodUnitEntries.map(([p]) => p),
+      datasets: [{ label: 'Units Sold', data: prodUnitEntries.map(([, n]) => n), backgroundColor: '#C9A55A', borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
+        y: { ticks: { color: tickColor }, grid: { color: gridColor } }
+      }
+    }
+  });
+
+  const prodRevEntries = Object.entries(productRevenue).sort((a, b) => b[1] - a[1]);
+  if (chartRevenueByProduct) chartRevenueByProduct.destroy();
+  chartRevenueByProduct = new Chart(document.getElementById('chart-revenue-by-product'), {
+    type: 'bar',
+    data: {
+      labels: prodRevEntries.map(([p]) => p),
+      datasets: [{ label: 'Revenue', data: prodRevEntries.map(([, v]) => v), backgroundColor: '#4A86A8', borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { callback: v => '$' + v, color: tickColor }, grid: { color: gridColor }, beginAtZero: true },
+        y: { ticks: { color: tickColor }, grid: { color: gridColor } }
+      }
     }
   });
 
