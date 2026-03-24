@@ -39,3 +39,22 @@ test('range filter buttons toggle active class', async ({ page }) => {
   await expect(page.locator('#range-btn-all')).toHaveClass(/active/);
   await expect(page.locator('#range-btn-12m')).not.toHaveClass(/active/);
 });
+
+test('shows 5 KPI cards', async ({ page }) => {
+  await expect(page.locator('#pnl-units')).toBeVisible();
+  await expect(page.locator('#pnl-aov')).toBeVisible();
+});
+
+test('shows new chart canvases', async ({ page }) => {
+  await expect(page.locator('#chart-cumulative')).toBeAttached();
+  await expect(page.locator('#chart-units-by-product')).toBeAttached();
+  await expect(page.locator('#chart-revenue-by-product')).toBeAttached();
+});
+
+test('shows best sellers product filter', async ({ page }) => {
+  await expect(page.locator('#best-sellers-filter')).toBeVisible();
+});
+
+test('shows 3 section headers', async ({ page }) => {
+  await expect(page.locator('.analytics-section-header')).toHaveCount(3);
+});

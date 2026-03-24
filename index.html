@@ -893,7 +893,7 @@ body {
   .form-row { grid-template-columns: 1fr; }
   .app-grid { grid-template-columns: 1fr 1fr; }
   .analytics-pnl { grid-template-columns: 1fr 1fr; }
-  .analytics-pnl .summary-card:last-child:nth-child(odd) { grid-column: span 2; }
+  .analytics-pnl .summary-card:nth-child(5) { grid-column: span 2; }
   .analytics-grid { grid-template-columns: 1fr; }
   /* ── Tabs ── */
   .tabs { padding: 0 8px; }
@@ -1065,7 +1065,8 @@ body {
 .analytics-range-toggle { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
 .analytics-range-toggle button { padding: 8px 16px; border: 1px solid var(--warm-gray); border-radius: 20px; background: white; color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 36px; }
 .analytics-range-toggle button.active { background: var(--navy); color: white; border-color: var(--navy); }
-.analytics-pnl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.analytics-pnl { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+.analytics-section-header { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 700; border-bottom: 1px solid var(--warm-gray); padding-bottom: 6px; margin: 20px 0 12px; }
 .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .chart-card { background: white; border: 1px solid var(--warm-gray); border-radius: 12px; padding: 20px; }
 .chart-card h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px; }
@@ -1928,6 +1929,14 @@ body {
         <div class="val" id="pnl-profit">—</div>
         <div class="lbl" id="pnl-profit-lbl">Est. Net Profit</div>
       </div>
+      <div class="summary-card c-sand">
+        <div class="val" id="pnl-units">—</div>
+        <div class="lbl">Units Sold</div>
+      </div>
+      <div class="summary-card c-blue">
+        <div class="val" id="pnl-aov">—</div>
+        <div class="lbl">Avg Order Value</div>
+      </div>
     </div>
 
     <div class="analytics-range-toggle">
@@ -1940,20 +1949,47 @@ body {
       <button id="range-btn-all" onclick="setAnalyticsRange('all',this)">All Time</button>
     </div>
 
+    <!-- Sales Performance -->
+    <div class="analytics-section-header">Sales Performance</div>
     <div class="analytics-grid">
-      <div class="chart-card chart-card--full">
+      <div class="chart-card">
         <h3>Revenue vs. Spend</h3>
         <canvas id="chart-revenue-spend"></canvas>
       </div>
-      <div class="chart-card chart-card--full">
-        <h3>Best Sellers</h3>
-        <canvas id="chart-sizes"></canvas>
+      <div class="chart-card">
+        <h3>Cumulative Revenue</h3>
+        <canvas id="chart-cumulative"></canvas>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="analytics-section-header">Products</div>
+    <div class="analytics-grid">
+      <div class="chart-card">
+        <h3>Units by Product</h3>
+        <canvas id="chart-units-by-product"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Revenue by Product</h3>
+        <canvas id="chart-revenue-by-product"></canvas>
       </div>
       <div class="chart-card chart-card--full">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3 style="margin:0">Best Sellers</h3>
+          <select id="best-sellers-filter" onchange="setAnalyticsProductFilter(this.value)" style="font-size:12px;padding:4px 8px;border:1px solid var(--warm-gray);border-radius:8px;background:white;color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer"></select>
+        </div>
+        <canvas id="chart-sizes"></canvas>
+      </div>
+    </div>
+
+    <!-- Margins -->
+    <div class="analytics-section-header">Margins</div>
+    <div class="analytics-grid">
+      <div class="chart-card">
         <h3>Margin Trend</h3>
         <canvas id="chart-margin-trend"></canvas>
       </div>
-      <div class="chart-card chart-card--full">
+      <div class="chart-card">
         <h3>Margin by Size</h3>
         <canvas id="chart-margin-by-size"></canvas>
       </div>
@@ -2638,7 +2674,9 @@ let currentPage = 'home';
 let analyticsRange = 'year';
 let chartRevenueSpend = null, chartSizes = null;
 let chartMarginTrend = null, chartMarginBySize = null;
+let chartCumulative = null, chartUnitsByProduct = null, chartRevenueByProduct = null;
 let analyticsSales = [], analyticsPurchases = [];
+let bestSellersProductFilter = 'all';
 let matchedSize = null;
 let currentEditOrder = null;
 let orderFilter = 'all';
@@ -2743,6 +2781,11 @@ function setAnalyticsRange(range, btn) {
   analyticsRange = range;
   document.querySelectorAll('.analytics-range-toggle button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  renderAnalyticsCharts();
+}
+
+function setAnalyticsProductFilter(filter) {
+  bestSellersProductFilter = filter;
   renderAnalyticsCharts();
 }
 
