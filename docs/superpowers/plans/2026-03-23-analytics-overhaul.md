@@ -354,7 +354,7 @@ const productUnits = {}, productRevenue = {};
 analyticsSales.forEach(s => {
   if (!inBounds(s.sale_date)) return;
   const prod = s.style || 'Standard';
-  productUnits[prod] = (productUnits[prod] || 0) + 1;
+  productUnits[prod] = (productUnits[prod] || 0) + (s.qty || 1);
   productRevenue[prod] = (productRevenue[prod] || 0) + (s.price || 0);
 });
 
@@ -485,6 +485,6 @@ git push origin main
 
 Open the live GitHub Pages URL. Navigate to Analytics. Confirm all 5 KPI cards, all 7 charts, and the product filter all work correctly.
 
-- [ ] **Step 5: Update test count in README if applicable**
+- [ ] **Step 5: Update smoke test count in README files**
 
-If `tests/README.md` or `README.md` lists smoke test counts, increment by the number of new tests added in `analytics.spec.ts`.
+This plan adds 4 new tests to `tests/analytics.spec.ts`. Update the smoke test count from **23 → 27** in both `tests/README.md` and `README.md` (search for "23 tests" in each file).
