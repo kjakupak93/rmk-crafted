@@ -702,10 +702,15 @@ body {
 .cut-row .cut-x { font-size:13px; color:var(--text-muted); flex-shrink:0; }
 .cut-row .remove-btn { background:none; border:none; color:var(--red); font-size:18px; cursor:pointer; padding:2px 6px; line-height:1; border-radius:4px; flex-shrink:0; }
 .cut-row .remove-btn:hover { background:var(--cream); }
-.cl-stock-row { display:flex; align-items:center; gap:8px; padding:7px 10px; background:var(--cream); border-radius:6px; margin-bottom:6px; }
+.cl-stock-row { display:flex; align-items:center; gap:6px; padding:5px 8px; background:var(--cream); border-radius:6px; margin-bottom:6px; }
 .cl-stock-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.cl-stock-name { flex:1; font-size:13px; font-weight:500; color:var(--text); }
-.cl-stock-len { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); flex-shrink:0; }
+.cl-stock-name-input { flex:1; min-width:80px; font-size:13px; font-weight:500; color:var(--text); background:transparent; border:1px solid transparent; border-radius:4px; padding:3px 5px; font-family:inherit; }
+.cl-stock-name-input:hover { border-color:var(--warm-gray); }
+.cl-stock-name-input:focus { border-color:var(--ocean); background:white; outline:none; }
+.cl-stock-dim { width:50px; font-family:'DM Mono',monospace; font-size:12px; text-align:right; padding:3px 5px; border:1px solid transparent; border-radius:4px; background:transparent; color:var(--text); }
+.cl-stock-dim:hover { border-color:var(--warm-gray); }
+.cl-stock-dim:focus { border-color:var(--ocean); background:white; outline:none; }
+.cl-stock-sep { font-size:11px; color:var(--text-muted); flex-shrink:0; }
 .cl-stock-remove { background:none; border:none; color:var(--red); font-size:16px; cursor:pointer; padding:0 4px; line-height:1; border-radius:4px; flex-shrink:0; }
 .cl-stock-remove:hover { background:var(--warm-gray); }
 .cl-mat-section { margin-bottom:18px; }
@@ -1214,6 +1219,9 @@ body {
 [data-theme="dark"] select.form-control, [data-theme="dark"] textarea.form-control {
   background: #0E1A24; color: var(--text); border-color: #2C4255;
 }
+[data-theme="dark"] .cl-stock-name-input, [data-theme="dark"] .cl-stock-dim { color: var(--text); }
+[data-theme="dark"] .cl-stock-name-input:focus, [data-theme="dark"] .cl-stock-dim:focus { background: #0E1A24; border-color: #7BADC8; }
+[data-theme="dark"] .cl-stock-row { background: #162534; }
 [data-theme="dark"] .form-control:focus, [data-theme="dark"] .std-input:focus { border-color: #7BADC8; outline: none; }
 /* Tables */
 [data-theme="dark"] .data-table { color: var(--text); }
@@ -1754,9 +1762,13 @@ body {
             <label>Length (in)</label>
             <input class="std-input" type="number" id="cl-new-stock-len" value="96" min="1" step="0.25">
           </div>
-          <div class="input-group" style="margin-bottom:0;flex:0 0 78px">
+          <div class="input-group" style="margin-bottom:0;flex:0 0 68px">
             <label>Width (in)</label>
             <input class="std-input" type="number" id="cl-new-stock-wid" value="" min="0.25" step="0.25" placeholder="opt.">
+          </div>
+          <div class="input-group" style="margin-bottom:0;flex:0 0 68px">
+            <label>Height (in)</label>
+            <input class="std-input" type="number" id="cl-new-stock-hgt" value="" min="0.25" step="0.25" placeholder="opt.">
           </div>
           <button class="btn-secondary" onclick="addStockType()" style="flex-shrink:0">+ Add</button>
         </div>
@@ -1966,8 +1978,9 @@ body {
     <div class="form-group">
       <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
       <div style="display:flex;gap:6px;align-items:center">
-        <select class="form-control" id="oAddonSelect" style="flex:1"><option value="">— Select add-on —</option></select>
-        <button type="button" class="btn-secondary" style="padding:6px 14px;white-space:nowrap;flex-shrink:0" onclick="addOrderAddon()">+ Add</button>
+        <select class="form-control" id="oAddonSelect" style="flex:1" onchange="onAddonSelectChange()"><option value="">— Select add-on —</option></select>
+        <input type="number" class="form-control" id="oAddonPrice" min="0" step="0.01" placeholder="$" style="width:72px;font-family:'DM Mono',monospace;font-size:13px;text-align:right;flex-shrink:0">
+        <button type="button" class="btn-secondary" style="padding:6px 12px;white-space:nowrap;flex-shrink:0" onclick="addOrderAddon()">+ Add</button>
       </div>
       <div id="orderAddonList" style="margin-top:6px"></div>
     </div>
@@ -2435,8 +2448,21 @@ function appendOrderAddonRow(id, label, price) {
   row.appendChild(removeBtn);
   container.appendChild(row);
 }
+function onAddonSelectChange() {
+  const sel = document.getElementById('oAddonSelect');
+  const priceIn = document.getElementById('oAddonPrice');
+  if (!sel || !priceIn) return;
+  const id = sel.value;
+  if (!id) { priceIn.value = ''; return; }
+  const addon = ADDONS.find(a => a.id === id);
+  if (!addon) { priceIn.value = ''; return; }
+  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+  const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
+  priceIn.value = addonPrice(addon.id, dims.l, dims.w, dims.h);
+}
 function addOrderAddon() {
   const sel = document.getElementById('oAddonSelect');
+  const priceIn = document.getElementById('oAddonPrice');
   const id = sel ? sel.value : '';
   if (!id) return;
   const addon = ADDONS.find(a => a.id === id);
@@ -2446,8 +2472,10 @@ function addOrderAddon() {
   }
   const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
   const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
-  appendOrderAddonRow(id, addon.label, addonPrice(addon.id, dims.l, dims.w, dims.h));
+  const price = priceIn && priceIn.value !== '' ? (parseFloat(priceIn.value) || 0) : addonPrice(addon.id, dims.l, dims.w, dims.h);
+  appendOrderAddonRow(id, addon.label, price);
   sel.value = '';
+  if (priceIn) priceIn.value = '';
   updateOrderTotal();
 }
 function renderOrderAddons(savedIds, savedPrices) {
@@ -3341,6 +3369,8 @@ function openOrderModal(order, prefill) {
   ['oName','oContact','oNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('oPickup').value='';
   document.getElementById('oPickupTime').value='';
+  const _addonSel = document.getElementById('oAddonSelect'); if (_addonSel) _addonSel.value = '';
+  const _addonPriceIn = document.getElementById('oAddonPrice'); if (_addonPriceIn) _addonPriceIn.value = '';
   document.getElementById('oPayment').value='unpaid';
   document.getElementById('oVenmoFeeWrap').style.display = 'none';
   document.getElementById('oVenmoFee').value = '';
@@ -4105,9 +4135,9 @@ function updateBuildCalc() {
 const CL_COLORS = ['#1E4D6B','#3A7D5C','#D4782A','#4A86A8','#C9A55A','#7B5EA7','#2E8B8B','#8B4513','#B8860B','#5F9EA0'];
 const CL_STOCK_COLORS = ['#1E4D6B','#3A7D5C','#D4782A','#4A86A8','#C9A55A','#7B5EA7','#2E8B8B'];
 const CL_DEFAULT_STOCK = [
-  { id: 'st-1', name: 'Cedar Picket 6ft', shortName: 'Picket 6\'', len: 72, width: 5.5 },
-  { id: 'st-2', name: 'Pine 2×2 8ft', shortName: '2×2 8\'', len: 96, width: 1.5 },
-  { id: 'st-3', name: 'Douglas Fir 2×4 8ft', shortName: '2×4 8\'', len: 96, width: 3.5 },
+  { id: 'st-1', name: 'Cedar Picket 6ft', shortName: 'Picket 6\'', len: 72, width: 5.5, height: 0.75 },
+  { id: 'st-2', name: 'Pine 2×2 8ft', shortName: '2×2 8\'', len: 96, width: 1.5, height: 1.5 },
+  { id: 'st-3', name: 'Douglas Fir 2×4 8ft', shortName: '2×4 8\'', len: 96, width: 3.5, height: 1.5 },
 ];
 let clStockTypes = CL_DEFAULT_STOCK.map(s => ({...s}));
 let clStockIdCounter = 10;
@@ -4125,8 +4155,16 @@ function renderStockTypes() {
     list.innerHTML = clStockTypes.map((s, si) => `
       <div class="cl-stock-row">
         <div class="cl-stock-dot" style="background:${CL_STOCK_COLORS[si % CL_STOCK_COLORS.length]}"></div>
-        <span class="cl-stock-name">${esc(s.name)}</span>
-        <span class="cl-stock-len">${s.len}"${s.width ? ' × ' + s.width + '"' : ''}</span>
+        <input class="cl-stock-name-input" type="text" value="${esc(s.name)}" title="Name"
+          onblur="updateStockField('${s.id}','name',this.value.trim()||'${esc(s.name)}')">
+        <input class="cl-stock-dim" type="number" value="${s.len}" min="1" step="0.25" title="Length (in)"
+          onblur="updateStockField('${s.id}','len',parseFloat(this.value)||${s.len})">
+        <span class="cl-stock-sep">×</span>
+        <input class="cl-stock-dim" type="number" value="${s.width||''}" min="0.25" step="0.25" title="Width (in)" placeholder="W"
+          onblur="updateStockField('${s.id}','width',parseFloat(this.value)||null)">
+        <span class="cl-stock-sep">×</span>
+        <input class="cl-stock-dim" type="number" value="${s.height||''}" min="0.25" step="0.25" title="Height/thickness (in)" placeholder="H"
+          onblur="updateStockField('${s.id}','height',parseFloat(this.value)||null)">
         <button class="cl-stock-remove" onclick="removeStockType('${s.id}')" title="Remove">×</button>
       </div>`).join('');
   }
@@ -4141,19 +4179,38 @@ function renderStockTypes() {
   });
 }
 
+function updateStockField(id, field, value) {
+  const stock = clStockTypes.find(s => s.id === id);
+  if (!stock) return;
+  stock[field] = value;
+  if (field === 'name' || field === 'shortName') {
+    document.querySelectorAll('#cl-rows tr').forEach(row => {
+      const rid = row.id.replace('cl-row-', '');
+      const sel = document.getElementById('cl-mat-' + rid);
+      if (!sel) return;
+      const current = sel.value;
+      sel.innerHTML = clStockTypes.map(s => `<option value="${s.id}">${esc(s.shortName || s.name)}</option>`).join('');
+      if (clStockTypes.find(s => s.id === current)) sel.value = current;
+    });
+  }
+}
+
 function addStockType() {
   const nameEl = document.getElementById('cl-new-stock-name');
   const lenEl = document.getElementById('cl-new-stock-len');
   const widEl = document.getElementById('cl-new-stock-wid');
+  const hgtEl = document.getElementById('cl-new-stock-hgt');
   const name = (nameEl.value || '').trim();
   const len = parseFloat(lenEl.value) || 0;
   const width = parseFloat(widEl.value) || null;
+  const height = hgtEl ? (parseFloat(hgtEl.value) || null) : null;
   if (!name) { showToast('Enter a material name', 'error'); return; }
   if (len <= 0) { showToast('Enter a valid length', 'error'); return; }
-  clStockTypes.push({ id: 'st-' + (++clStockIdCounter), name, len, width });
+  clStockTypes.push({ id: 'st-' + (++clStockIdCounter), name, len, width, height });
   nameEl.value = '';
   lenEl.value = '96';
   widEl.value = '';
+  if (hgtEl) hgtEl.value = '';
   renderStockTypes();
 }
 
