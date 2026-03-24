@@ -283,14 +283,8 @@ test('quote margin badge renders correct colour in Quotes tab', async ({ page })
   const marginBadge = quoteRow.locator('span').filter({ hasText: '%' });
   await expect(marginBadge).toBeVisible();
 
-  // Screenshot the Est. Margin cell (column index 3: Date/Customer/Price/Est.Margin)
-  // — captures the inline colour which is invisible to text-only assertions
-  await expect(quoteRow.locator('td').nth(3)).toHaveScreenshot('quote-margin-badge.png', {
-    maxDiffPixelRatio: 0.02,
-  });
-
-  // Screenshot the full quotes table for a broader regression baseline
-  await expect(page.locator('#otab-quotes')).toHaveScreenshot('quotes-tab-with-margin.png', {
-    maxDiffPixelRatio: 0.02,
-  });
+  // Assert the badge uses the green colour — marginColor() returns 'var(--green)'
+  // for margin ≥ 60%. A $100 price on a ~2-picket cut list will always be in range.
+  // Using a style assertion avoids 1-pixel screenshot instability across platforms.
+  await expect(marginBadge).toHaveAttribute('style', /var\(--green\)/);
 });

@@ -140,6 +140,7 @@ test('edit booking changes the buyer name', async ({ page }) => {
   await clickFirstAvailableDay(page);
 
   // Add a booking to edit
+  await expect(page.locator('button:has-text("+ Book Pickup")')).toBeVisible({ timeout: 5000 });
   await page.click('button:has-text("+ Book Pickup")');
   await page.waitForSelector('#bookingModal.open');
   await page.fill('#bkName', `${TAG} EditBook`);
