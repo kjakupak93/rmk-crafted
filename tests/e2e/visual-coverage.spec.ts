@@ -48,11 +48,11 @@ async function goToScheduler(page: Page) {
 // ─── Global cleanup ───────────────────────────────────────────────────────────
 
 test.beforeAll(async () => {
-  await cleanupTestData(['orders', 'sales', 'quotes', 'cut_lists', 'schedule_slots', 'schedule_bookings']);
+  await cleanupTestData(['orders', 'sales', 'quotes', 'cut_lists', 'schedule_slots', 'schedule_bookings', 'activity_log']);
 });
 
 test.afterAll(async () => {
-  await cleanupTestData(['orders', 'sales', 'quotes', 'cut_lists', 'schedule_slots', 'schedule_bookings']);
+  await cleanupTestData(['orders', 'sales', 'quotes', 'cut_lists', 'schedule_slots', 'schedule_bookings', 'activity_log']);
 });
 
 // =============================================================================
