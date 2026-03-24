@@ -241,12 +241,14 @@ test('new add-on appears in order modal add-on dropdown', async ({ page }) => {
   await page.click('#mtab-addons button:has-text("+ Add Add-on")');
   await expect(page.locator('#addons-list > div')).toHaveCount(beforeCount + 1, { timeout: 5000 });
 
-  // Open the order modal and verify the select has one more option than before
-  // (options = 1 blank + N addons; beforeCount+1 addons after our add)
+  // Navigate home (reloads app — localStorage persists so new add-on is loaded)
+  // then go to Orders and open the new order modal
+  await login(page);
   await page.click('.app-tile--orders');
   await page.waitForSelector('#page-orders.active');
   await page.click('button:has-text("+ New Order")');
   await page.waitForSelector('#orderModal.open');
+  // options = 1 blank "— Select add-on —" + (beforeCount + 1) addons
   await expect(page.locator('#oAddonSelect option')).toHaveCount(beforeCount + 2, { timeout: 5000 });
   await page.click('button.modal-btn-cancel');
   // No Supabase cleanup needed — add-ons are localStorage only (reset per browser context)
