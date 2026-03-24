@@ -58,7 +58,7 @@ All data is stored in Supabase (cloud) so it works across any device. The dashbo
 | 🗑️ Delete | Permanently remove (cannot undo) |
 | 🔗 Share booking link | Copy a unique URL to send to the customer so they can self-schedule their pickup |
 
-**Adding or editing an order** — fields include: Customer Name · Contact · Items (size, style, qty, price) · Payment · Status · Pickup Date · Pickup Time · Notes
+**Adding or editing an order** — fields include: Customer Name · Contact · Items (size, product, qty, price) · Add-ons (select from dropdown, price editable per order) · Payment · Status · Pickup Date · Pickup Time · Notes
 
 > Setting a **Pickup Date + Time** automatically creates a booking on the Pickup Scheduler calendar. Updating it later updates the calendar too.
 
@@ -73,19 +73,21 @@ All data is stored in Supabase (cloud) so it works across any device. The dashbo
 ### 3 — Material Cost Tracker
 
 **Stock Levels tab** — current on-hand quantities for each material:
-- Cedar Pickets (6ft) — Standard style
-- 2×2 Lumber (8ft) — Vertical style frames
-- 2×4 Lumber (8ft) — Vertical style bases
+- Cedar Pickets (6ft)
+- 2×2 Lumber (8ft)
+- 2×4 Lumber (8ft)
 
 Stock color coding: 🔴 Low · 🟠 Medium · 🟢 Good
 
 Use +/− buttons to adjust as you build or receive materials.
 
-**Build Cost Estimator** — enter dimensions and style to see material requirements and estimated cost. Good for cross-checking pricing.
-
-**Lowes Purchase Log tab** — log every materials run. Records date, item, quantity, and cost. Tracks total materials spend over time.
+**Lowes Purchase Log tab** — log every materials run. Select materials from a dropdown (auto-fills price per unit), enter quantities, add notes and a total override. Records date, store, and cost. Tracks total materials spend over time.
 
 > Note: Logging a purchase does **not** auto-update stock levels. Update the Stock Levels tab manually.
+
+**Products tab** — manage planter product types (Standard, Vertical, Tiered, Dog Bowl, etc.). Add, rename, or delete products. Product list populates the product dropdown in all order and cut list forms.
+
+**Add-ons tab** — manage optional add-ons (Sealant, Fabric Liner, Casters, etc.). Each add-on has a name, base price, and a "Scales" flag that auto-adjusts price with planter size. When creating an order, select add-ons from a dropdown with an editable per-order price.
 
 ---
 

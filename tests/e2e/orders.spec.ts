@@ -243,6 +243,32 @@ test.describe('mark all paid', () => {
   });
 });
 
+test('add-on selected in order modal is saved and reflected in order total', async ({ page }) => {
+  await goToOrders(page);
+  const name = `${TAG} Addon Order`;
+
+  await page.click('button:has-text("+ New Order")');
+  await page.waitForSelector('#orderModal.open');
+  await page.fill('#oName', name);
+  await page.locator('.item-size').fill('36×16×16');
+  await page.locator('.item-price').fill('60');
+
+  // Select first add-on from dropdown — should auto-populate price
+  const addonSel = page.locator('#oAddonSelect');
+  await addonSel.selectOption({ index: 1 });
+  const autoPrice = await page.locator('#oAddonPrice').inputValue();
+  expect(parseFloat(autoPrice)).toBeGreaterThanOrEqual(0);
+
+  // Override price to known value and add it
+  await page.fill('#oAddonPrice', '10');
+  await page.click('button[onclick="addOrderAddon()"]');
+  // Total should now be 60 + 10 = 70
+  await expect(page.locator('#oItemsTotal')).toContainText('70');
+
+  await page.click('button[onclick="saveOrder()"]');
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
+});
+
 test('multi-item order — total reflects both items', async ({ page }) => {
   await goToOrders(page);
   const name = `${TAG} Multi Item`;

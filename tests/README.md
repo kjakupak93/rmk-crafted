@@ -23,14 +23,14 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ## Smoke Suite (`tests/*.spec.ts`)
 
-22 tests. Fast, read-only — no data writes to Supabase. Runs in parallel.
+23 tests. Fast, read-only — no data writes to Supabase. Runs in parallel.
 
 | File | What it checks |
 |---|---|
 | `auth.spec.ts` | PIN gate: wrong PIN shows error, correct PIN dismisses gate |
 | `home.spec.ts` | KPI cards present, nav tiles visible, dark mode toggle |
 | `orders.spec.ts` | Orders page tabs, New Order modal, Quotes tab visibility, Sales History margin badges |
-| `materials.spec.ts` | Stock counts load, tab switching, Cut List quote button starts disabled, Products tab renders |
+| `materials.spec.ts` | Stock counts load, tab switching (all 5 tabs), Cut List quote button starts disabled, Products tab renders, Add-ons tab renders |
 | `scheduler.spec.ts` | Calendar renders, tab switching |
 | `analytics.spec.ts` | P&L cards, charts, range toggle |
 
@@ -38,15 +38,16 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ## E2E Suite (`tests/e2e/*.spec.ts`)
 
-42 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
+54 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
 
 | File | Tests | Coverage |
 |---|---|---|
-| `orders.spec.ts` | 12 | Create, edit, advance status (pending→building→ready), complete unpaid (Cash + Venmo), skip payment, prepaid bypass, delete, filter, multi-item, mark all paid (Cash + Venmo) |
+| `orders.spec.ts` | 11 | Create, edit, advance status (pending→building→ready), complete unpaid (Cash + Venmo), skip payment, prepaid bypass, delete, filter, add-on saved on order, multi-item, mark all paid (Cash + Venmo) |
 | `cutlist-quotes.spec.ts` | 7 | Quote button enables after run, modal pre-fill, save quote, convert to order, delete, product saved with cut list, product grouping in saved list |
-| `materials.spec.ts` | 12 | Add/edit/delete purchase, run cut list, save cut list, re-save updates existing record, load + delete cut list, stock +/− buttons, add product, rename product, delete product, product persists across reload |
+| `materials.spec.ts` | 15 | Add/edit/delete purchase, run cut list, save cut list, re-save updates existing record, load + delete cut list, stock +/− buttons, add product, rename product, delete product, product persists across reload, add/delete add-on, new add-on appears in order modal dropdown |
 | `scheduler.spec.ts` | 10 | Add/edit/delete slot, book/edit/delete pickup, quick book, booking edit syncs order pickup time, add/delete availability window |
 | `inventory-sales.spec.ts` | 7 | Add inventory, adjust qty (+/−), qty → 0 removes item, delete inventory, log/edit/delete sale |
+| `visual-coverage.spec.ts` | 4 | Cut list board diagram, calendar dot states, order status badge colours (all four states), quote margin badge |
 
 ### Authentication
 

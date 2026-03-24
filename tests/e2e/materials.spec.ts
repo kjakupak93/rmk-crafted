@@ -208,3 +208,52 @@ test('deleting the last remaining product shows error and keeps it', async ({ pa
   await expect(page.locator('.toast, [class*="toast"]')).toContainText('required', { timeout: 5000 });
   await expect(rows).toHaveCount(1);
 });
+
+async function goToAddons(page: Page) {
+  await goToMaterials(page);
+  await page.click('button:has-text("Add-ons")');
+  await page.waitForSelector('#mtab-addons.active');
+}
+
+test('add new add-on from Add-ons tab appears in list', async ({ page }) => {
+  await goToAddons(page);
+  const beforeCount = await page.locator('#addons-list > div').count();
+  await page.click('#mtab-addons button:has-text("+ Add Add-on")');
+  await expect(page.locator('#addons-list > div')).toHaveCount(beforeCount + 1, { timeout: 5000 });
+});
+
+test('delete add-on removes it from the list', async ({ page }) => {
+  await goToAddons(page);
+  // Add one first so we have a safe target to delete
+  await page.click('#mtab-addons button:has-text("+ Add Add-on")');
+  const rows = page.locator('#addons-list > div');
+  const countAfterAdd = await rows.count();
+  await expect(rows).toHaveCount(countAfterAdd);
+  // Delete the last row
+  await rows.last().locator('button[title="Delete"]').click();
+  await expect(rows).toHaveCount(countAfterAdd - 1, { timeout: 5000 });
+});
+
+test('new add-on appears in order modal add-on dropdown', async ({ page }) => {
+  await goToAddons(page);
+  // Add a distinctly named add-on
+  await page.click('#mtab-addons button:has-text("+ Add Add-on")');
+  const lastRow = page.locator('#addons-list > div').last();
+  const labelInput = lastRow.locator('input[type="text"]');
+  await labelInput.fill(`${TAG} Addon`);
+  await labelInput.blur();
+  // Navigate to new order modal and verify the dropdown contains the new add-on
+  await page.click('.app-tile--orders');
+  await page.waitForSelector('#page-orders.active');
+  await page.click('button:has-text("+ New Order")');
+  await page.waitForSelector('#orderModal.open');
+  await expect(page.locator('#oAddonSelect option', { hasText: `${TAG} Addon` })).toBeAttached({ timeout: 5000 });
+  await page.click('button.modal-btn-cancel');
+  // Cleanup: remove the test add-on
+  await page.click('.app-tile--mats');
+  await page.waitForSelector('#page-materials.active');
+  await page.click('button:has-text("Add-ons")');
+  await page.waitForSelector('#mtab-addons.active');
+  const testRow = page.locator('#addons-list > div').filter({ has: page.locator(`input[value="${TAG} Addon"]`) });
+  await testRow.locator('button[title="Delete"]').click();
+});
