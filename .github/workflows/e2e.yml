@@ -30,20 +30,21 @@ jobs:
         run: npx playwright test --project=smoke
 
       # Visual snapshot baselines are platform-specific (darwin vs linux).
-      # When linux baselines are missing (first run after new visual tests are
-      # added on macOS), generate them here and commit back so future runs do
-      # real diff-based regression testing.
+      # Regenerate and commit whenever any linux baseline is missing — covers
+      # both first-time setup (no files) and stale-snapshot reset (one deleted).
       - name: Bootstrap linux visual snapshots if missing
         run: |
           SNAP_DIR="tests/e2e/visual-coverage.spec.ts-snapshots"
-          if ! ls "${SNAP_DIR}"/*-linux.png 2>/dev/null | grep -q .; then
-            echo "No linux baselines found — generating..."
+          LINUX_COUNT=$(find "$SNAP_DIR" -name "*-e2e-linux.png" 2>/dev/null | wc -l)
+          DARWIN_COUNT=$(find "$SNAP_DIR" -name "*-e2e-darwin.png" 2>/dev/null | wc -l)
+          if [ "$LINUX_COUNT" -lt "$DARWIN_COUNT" ]; then
+            echo "Missing linux baselines ($LINUX_COUNT of $DARWIN_COUNT) — regenerating..."
             npx playwright test --project=e2e tests/e2e/visual-coverage.spec.ts --update-snapshots || true
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add "${SNAP_DIR}/"
             if ! git diff --staged --quiet; then
-              git commit -m "chore: add linux playwright snapshot baselines [skip actions]"
+              git commit -m "chore: update linux playwright snapshot baselines [skip actions]"
               git push
             fi
           fi
