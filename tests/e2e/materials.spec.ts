@@ -12,10 +12,10 @@ async function goToMaterials(page: Page) {
   await page.waitForSelector('#page-materials.active');
 }
 
-async function goToStyles(page: Page) {
+async function goToProducts(page: Page) {
   await goToMaterials(page);
-  await page.click('button:has-text("Styles")');
-  await page.waitForSelector('#mtab-styles.active');
+  await page.click('button:has-text("Products")');
+  await page.waitForSelector('#mtab-products.active');
 }
 
 async function addPurchase(page: Page, storeName: string): Promise<void> {
@@ -24,7 +24,8 @@ async function addPurchase(page: Page, storeName: string): Promise<void> {
   await page.click('button:has-text("+ Log Purchase")');
   await page.waitForSelector('#purchaseModal.open');
   await page.fill('#pStore', storeName);
-  await page.fill('#pPickets', '5');
+  // First material row qty (new dropdown-based UI)
+  await page.locator('#pMaterialRows .purch-mat-row input[type="number"]').first().fill('5');
   await page.click('#purchSaveBtn');
   await expect(page.locator('#purchaseBody tr').filter({ hasText: storeName })).toBeVisible({ timeout: 10000 });
 }
@@ -164,43 +165,43 @@ test('load cut list restores name; delete removes it from saved list', async ({ 
   await expect(page.locator('#cl-saved-list tr').filter({ hasText: cutListName })).toHaveCount(0, { timeout: 10000 });
 });
 
-test('add style from Styles tab appears in list', async ({ page }) => {
-  const styleName = `${TAG} TestStyle`;
-  await goToStyles(page);
-  page.once('dialog', d => d.accept(styleName));
-  await page.click('#mtab-styles button:has-text("+ Add Style")');
-  await expect(page.locator('#styles-list').getByText(styleName)).toBeVisible({ timeout: 5000 });
+test('add product from Products tab appears in list', async ({ page }) => {
+  const productName = `${TAG} TestStyle`;
+  await goToProducts(page);
+  page.once('dialog', d => d.accept(productName));
+  await page.click('#mtab-products button:has-text("+ Add Product")');
+  await expect(page.locator('#products-list').getByText(productName)).toBeVisible({ timeout: 5000 });
 });
 
-test('rename style from Styles tab updates name in list', async ({ page }) => {
+test('rename product from Products tab updates name in list', async ({ page }) => {
   const original = `${TAG} RenameMe`;
   const renamed = `${TAG} Renamed`;
-  await goToStyles(page);
+  await goToProducts(page);
   page.once('dialog', d => d.accept(original));
-  await page.click('#mtab-styles button:has-text("+ Add Style")');
-  await expect(page.locator('#styles-list').getByText(original)).toBeVisible({ timeout: 5000 });
-  const row = page.locator('#styles-list div').filter({ hasText: original });
+  await page.click('#mtab-products button:has-text("+ Add Product")');
+  await expect(page.locator('#products-list').getByText(original)).toBeVisible({ timeout: 5000 });
+  const row = page.locator('#products-list div').filter({ hasText: original });
   page.once('dialog', d => d.accept(renamed));
   await row.locator('button:has-text("Rename")').click();
-  await expect(page.locator('#styles-list').getByText(renamed)).toBeVisible({ timeout: 5000 });
-  await expect(page.locator('#styles-list').getByText(original)).toHaveCount(0);
+  await expect(page.locator('#products-list').getByText(renamed)).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('#products-list').getByText(original)).toHaveCount(0);
 });
 
-test('delete style with no cut lists removes it from list', async ({ page }) => {
-  const styleName = `${TAG} DeleteMe`;
-  await goToStyles(page);
-  page.once('dialog', d => d.accept(styleName));
-  await page.click('#mtab-styles button:has-text("+ Add Style")');
-  await expect(page.locator('#styles-list').getByText(styleName)).toBeVisible({ timeout: 5000 });
-  const row = page.locator('#styles-list div').filter({ hasText: styleName });
+test('delete product with no cut lists removes it from list', async ({ page }) => {
+  const productName = `${TAG} DeleteMe`;
+  await goToProducts(page);
+  page.once('dialog', d => d.accept(productName));
+  await page.click('#mtab-products button:has-text("+ Add Product")');
+  await expect(page.locator('#products-list').getByText(productName)).toBeVisible({ timeout: 5000 });
+  const row = page.locator('#products-list div').filter({ hasText: productName });
   page.once('dialog', d => d.accept());
   await row.locator('.icon-btn').click();
-  await expect(page.locator('#styles-list').getByText(styleName)).toHaveCount(0);
+  await expect(page.locator('#products-list').getByText(productName)).toHaveCount(0);
 });
 
-test('deleting the last remaining style shows error and keeps it', async ({ page }) => {
-  await goToStyles(page);
-  const rows = page.locator('#styles-list div[style*="border-bottom"]');
+test('deleting the last remaining product shows error and keeps it', async ({ page }) => {
+  await goToProducts(page);
+  const rows = page.locator('#products-list div[style*="border-bottom"]');
   const count = await rows.count();
   if (count !== 1) { test.skip(); return; }
   await rows.first().locator('.icon-btn').click();

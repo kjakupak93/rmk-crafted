@@ -478,7 +478,7 @@ body {
   gap: 8px;
 }
 .inv-size { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--navy); }
-.inv-style { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
+.inv-product { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
 .inv-price { font-family: 'DM Mono', monospace; font-size: 20px; color: var(--green); font-weight: 500; }
 .qty-ctrl { display: flex; align-items: center; gap: 10px; }
 .qty-btn {
@@ -819,7 +819,7 @@ body {
 .order-items { display:flex; flex-direction:column; gap:6px; margin-bottom:4px; }
 .order-item-row { display:flex; gap:6px; align-items:center; }
 .order-item-row .item-size { flex:2; min-width:0; }
-.order-item-row .item-style { flex:1; min-width:0; }
+.order-item-row .item-product { flex:1; min-width:0; }
 .order-item-row .item-qty { flex:0 0 54px; }
 .order-item-row .item-price { flex:0 0 72px; }
 .order-items-total { text-align:right; font-size:13px; color:var(--text-muted); padding:2px 0 6px; }
@@ -888,8 +888,6 @@ body {
   .analytics-pnl { grid-template-columns: 1fr 1fr; }
   .analytics-pnl .summary-card:last-child:nth-child(odd) { grid-column: span 2; }
   .analytics-grid { grid-template-columns: 1fr; }
-  .addon-grid { grid-template-columns: 1fr; }
-
   /* ── Tabs ── */
   .tabs { padding: 0 8px; }
   .tab-btn { padding: 12px 10px; font-size: 12px; }
@@ -969,7 +967,7 @@ body {
   /* ── Order item rows in modal ── */
   .order-item-row { flex-wrap: wrap; }
   .order-item-row .item-size { flex: 1 1 120px; }
-  .order-item-row .item-style { flex: 1 1 80px; }
+  .order-item-row .item-product { flex: 1 1 80px; }
   .order-item-row .item-qty { flex: 0 0 54px; }
   .order-item-row .item-price { flex: 0 0 72px; }
 
@@ -1014,9 +1012,6 @@ body {
   .slot-time { min-width: 70px; font-size: 13px; }
   .slot-info { min-width: 0; flex: 1 1 120px; }
   .slot-badge { flex-shrink: 0; }
-
-  /* ── Addon settings grid ── */
-  .addon-settings-row { grid-template-columns: 1fr 60px 50px; gap: 6px; font-size: 12px; }
 
   /* ── Shares card ── */
   .share-msg-box { font-size: 11px; }
@@ -1243,12 +1238,6 @@ body {
 [data-theme="dark"] .cal-day.today { border-color: #7BADC8; }
 [data-theme="dark"] .cal-day.selected { background: #1E3347; border-color: #7BADC8; }
 [data-theme="dark"] .cal-day.has-slots { background: #1A2F42; }
-/* Add-on chips */
-[data-theme="dark"] .addon-chip { background: #162534; border-color: #2C4255; color: var(--text); }
-[data-theme="dark"] .addon-chip:hover { border-color: #7BADC8; background: #1E3347; }
-[data-theme="dark"] .addon-chip.selected { border-color: #7BADC8; background: #1E3347; color: #D8EEF8; }
-[data-theme="dark"] .addon-chip .chip-price { color: var(--text-muted); }
-[data-theme="dark"] .addon-subtotal { background: #1A2215; border-color: #3A4A20; color: var(--sand); }
 /* Misc */
 [data-theme="dark"] .low-stock-banner { background: #1F1800; border-color: #6A4A00; color: #F5C842; }
 [data-theme="dark"] .calc-result { background: #1E3347; border-color: #2C4255; }
@@ -1307,38 +1296,8 @@ body {
 .order-highlight { animation: orderHighlight 1.5s ease; border-color: var(--ocean) !important; }
 
 /* ===== ADD-ONS ===== */
-.addon-section { margin-bottom: 20px; }
-.addon-section-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
-.addon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-.addon-chip {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px;
-  border: 2px solid var(--warm-gray);
-  border-radius: 10px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.15s;
-  user-select: none;
-  font-size: 13px; font-weight: 500; color: var(--text);
-}
-.addon-chip:hover { border-color: var(--ocean); background: var(--cream); }
-.addon-chip.selected { border-color: var(--navy); background: var(--navy); color: white; }
-.addon-chip .chip-name { flex: 1; }
-.addon-chip .chip-price { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
-.addon-chip.selected .chip-price { color: rgba(255,255,255,0.65); }
-.addon-chip .chip-check { font-size: 11px; opacity: 0; transition: opacity 0.1s; margin-left: -2px; }
-.addon-chip.selected .chip-check { opacity: 1; }
-.addon-subtotal {
-  background: var(--sand-pale);
-  border: 1px solid var(--sand-light);
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-family: 'DM Mono', monospace;
-  color: var(--navy);
-  display: flex; justify-content: space-between; align-items: center;
-}
-.addon-subtotal .addon-sub-label { font-size: 11px; color: var(--text-muted); }
+.addon-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--warm-gray); }
+.addon-row:last-child { border-bottom:none; }
 
 /* ===== HOME HERO ===== */
 .home-hero {
@@ -1401,39 +1360,6 @@ body {
 .tms-val { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--navy); }
 .tms-val.low   { color: var(--red); }
 .tms-val.money { color: var(--green); }
-.chip-price-input {
-  display: none;
-  width: 46px;
-  padding: 2px 5px;
-  border: 1px solid rgba(255,255,255,0.45);
-  border-radius: 4px;
-  background: rgba(255,255,255,0.18);
-  color: white;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  text-align: center;
-  -moz-appearance: textfield;
-}
-.chip-price-input::-webkit-outer-spin-button, .chip-price-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-.chip-price-input:focus { outline: none; border-color: rgba(255,255,255,0.8); }
-.addon-chip.selected .chip-price-static { display: none; }
-.addon-chip.selected .chip-price-input { display: block; }
-.addon-manage-btn {
-  background: none; border: none; cursor: pointer;
-  font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace;
-  padding: 0; text-decoration: underline; text-underline-offset: 2px;
-  transition: color 0.15s;
-}
-.addon-manage-btn:hover { color: var(--ocean); }
-.addon-settings-row {
-  display: grid; grid-template-columns: 1fr 70px 60px;
-  gap: 8px; align-items: center;
-  padding: 8px 0; border-bottom: 1px solid var(--warm-gray);
-  font-size: 13px;
-}
-.addon-settings-row:last-child { border-bottom: none; }
-.addon-settings-row label { color: var(--text-muted); font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
-.addon-settings-scales { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); justify-content: center; }
 </style>
 </head>
 <body>
@@ -1687,7 +1613,7 @@ body {
       </div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Date</th><th>Size</th><th>Qty</th><th>Style</th><th>Buyer</th><th>Price</th><th>Payment</th><th>Notes</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Size</th><th>Qty</th><th>Product</th><th>Buyer</th><th>Price</th><th>Payment</th><th>Notes</th><th></th></tr></thead>
           <tbody id="salesBody"></tbody>
         </table>
       </div>
@@ -1703,7 +1629,8 @@ body {
     <button class="tab-btn active" onclick="showMaterialsTab('stock',this)">📦 Stock</button>
     <button class="tab-btn" onclick="showMaterialsTab('purchases',this)">🛒 Purchases</button>
     <button class="tab-btn" onclick="showMaterialsTab('cutlist',this)">🪵 Cut List</button>
-    <button class="tab-btn" onclick="showMaterialsTab('styles',this)">🎨 Styles</button>
+    <button class="tab-btn" onclick="showMaterialsTab('products',this)">🎨 Products</button>
+    <button class="tab-btn" onclick="showMaterialsTab('addons',this)">🔧 Add-ons</button>
   </div>
   <div class="app-container">
     <div class="tab-panel active" id="mtab-stock">
@@ -1845,9 +1772,9 @@ body {
           <input class="std-input" type="text" id="cl-name" placeholder="e.g. 36×16×16 Standard">
         </div>
         <div class="input-group" style="margin-bottom:14px">
-          <label>Style</label>
-          <select class="std-input" id="cl-style" onfocus="this.dataset.prev=this.value" onchange="onClStyleChange(this)">
-            <option value="">— No style —</option>
+          <label>Product</label>
+          <select class="std-input" id="cl-product" onfocus="this.dataset.prev=this.value" onchange="onClProductChange(this)">
+            <option value="">— No product —</option>
           </select>
         </div>
 
@@ -1886,11 +1813,25 @@ body {
       </div>
     </div>
 
-    <!-- Styles tab -->
-    <div class="tab-panel" id="mtab-styles">
-      <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Planter Styles</h2>
-      <div id="styles-list" style="margin-bottom:20px"></div>
-      <button class="btn-primary" onclick="promptAddStyle()">+ Add Style</button>
+    <!-- Products tab -->
+    <div class="tab-panel" id="mtab-products">
+      <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Products</h2>
+      <div id="products-list" style="margin-bottom:20px"></div>
+      <button class="btn-primary" onclick="promptAddProduct()">+ Add Product</button>
+    </div>
+
+    <!-- Add-ons tab -->
+    <div class="tab-panel" id="mtab-addons">
+      <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 8px;">Add-ons</h2>
+      <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px">Default names and prices. Check <strong>Scales</strong> to auto-adjust price with planter size.</p>
+      <div style="display:grid;grid-template-columns:1fr 90px 70px 32px;gap:8px;padding:0 4px 8px;border-bottom:2px solid var(--warm-gray);margin-bottom:4px">
+        <span style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">Name</span>
+        <span style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">Base $</span>
+        <span style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);text-align:center">Scales?</span>
+        <span></span>
+      </div>
+      <div id="addons-list" style="margin-bottom:16px"></div>
+      <button class="btn-primary" onclick="addNewAddon()">+ Add Add-on</button>
     </div>
   </div>
 </div>
@@ -2023,23 +1964,18 @@ body {
       <div class="order-items-total">Total: <strong id="oItemsTotal">$0</strong></div>
     </div>
     <div class="form-group">
-      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional — click to select, edit price when selected)</span></label>
-      <div class="addon-grid" id="orderAddonGrid" style="margin-top:4px">
-        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price-static" id="oap-sealant">+$20</span><input class="chip-price-input" type="number" min="0" value="20" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
-        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price-static" id="oap-liner">+$15</span><input class="chip-price-input" type="number" min="0" value="15" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
-        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price-static" id="oap-casters">+$40</span><input class="chip-price-input" type="number" min="0" value="40" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
-        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'order')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price-static" id="oap-shelf">+$30</span><input class="chip-price-input" type="number" min="0" value="30" onclick="event.stopPropagation()" oninput="onChipPriceInput(this,'order')"></div>
-      </div>
+      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
+      <div id="orderAddonList" style="margin-top:4px"></div>
     </div>
     <div class="form-group" style="max-width:180px"><label>Payment</label><select class="form-control" id="oPayment" onchange="onPaymentChange(this.value)"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select><span id="oVenmoFeeWrap" style="display:none;align-items:center;gap:4px;margin-top:6px;"><span style="font-size:0.85em;color:var(--text-muted)">+$</span><input class="form-control" type="number" id="oVenmoFee" min="0" step="0.01" style="width:70px" placeholder="0" onchange="onVenmoFeeChange(this.value)"><span style="font-size:0.85em;color:var(--text-muted)">fee</span></span></div>
     <div class="form-row">
       <div class="form-group"><label>Status</label><select class="form-control" id="oStatus"><option value="pending">Pending</option><option value="building">Building</option><option value="ready">Ready for Pickup</option><option value="completed">Completed</option></select></div>
-      <div class="form-group"><label>Pickup Date</label><input class="form-control" type="date" id="oPickup"></div>
     </div>
     <div class="form-row">
+      <div class="form-group"><label>Pickup Date</label><input class="form-control" type="date" id="oPickup"></div>
       <div class="form-group"><label>Pickup Time</label><input class="form-control" type="time" id="oPickupTime"></div>
-      <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="oNotes" placeholder="Custom requests, etc."></div>
     </div>
+    <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="oNotes" placeholder="Custom requests, etc."></div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('orderModal')">Cancel</button>
       <button class="modal-btn-primary" onclick="saveOrder()">Save Order</button>
@@ -2055,7 +1991,7 @@ body {
     <input type="hidden" id="editInvId">
     <div class="form-row">
       <div class="form-group"><label>Size (L×W×H)</label><input class="form-control" type="text" id="iSize" placeholder="36×16×16"></div>
-      <div class="form-group"><label>Style</label><select class="form-control" id="iStyle"></select></div>
+      <div class="form-group"><label>Product</label><select class="form-control" id="iProduct"></select></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Asking Price ($)</label><input class="form-control" type="number" id="iPrice" placeholder="60"></div>
@@ -2064,12 +2000,7 @@ body {
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="iNotes" placeholder="Optional"></div>
     <div class="form-group">
       <label>Add-ons included <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
-      <div class="addon-grid" id="invAddonGrid" style="margin-top:4px">
-        <div class="addon-chip" data-id="sealant" onclick="toggleAddon(this,'inv')"><span class="chip-check">✓</span><span class="chip-name">🧴 Sealant</span><span class="chip-price"></span></div>
-        <div class="addon-chip" data-id="liner" onclick="toggleAddon(this,'inv')"><span class="chip-check">✓</span><span class="chip-name">🌿 Fabric Liner</span><span class="chip-price"></span></div>
-        <div class="addon-chip" data-id="casters" onclick="toggleAddon(this,'inv')"><span class="chip-check">✓</span><span class="chip-name">⚙️ Casters</span><span class="chip-price"></span></div>
-        <div class="addon-chip" data-id="shelf" onclick="toggleAddon(this,'inv')"><span class="chip-check">✓</span><span class="chip-name">🪵 Bottom Shelf</span><span class="chip-price"></span></div>
-      </div>
+      <div id="invAddonList" style="margin-top:4px"></div>
     </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('invModal')">Cancel</button>
@@ -2089,7 +2020,7 @@ body {
     <div class="form-group"><label>Size(s)</label><input class="form-control" type="text" id="sSize" placeholder='48×16×16 or 36×16×16 + 48×24×16'></div>
     <div class="form-row">
       <div class="form-group"><label>Qty</label><input class="form-control" type="number" id="sQty" min="1" value="1"></div>
-      <div class="form-group"><label>Style</label><select class="form-control" id="sStyle"></select></div>
+      <div class="form-group"><label>Product</label><select class="form-control" id="sProduct"></select></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Sale Price ($)</label><input class="form-control" type="number" id="sPrice" placeholder="85"></div>
@@ -2111,28 +2042,23 @@ body {
       <div class="form-group"><label>Date</label><input class="form-control" type="date" id="pDate"></div>
       <div class="form-group"><label>Store</label><input class="form-control" type="text" id="pStore" placeholder="e.g. Lowes, Home Depot, Amazon…"></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Cedar pickets (qty)</label><input class="form-control" type="number" id="pPickets" placeholder="0" min="0" oninput="updatePurchEst()"></div>
-      <div class="form-group"><label>Price per picket ($)</label><input class="form-control" type="number" id="pPP" value="3.66" step="0.01" oninput="updatePurchEst()"></div>
+    <div style="margin-bottom:6px">
+      <div style="display:flex;gap:6px;font-size:12px;color:var(--text-muted);font-weight:600;padding:0 2px;margin-bottom:4px">
+        <span style="flex:2">Material</span><span style="flex:1">Qty</span><span style="flex:1">$/ea</span><span style="width:28px"></span>
+      </div>
+      <div id="pMaterialRows"></div>
+      <button type="button" onclick="addPurchaseMaterialRow()" style="background:none;border:none;color:var(--ocean);font-size:13px;cursor:pointer;padding:2px 0;font-family:inherit">+ Add material</button>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>2×2s (qty)</label><input class="form-control" type="number" id="p22" placeholder="0" min="0" oninput="updatePurchEst()"></div>
-      <div class="form-group"><label>Price per 2×2 ($)</label><input class="form-control" type="number" id="p22p" value="3.23" step="0.01" oninput="updatePurchEst()"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>2×4s (qty)</label><input class="form-control" type="number" id="p24" placeholder="0" min="0" oninput="updatePurchEst()"></div>
-      <div class="form-group"><label>Price per 2×4 ($)</label><input class="form-control" type="number" id="p24p" value="4.17" step="0.01" oninput="updatePurchEst()"></div>
-    </div>
-    <div class="form-row">
+    <div class="form-row" style="margin-top:4px">
       <div class="form-group"><label>Discount ($)</label><input class="form-control" type="number" id="pDiscount" placeholder="0.00" min="0" step="0.01" oninput="updatePurchEst()"></div>
-      <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="pNotes" placeholder="Optional"></div>
+      <div class="form-group"><label>Notes</label><textarea class="form-control" id="pNotes" placeholder="Optional" rows="3" style="resize:vertical;font-family:inherit;font-size:14px"></textarea></div>
     </div>
-    <div style="background:#EAF2F8;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--navy);font-family:'DM Mono',monospace">
+    <div style="background:#EAF2F8;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--navy);font-family:'DM Mono',monospace;margin-top:4px">
       Subtotal: <strong id="purchSubtotal">$0.00</strong><span id="purchDiscountLine" style="display:none"> &minus; <span style="color:var(--green)" id="purchDiscountAmt"></span> discount</span> &rarr; <strong id="purchEst">$0.00</strong>
     </div>
-    <div class="form-group" style="margin-top:10px">
-      <label>Total override ($) <span style="font-size:11px;color:var(--text-muted);font-weight:400">— enter manually if no materials above</span></label>
-      <input class="form-control" type="number" id="pTotal" placeholder="0.00" min="0" step="0.01">
+    <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+      <label style="white-space:nowrap;font-size:13px;font-weight:600;color:var(--text)">Total override ($)</label>
+      <input class="form-control" type="number" id="pTotal" placeholder="leave blank to auto-calc" min="0" step="0.01" style="max-width:180px">
     </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="editingPurchaseId=null;closeModal('purchaseModal')">Cancel</button>
@@ -2294,24 +2220,6 @@ body {
   </div>
 </div>
 
-<!-- Add-on Settings modal -->
-<div class="modal-overlay" id="addonSettingsModal">
-  <div class="modal" style="max-width:420px">
-    <h2>Manage Add-ons</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Edit default names and base prices. Scaled add-ons adjust automatically with box size.</p>
-    <div style="display:grid;grid-template-columns:1fr 70px 60px;gap:8px;margin-bottom:6px;padding-bottom:6px;border-bottom:2px solid var(--warm-gray)">
-      <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">Name</div>
-      <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">Base $</div>
-      <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);text-align:center">Scales</div>
-    </div>
-    <div id="addonSettingsRows"></div>
-    <div class="modal-actions">
-      <button class="modal-btn-cancel" onclick="closeModal('addonSettingsModal')">Cancel</button>
-      <button class="modal-btn-primary" onclick="saveAddonSettings()">Save</button>
-    </div>
-  </div>
-</div>
-
 
 <div id="createQuoteModal" class="modal-overlay">
   <div class="modal" onclick="event.stopPropagation()">
@@ -2444,130 +2352,202 @@ function loadAddonSettings() {
       else localStorage.removeItem('rmk_addons'); // clear corrupt data
     }
   } catch(e) { localStorage.removeItem('rmk_addons'); }
-  syncAddonChipLabels();
+  renderOrderAddons();
+  renderInvAddons();
+}
+function saveAddons() {
+  localStorage.setItem('rmk_addons', JSON.stringify(ADDONS));
+}
+function saveAddonField(idx, key, value) {
+  if (!ADDONS[idx]) return;
+  ADDONS[idx][key] = value;
+  saveAddons();
+}
+function addNewAddon() {
+  ADDONS.push({id:'addon_'+Date.now(), label:'New Add-on', base:0, scales:false});
+  saveAddons();
+  renderAddonsTab();
+}
+function deleteAddon(idx) {
+  ADDONS.splice(idx, 1);
+  saveAddons();
+  renderAddonsTab();
+}
+function renderAddonsTab() {
+  const container = document.getElementById('addons-list');
+  if (!container) return;
+  if (!ADDONS.length) { container.textContent = 'No add-ons yet.'; return; }
+  container.innerHTML = ADDONS.map((a, i) =>
+    '<div style="display:grid;grid-template-columns:1fr 90px 70px 32px;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--warm-gray)">' +
+      '<input class="form-control" type="text" value="' + esc(a.label) + '" style="font-size:13px" ' +
+        'onblur="saveAddonField(' + i + ',\'label\',this.value.trim()||ADDONS[' + i + '].label)">' +
+      '<input class="form-control" type="number" min="0" value="' + a.base + '" ' +
+        'style="font-family:\'DM Mono\',monospace;font-size:13px" ' +
+        'onblur="saveAddonField(' + i + ',\'base\',parseFloat(this.value)||0)">' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:5px">' +
+        '<input type="checkbox"' + (a.scales ? ' checked' : '') + ' style="width:16px;height:16px;cursor:pointer" ' +
+          'onchange="saveAddonField(' + i + ',\'scales\',this.checked)">' +
+        '<label style="font-size:12px;color:var(--text-muted);cursor:pointer">Yes</label>' +
+      '</div>' +
+      '<button class="icon-btn" style="color:var(--red)" onclick="deleteAddon(' + i + ')" title="Delete">🗑</button>' +
+    '</div>'
+  ).join('');
+}
+function renderOrderAddons(savedIds, savedPrices) {
+  savedIds = savedIds || [];
+  savedPrices = savedPrices || {};
+  const container = document.getElementById('orderAddonList');
+  if (!container) return;
+  if (!ADDONS.length) { container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No add-ons configured. Add some in Materials → Add-ons.</p>'; return; }
+  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+  const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
+  container.innerHTML = ADDONS.map(a => {
+    const isChecked = savedIds.includes(a.id);
+    const price = isChecked && savedPrices[a.id] !== undefined ? savedPrices[a.id] : addonPrice(a.id, dims.l, dims.w, dims.h);
+    return '<div class="addon-row">' +
+      '<input type="checkbox" data-id="' + esc(a.id) + '"' + (isChecked ? ' checked' : '') +
+        ' style="width:16px;height:16px;flex-shrink:0;cursor:pointer" onchange="updateOrderTotal()">' +
+      '<span style="flex:1;font-size:13px;font-weight:500">' + esc(a.label) + '</span>' +
+      '<input type="number" min="0" data-id="' + esc(a.id) + '" value="' + price +
+        '" class="form-control" style="width:80px;font-family:\'DM Mono\',monospace;font-size:13px;text-align:right" oninput="updateOrderTotal()">' +
+    '</div>';
+  }).join('');
+}
+function renderInvAddons(savedIds) {
+  savedIds = savedIds || [];
+  const container = document.getElementById('invAddonList');
+  if (!container) return;
+  if (!ADDONS.length) { container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No add-ons configured.</p>'; return; }
+  container.innerHTML = ADDONS.map(a =>
+    '<div class="addon-row">' +
+      '<input type="checkbox" data-id="' + esc(a.id) + '"' + (savedIds.includes(a.id) ? ' checked' : '') +
+        ' style="width:16px;height:16px;flex-shrink:0;cursor:pointer">' +
+      '<span style="font-size:13px;font-weight:500">' + esc(a.label) + '</span>' +
+    '</div>'
+  ).join('');
 }
 const DEFAULT_STYLES = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
-let PRODUCT_STYLES = [...DEFAULT_STYLES];
-function loadStyleSettings() {
+let PRODUCT_TYPES = [...DEFAULT_STYLES];
+function loadProductSettings() {
   try {
-    const saved = localStorage.getItem('rmk_styles');
+    const saved = localStorage.getItem('rmk_products');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) PRODUCT_STYLES = parsed;
-      else localStorage.removeItem('rmk_styles');
+      if (Array.isArray(parsed) && parsed.length > 0) PRODUCT_TYPES = parsed;
+      else localStorage.removeItem('rmk_products');
     }
-  } catch(e) { localStorage.removeItem('rmk_styles'); }
+  } catch(e) { localStorage.removeItem('rmk_products'); }
 }
-function populateStyleSelects(selectedVal) {
-  const styleOpts = PRODUCT_STYLES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
-  // iStyle and sStyle (inventory/sales modals) — required field, no blank option
-  ['iStyle', 'sStyle'].forEach(id => {
+function populateProductSelects(selectedVal) {
+  const styleOpts = PRODUCT_TYPES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
+  // iProduct and sProduct (inventory/sales modals) — required field, no blank option
+  ['iProduct', 'sProduct'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.innerHTML = styleOpts;
-    if (selectedVal && PRODUCT_STYLES.includes(selectedVal)) el.value = selectedVal;
+    if (selectedVal && PRODUCT_TYPES.includes(selectedVal)) el.value = selectedVal;
   });
-  // cl-style (cut list) — optional, has blank + "New style..." options
-  const clStyleEl = document.getElementById('cl-style');
+  // cl-product (cut list) — optional, has blank + "New product..." options
+  const clStyleEl = document.getElementById('cl-product');
   if (clStyleEl) {
     const prev = clStyleEl.value;
-    clStyleEl.innerHTML = '<option value="">— No style —</option>' + styleOpts + '<option value="__new__">New style…</option>';
-    if (prev && prev !== '__new__' && PRODUCT_STYLES.includes(prev)) {
+    clStyleEl.innerHTML = '<option value="">— No product —</option>' + styleOpts + '<option value="__new__">New product…</option>';
+    if (prev && prev !== '__new__' && PRODUCT_TYPES.includes(prev)) {
       clStyleEl.value = prev;
     } else {
       clStyleEl.value = '';
     }
   }
 }
-function addStyle(name) {
+function addProduct(name) {
   const trimmed = name.trim();
   if (!trimmed) return false;
-  if (PRODUCT_STYLES.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
-    showToast('A style with that name already exists', 'error');
+  if (PRODUCT_TYPES.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
+    showToast('A product with that name already exists', 'error');
     return false;
   }
-  PRODUCT_STYLES.push(trimmed);
-  localStorage.setItem('rmk_styles', JSON.stringify(PRODUCT_STYLES));
-  populateStyleSelects();
+  PRODUCT_TYPES.push(trimmed);
+  localStorage.setItem('rmk_products', JSON.stringify(PRODUCT_TYPES));
+  populateProductSelects();
   return true;
 }
-function promptAddStyle() {
-  const name = prompt('Style name:');
+function promptAddProduct() {
+  const name = prompt('Product name:');
   if (!name || !name.trim()) return;
-  if (addStyle(name)) {
-    renderStylesTab();
-    showToast('Style added!');
+  if (addProduct(name)) {
+    renderProductsTab();
+    showToast('Product added!');
   }
 }
-function renameStyle(idx) {
-  const oldName = PRODUCT_STYLES[idx];
+function renameProduct(idx) {
+  const oldName = PRODUCT_TYPES[idx];
   if (oldName === undefined) return;
   const newName = prompt('New name:', oldName);
   if (!newName || !newName.trim()) return;
   const trimmed = newName.trim();
   if (trimmed.toLowerCase() === oldName.toLowerCase()) return;
-  if (PRODUCT_STYLES.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
-    showToast('A style with that name already exists', 'error');
+  if (PRODUCT_TYPES.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
+    showToast('A product with that name already exists', 'error');
     return;
   }
-  PRODUCT_STYLES[idx] = trimmed;
-  localStorage.setItem('rmk_styles', JSON.stringify(PRODUCT_STYLES));
-  populateStyleSelects();
-  renderStylesTab();
-  showToast('Style renamed!');
+  PRODUCT_TYPES[idx] = trimmed;
+  localStorage.setItem('rmk_products', JSON.stringify(PRODUCT_TYPES));
+  populateProductSelects();
+  renderProductsTab();
+  showToast('Product renamed!');
 }
-async function deleteStyle(idx) {
-  const name = PRODUCT_STYLES[idx];
+async function deleteProduct(idx) {
+  const name = PRODUCT_TYPES[idx];
   if (name === undefined) return;
-  if (PRODUCT_STYLES.length <= 1) {
-    showToast('At least one style is required', 'error');
+  if (PRODUCT_TYPES.length <= 1) {
+    showToast('At least one product is required', 'error');
     return;
   }
   const { data: affected } = await sb.from('cut_lists').select('id').eq('style', name);
   const count = affected ? affected.length : 0;
   const msg = count > 0
-    ? count + ' cut list(s) use this style. They\'ll be moved to Uncategorized. Delete style "' + name + '"?'
-    : 'Delete style "' + name + '"?';
+    ? count + ' cut list(s) use this product. They\'ll be moved to Uncategorized. Delete product "' + name + '"?'
+    : 'Delete product "' + name + '"?';
   if (!confirm(msg)) return;
   if (count > 0) {
     await sb.from('cut_lists').update({ style: null }).eq('style', name);
   }
-  PRODUCT_STYLES = PRODUCT_STYLES.filter(s => s !== name);
-  localStorage.setItem('rmk_styles', JSON.stringify(PRODUCT_STYLES));
-  populateStyleSelects();
-  renderStylesTab();
-  showToast('Style deleted');
+  PRODUCT_TYPES = PRODUCT_TYPES.filter(s => s !== name);
+  localStorage.setItem('rmk_products', JSON.stringify(PRODUCT_TYPES));
+  populateProductSelects();
+  renderProductsTab();
+  showToast('Product deleted');
 }
-function renderStylesTab() {
-  const container = document.getElementById('styles-list');
+function renderProductsTab() {
+  const container = document.getElementById('products-list');
   if (!container) return;
-  if (!PRODUCT_STYLES.length) {
-    container.textContent = 'No styles yet.';
+  if (!PRODUCT_TYPES.length) {
+    container.textContent = 'No products yet.';
     return;
   }
-  container.innerHTML = PRODUCT_STYLES.map((s, i) =>
+  container.innerHTML = PRODUCT_TYPES.map((s, i) =>
     '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
       '<span style="flex:1;font-size:15px;font-weight:600;color:var(--navy)">' + esc(s) + '</span>' +
-      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="renameStyle(' + i + ')">Rename</button>' +
-      '<button class="icon-btn" style="color:var(--red)" onclick="deleteStyle(' + i + ')" title="Delete">🗑</button>' +
+      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="renameProduct(' + i + ')">Rename</button>' +
+      '<button class="icon-btn" style="color:var(--red)" onclick="deleteProduct(' + i + ')" title="Delete">🗑</button>' +
     '</div>'
   ).join('');
 }
-function onClStyleChange(sel) {
+function onClProductChange(sel) {
   if (sel.value !== '__new__') return;
   const prev = sel.dataset.prev || '';
-  const name = prompt('New style name:');
+  const name = prompt('New product name:');
   if (!name || !name.trim()) {
     sel.value = prev;
     return;
   }
-  if (!addStyle(name)) {
+  if (!addProduct(name)) {
     sel.value = prev;
     return;
   }
-  renderStylesTab();
+  renderProductsTab();
   sel.value = name.trim();
-  showToast('Style added!');
+  showToast('Product added!');
 }
 let currentPage = 'home';
 let analyticsRange = 'year';
@@ -3199,18 +3179,17 @@ function addonPrice(id, l, w, h) {
   if (!a.scales) return a.base;
   return Math.round(a.base * addonScaleFactor(l, w, h));
 }
-function getSelectedAddonIds(gridId) {
-  return Array.from(document.querySelectorAll('#'+gridId+' .addon-chip.selected')).map(el=>el.dataset.id);
-}
-function calcAddonTotal(ids, l, w, h) {
-  return ids.reduce((s,id)=>s+addonPrice(id,l,w,h), 0);
+function getAddonTotalFromOrder() {
+  let total = 0;
+  document.querySelectorAll('#orderAddonList input[type="checkbox"]:checked').forEach(cb => {
+    const priceIn = document.querySelector('#orderAddonList input[type="number"][data-id="'+cb.dataset.id+'"]');
+    total += parseFloat(priceIn?.value) || 0;
+  });
+  return total;
 }
 function parseSizeDims(sizeStr) {
   const p = (sizeStr||'').split('×').map(x=>parseInt(x.trim()));
   return (p.length===3&&p.every(x=>x>0)) ? {l:p[0],w:p[1],h:p[2]} : {l:16,w:16,h:16};
-}
-function resetAddonChips(gridId) {
-  document.querySelectorAll('#'+gridId+' .addon-chip').forEach(el=>el.classList.remove('selected'));
 }
 function getItemRows(o) {
   if (!o.items) return [];
@@ -3224,87 +3203,6 @@ function getItemAddons(o) {
 function getItemAddonTotal(o) {
   if (!o.items||Array.isArray(o.items)) return 0;
   return o.items.add_on_total || 0;
-}
-function getAddonTotalFromGrid(gridId) {
-  let total = 0;
-  document.querySelectorAll('#'+gridId+' .addon-chip.selected').forEach(chip => {
-    total += parseFloat(chip.querySelector('.chip-price-input').value) || 0;
-  });
-  return total;
-}
-function syncAddonChipLabels() {
-  // Update chip label text for all grids when ADDONS changes
-  ['orderAddonGrid','invAddonGrid'].forEach(gridId => {
-    ADDONS.forEach(a => {
-      const chip = document.querySelector('#'+gridId+' [data-id="'+a.id+'"]');
-      if (!chip) return;
-      const nameEl = chip.querySelector('.chip-name');
-      if (nameEl) {
-        const icon = nameEl.textContent.match(/^\S+\s/)?.[0] || '';
-        nameEl.textContent = icon + a.label;
-      }
-    });
-  });
-}
-function toggleAddon(el, context) {
-  const wasSelected = el.classList.contains('selected');
-  el.classList.toggle('selected');
-  const input = el.querySelector('.chip-price-input');
-  if (!wasSelected && input) {
-    // Just selected — set the input to the default calculated price
-    const id = el.dataset.id;
-    const a = ADDONS.find(x=>x.id===id);
-    if (a) {
-      let price = a.base;
-      if (a.scales) {
-        if (context==='order') {
-          const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
-          const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
-          price = addonPrice(id, dims.l, dims.w, dims.h);
-        }
-      }
-      input.value = price;
-    }
-    setTimeout(() => input.focus(), 0);
-  }
-  if (context==='order') updateOrderTotal();
-}
-function onChipPriceInput(input, context) {
-  if (context==='order') updateOrderTotal();
-}
-function openAddonSettings() {
-  const rows = document.getElementById('addonSettingsRows');
-  rows.innerHTML = ADDONS.map((a,i) => `
-    <div class="addon-settings-row">
-      <input class="form-control" type="text" value="${esc(a.label)}" id="as-label-${i}" style="font-size:13px;padding:7px 10px">
-      <input class="form-control" type="number" min="0" value="${a.base}" id="as-base-${i}" style="font-size:13px;padding:7px 10px;font-family:'DM Mono',monospace">
-      <div class="addon-settings-scales">
-        <input type="checkbox" id="as-scales-${i}" ${a.scales?'checked':''} style="width:16px;height:16px;cursor:pointer">
-        <label for="as-scales-${i}" style="font-size:11px;cursor:pointer">size</label>
-      </div>
-    </div>`).join('');
-  openModal('addonSettingsModal');
-}
-function saveAddonSettings() {
-  ADDONS = ADDONS.map((a,i) => ({
-    id: a.id,
-    label: document.getElementById('as-label-'+i).value.trim() || a.label,
-    base: parseFloat(document.getElementById('as-base-'+i).value) || a.base,
-    scales: document.getElementById('as-scales-'+i).checked
-  }));
-  localStorage.setItem('rmk_addons', JSON.stringify(ADDONS));
-  closeModal('addonSettingsModal');
-  syncAddonChipLabels();
-  updateOrderAddonPrices();
-  showToast('Add-on settings saved!', 'success');
-}
-function updateOrderAddonPrices() {
-  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
-  const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
-  ADDONS.forEach(a => {
-    const priceEl = document.getElementById('oap-'+a.id);
-    if (priceEl) priceEl.textContent = a.scales ? '+$'+addonPrice(a.id,dims.l,dims.w,dims.h) : '+$'+a.base;
-  });
 }
 
 // ===== ORDERS =====
@@ -3389,22 +3287,22 @@ function openOrderModal(order, prefill) {
   document.getElementById('editOrderId').value='';
   ['oName','oContact','oNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('oPickup').value='';
+  document.getElementById('oPickupTime').value='';
   document.getElementById('oPayment').value='unpaid';
   document.getElementById('oVenmoFeeWrap').style.display = 'none';
   document.getElementById('oVenmoFee').value = '';
   document.getElementById('oStatus').value='pending';
   document.getElementById('oItemsContainer').innerHTML='';
-  resetAddonChips('orderAddonGrid');
   if (prefill) {
     addOrderItem('', 'Standard', 1, prefill.price || 0);
   } else {
     addOrderItem();
   }
+  renderOrderAddons();
   if (prefill) {
     document.getElementById('oName').value = prefill.name || '';
     document.getElementById('oNotes').value = prefill.notes || '';
   }
-  updateOrderAddonPrices();
   openModal('orderModal');
 }
 
@@ -3458,26 +3356,9 @@ async function editOrder(id) {
   const itemRows = getItemRows(data);
   const items = itemRows.length ? itemRows : [{size:data.size||'',style:data.style||'Standard',qty:1,price:data.price||0}];
   items.forEach(item => addOrderItem(item.size, item.style||'Standard', item.qty||1, item.price||0));
-  resetAddonChips('orderAddonGrid');
   const savedAddonIds = getItemAddons(data);
   const savedAddonPrices = data.items?.add_on_prices || {};
-  savedAddonIds.forEach(aid => {
-    const chip = document.querySelector('#orderAddonGrid [data-id="'+aid+'"]');
-    if (!chip) return;
-    chip.classList.add('selected');
-    const input = chip.querySelector('.chip-price-input');
-    if (!input) return;
-    if (savedAddonPrices[aid] !== undefined) {
-      input.value = savedAddonPrices[aid];
-    } else {
-      // fallback for old orders saved before per-addon prices were stored
-      const a = ADDONS.find(x=>x.id===aid);
-      const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
-      const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
-      input.value = a ? addonPrice(aid, dims.l, dims.w, dims.h) : 0;
-    }
-  });
-  updateOrderAddonPrices();
+  renderOrderAddons(savedAddonIds, savedAddonPrices);
   openModal('orderModal');
 }
 
@@ -3486,12 +3367,15 @@ async function saveOrder() {
   const itemRows=getOrderItems();
   if (!document.getElementById('oName').value) {showToast('Customer name required','error');return;}
   if (!itemRows.length||!itemRows[0].size) {showToast('At least one item with a size is required','error');return;}
-  const selectedAddons = getSelectedAddonIds('orderAddonGrid');
-  const addonTotal = getAddonTotalFromGrid('orderAddonGrid');
+  const selectedAddons = [];
   const addonPrices = {};
-  document.querySelectorAll('#orderAddonGrid .addon-chip.selected').forEach(chip => {
-    addonPrices[chip.dataset.id] = parseFloat(chip.querySelector('.chip-price-input').value) || 0;
+  document.querySelectorAll('#orderAddonList input[type="checkbox"]:checked').forEach(cb => {
+    const id = cb.dataset.id;
+    selectedAddons.push(id);
+    const priceIn = document.querySelector('#orderAddonList input[type="number"][data-id="'+id+'"]');
+    addonPrices[id] = parseFloat(priceIn?.value) || 0;
   });
+  const addonTotal = getAddonTotalFromOrder();
   const venmoFee = document.getElementById('oPayment').value === 'venmo'
     ? (parseFloat(document.getElementById('oVenmoFee').value) || 0)
     : 0;
@@ -3748,8 +3632,8 @@ function addOrderItem(size='', style='Standard', qty=1, price='') {
   row.className = 'order-item-row';
   row.innerHTML = `
     <input class="form-control item-size" type="text" placeholder="36×16×16" value="${esc(size)}" style="flex:2;min-width:0" oninput="updateOrderTotal()">
-    <select class="form-control item-style" style="flex:1;min-width:0" onchange="updateOrderTotal()">
-      ${PRODUCT_STYLES.map(s=>`<option${s===style?' selected':''}>${esc(s)}</option>`).join('')}
+    <select class="form-control item-product" style="flex:1;min-width:0" onchange="updateOrderTotal()">
+      ${PRODUCT_TYPES.map(s=>`<option${s===style?' selected':''}>${esc(s)}</option>`).join('')}
     </select>
     <input class="form-control item-qty" type="number" min="1" value="${qty}" placeholder="1" style="flex:0 0 54px" oninput="updateOrderTotal()">
     <input class="form-control item-price" type="number" min="0" value="${price}" placeholder="$" style="flex:0 0 72px" oninput="updateOrderTotal()">
@@ -3782,9 +3666,7 @@ function updateOrderTotal() {
     const price = parseFloat(row.querySelector('.item-price').value) || 0;
     total += qty * price;
   });
-  const addonTotal = getAddonTotalFromGrid('orderAddonGrid');
-  total += addonTotal;
-  updateOrderAddonPrices();
+  total += getAddonTotalFromOrder();
   document.getElementById('oItemsTotal').textContent = '$' + total.toFixed(0);
 }
 
@@ -3792,7 +3674,7 @@ function getOrderItems() {
   const rows = document.querySelectorAll('#oItemsContainer .order-item-row');
   return Array.from(rows).map(row => ({
     size: row.querySelector('.item-size').value.trim(),
-    style: row.querySelector('.item-style').value,
+    style: row.querySelector('.item-product').value,
     qty: parseInt(row.querySelector('.item-qty').value) || 1,
     price: parseFloat(row.querySelector('.item-price').value) || 0
   }));
@@ -3828,7 +3710,7 @@ async function loadInventory() {
   document.getElementById('inv-stat-value').textContent='$'+totalVal.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
   if (!data||!data.length) {grid.innerHTML=emptyState('📦','No ready-to-sell items yet.');return;}
   grid.innerHTML=data.map(item=>`<div class="inv-card">
-    <div><div class="inv-size">${esc(item.size)}"</div><div class="inv-style">${esc(item.style)}</div></div>
+    <div><div class="inv-size">${esc(item.size)}"</div><div class="inv-product">${esc(item.style)}</div></div>
     <div class="inv-price">$${item.price}</div>
     <div class="qty-ctrl">
       <button class="qty-btn" onclick="adjustInvQty('${item.id}',${item.qty},-1)">−</button>
@@ -3839,7 +3721,7 @@ async function loadInventory() {
     ${item.add_ons&&item.add_ons.length?`<div style="font-size:11px;color:var(--ocean)">✨ ${item.add_ons.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?esc(a.label):id;}).join(' · ')}</div>`:''}
     ${item.notes?`<div style="font-size:12px;color:var(--text-muted)">${esc(item.notes)}</div>`:''}
     <div style="display:flex;gap:6px;margin-top:4px">
-      <button class="icon-btn" style="flex:1;width:auto;padding:5px 8px;font-size:11px" data-size="${item.size}" data-style="${item.style||'Standard'}" data-price="${item.price}" onclick="openListingModal(this.dataset.size,this.dataset.style,this.dataset.price)">📣 List</button>
+      <button class="icon-btn" style="flex:1;width:auto;padding:5px 8px;font-size:11px" data-size="${item.size}" data-product="${item.style||'Standard'}" data-price="${item.price}" onclick="openListingModal(this.dataset.size,this.dataset.product,this.dataset.price)">📣 List</button>
       <button class="icon-btn" onclick="deleteInvItem('${item.id}')">🗑️</button>
     </div>
   </div>`).join('');
@@ -3850,14 +3732,14 @@ function openInvModal() {
   ['iSize','iNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('iPrice').value='';
   document.getElementById('iQty').value=1;
-  resetAddonChips('invAddonGrid');
-  populateStyleSelects();
+  renderInvAddons();
+  populateProductSelects();
   openModal('invModal');
 }
 
 async function saveInvItem() {
-  const addons = getSelectedAddonIds('invAddonGrid');
-  const payload={size:document.getElementById('iSize').value,style:document.getElementById('iStyle').value,price:parseFloat(document.getElementById('iPrice').value)||0,qty:parseInt(document.getElementById('iQty').value)||1,notes:document.getElementById('iNotes').value,add_ons:addons.length?addons:null};
+  const addons = Array.from(document.querySelectorAll('#invAddonList input[type="checkbox"]:checked')).map(cb=>cb.dataset.id);
+  const payload={size:document.getElementById('iSize').value,style:document.getElementById('iProduct').value,price:parseFloat(document.getElementById('iPrice').value)||0,qty:parseInt(document.getElementById('iQty').value)||1,notes:document.getElementById('iNotes').value,add_ons:addons.length?addons:null};
   if (!payload.size) {showToast('Size required','error');return;}
   const {error}=await sb.from('inventory').insert(payload);
   if (error) {showToast('Error saving','error');return;}
@@ -3955,7 +3837,7 @@ function openSaleModal() {
   ['sName','sSize','sNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('sPrice').value='';
   document.getElementById('sQty').value='1';
-  populateStyleSelects();
+  populateProductSelects();
   openModal('saleModal');
 }
 
@@ -3968,8 +3850,8 @@ function editSale(id) {
   document.getElementById('sDate').value = s.sale_date||'';
   document.getElementById('sSize').value = s.size||'';
   document.getElementById('sQty').value = s.qty||1;
-  populateStyleSelects(s.style||'Standard');
-  document.getElementById('sStyle').value = s.style||'Standard';
+  populateProductSelects(s.style||'Standard');
+  document.getElementById('sProduct').value = s.style||'Standard';
   document.getElementById('sPrice').value = s.price||'';
   document.getElementById('sPayment').value = s.payment||'cash';
   document.getElementById('sNotes').value = s.notes||'';
@@ -3977,7 +3859,7 @@ function editSale(id) {
 }
 
 async function saveSale() {
-  const payload={name:document.getElementById('sName').value,size:document.getElementById('sSize').value,style:document.getElementById('sStyle').value,price:parseFloat(document.getElementById('sPrice').value)||0,qty:parseInt(document.getElementById('sQty').value)||1,payment:document.getElementById('sPayment').value,sale_date:document.getElementById('sDate').value,notes:document.getElementById('sNotes').value};
+  const payload={name:document.getElementById('sName').value,size:document.getElementById('sSize').value,style:document.getElementById('sProduct').value,price:parseFloat(document.getElementById('sPrice').value)||0,qty:parseInt(document.getElementById('sQty').value)||1,payment:document.getElementById('sPayment').value,sale_date:document.getElementById('sDate').value,notes:document.getElementById('sNotes').value};
   if (!payload.size||!payload.price) {showToast('Size and price required','error');return;}
   if (editingSaleId) {
     const {error}=await sb.from('sales').update(payload).eq('id',editingSaleId);
@@ -4556,7 +4438,7 @@ async function saveCutList() {
   const cuts = collectCutGroups();
   if (!cuts.length) { showToast('Add at least one cut first', 'error'); return; }
   const notes = (document.getElementById('cl-notes').value || '').trim();
-  const styleVal = document.getElementById('cl-style').value;
+  const styleVal = document.getElementById('cl-product').value;
   const style = (styleVal && styleVal !== '__new__') ? styleVal : null;
   const stock_types = clStockTypes;
   const picket_len = 72;
@@ -4583,12 +4465,12 @@ async function loadSavedCutLists() {
     return;
   }
 
-  // Group by style
+  // Group by product
   const groups = {};
-  PRODUCT_STYLES.forEach(s => { groups[s] = []; });
+  PRODUCT_TYPES.forEach(s => { groups[s] = []; });
   groups['__uncategorized__'] = [];
   data.forEach(cl => {
-    const key = (cl.style && PRODUCT_STYLES.includes(cl.style)) ? cl.style : '__uncategorized__';
+    const key = (cl.style && PRODUCT_TYPES.includes(cl.style)) ? cl.style : '__uncategorized__';
     groups[key].push(cl);
   });
 
@@ -4622,7 +4504,7 @@ async function loadSavedCutLists() {
       '</tr></thead><tbody>' + renderRows(items) + '</tbody></table></div></div>';
   }
 
-  let html = PRODUCT_STYLES.map(s => renderGroup(s, groups[s])).join('');
+  let html = PRODUCT_TYPES.map(s => renderGroup(s, groups[s])).join('');
   html += renderGroup('Uncategorized', groups['__uncategorized__']);
   container.innerHTML = html;
 }
@@ -4637,10 +4519,10 @@ function loadCutList(idOrObj) {
   nameEl.dataset.savedId = cl.id;
   document.getElementById('cl-kerf').value = cl.kerf;
   document.getElementById('cl-notes').value = cl.notes || '';
-  const clStyleEl = document.getElementById('cl-style');
+  const clStyleEl = document.getElementById('cl-product');
   if (clStyleEl) {
     const storedStyle = cl.style || '';
-    clStyleEl.value = (storedStyle && PRODUCT_STYLES.includes(storedStyle)) ? storedStyle : '';
+    clStyleEl.value = (storedStyle && PRODUCT_TYPES.includes(storedStyle)) ? storedStyle : '';
   }
   document.getElementById('cl-rows').innerHTML = '';
   document.getElementById('cl-results').style.display = 'none';
@@ -4669,7 +4551,8 @@ function showMaterialsTab(tab, btn) {
   btn.classList.add('active');
   if (tab==='purchases') loadPurchases();
   if (tab==='cutlist') loadSavedCutLists();
-  if (tab==='styles') renderStylesTab();
+  if (tab==='products') renderProductsTab();
+  if (tab==='addons') renderAddonsTab();
 }
 
 async function downloadPurchaseCSV() {
@@ -4751,27 +4634,22 @@ function openPurchaseModal(item=null) {
   editingPurchaseId=item?item.id:null;
   document.getElementById('purchModalTitle').textContent=item?'Edit Purchase':'Log Purchase';
   document.getElementById('purchSaveBtn').textContent=item?'Update':'Save';
+  clearPurchaseMaterialRows();
   if (item) {
     document.getElementById('pDate').value=item.purchase_date||'';
     document.getElementById('pStore').value=item.store||'Lowes';
-    document.getElementById('pPickets').value=item.pickets||'';
-    document.getElementById('pPP').value=item.picket_price||3.66;
-    document.getElementById('p22').value=item.twobytwo||'';
-    document.getElementById('p22p').value=item.twobytwo_price||3.23;
-    document.getElementById('p24').value=item.twobyfour||'';
-    document.getElementById('p24p').value=item.twobyfour_price||4.17;
+    if (item.pickets>0) addPurchaseMaterialRow('pickets',item.pickets,item.picket_price!=null?item.picket_price:3.66);
+    if (item.twobytwo>0) addPurchaseMaterialRow('twobytwo',item.twobytwo,item.twobytwo_price!=null?item.twobytwo_price:3.23);
+    if (item.twobyfour>0) addPurchaseMaterialRow('twobyfour',item.twobyfour,item.twobyfour_price!=null?item.twobyfour_price:4.17);
+    if (!item.pickets&&!item.twobytwo&&!item.twobyfour) addPurchaseMaterialRow();
     document.getElementById('pDiscount').value=item.discount||'';
     document.getElementById('pNotes').value=item.notes||'';
-    // Pre-fill total override only when there are no material quantities (misc purchase)
-    const hasMaterials=(item.pickets||0)+(item.twobytwo||0)+(item.twobyfour||0)>0;
-    document.getElementById('pTotal').value=hasMaterials?'':(item.total||'');
+    document.getElementById('pTotal').value=item.total||'';
   } else {
     document.getElementById('pDate').value=new Date().toISOString().split('T')[0];
     document.getElementById('pStore').value='';
-    ['pPickets','p22','p24','pDiscount','pNotes','pTotal'].forEach(f=>document.getElementById(f).value='');
-    document.getElementById('pPP').value=3.66;
-    document.getElementById('p22p').value=3.23;
-    document.getElementById('p24p').value=4.17;
+    addPurchaseMaterialRow();
+    ['pDiscount','pNotes','pTotal'].forEach(f=>document.getElementById(f).value='');
   }
   updatePurchEst();
   openModal('purchaseModal');
@@ -4785,11 +4663,50 @@ function editPurchase(idOrItem) {
   openPurchaseModal(item);
 }
 
+const PURCH_MAT_PRICES={pickets:3.66,twobytwo:3.23,twobyfour:4.17};
+
+function addPurchaseMaterialRow(matType,qty,price) {
+  matType=matType||'pickets'; qty=qty||''; price=price!=null?price:'';
+  const container=document.getElementById('pMaterialRows');
+  const row=document.createElement('div');
+  row.className='purch-mat-row';
+  row.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:6px';
+  const sel=document.createElement('select');
+  sel.className='form-control'; sel.style.cssText='flex:2;font-size:13px';
+  [['pickets','Cedar Pickets'],['twobytwo','2×2s'],['twobyfour','2×4s']].forEach(function(pair){
+    const opt=document.createElement('option');
+    opt.value=pair[0]; opt.textContent=pair[1];
+    if (pair[0]===matType) opt.selected=true;
+    sel.appendChild(opt);
+  });
+  const qtyIn=document.createElement('input');
+  qtyIn.className='form-control'; qtyIn.type='number'; qtyIn.placeholder='Qty'; qtyIn.min='0'; qtyIn.style.flex='1';
+  if (qty!=='') qtyIn.value=qty;
+  const priceIn=document.createElement('input');
+  priceIn.className='form-control'; priceIn.type='number'; priceIn.placeholder='$/ea'; priceIn.step='0.01'; priceIn.min='0'; priceIn.style.flex='1';
+  priceIn.value=price!==''?price:(PURCH_MAT_PRICES[matType]||'');
+  const rmBtn=document.createElement('button');
+  rmBtn.type='button'; rmBtn.textContent='\u00d7';
+  rmBtn.style.cssText='background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;line-height:1;padding:0 4px;flex-shrink:0';
+  sel.addEventListener('change',function(){priceIn.value=PURCH_MAT_PRICES[sel.value]||'';updatePurchEst();});
+  qtyIn.addEventListener('input',updatePurchEst);
+  priceIn.addEventListener('input',updatePurchEst);
+  rmBtn.addEventListener('click',function(){row.remove();updatePurchEst();});
+  row.append(sel,qtyIn,priceIn,rmBtn);
+  container.appendChild(row);
+  updatePurchEst();
+}
+
+function clearPurchaseMaterialRows() {
+  document.getElementById('pMaterialRows').innerHTML='';
+}
+
 function updatePurchEst() {
-  const p=(parseInt(document.getElementById('pPickets').value)||0)*(parseFloat(document.getElementById('pPP').value)||3.66);
-  const t22=(parseInt(document.getElementById('p22').value)||0)*(parseFloat(document.getElementById('p22p').value)||3.23);
-  const t24=(parseInt(document.getElementById('p24').value)||0)*(parseFloat(document.getElementById('p24p').value)||4.17);
-  const subtotal=p+t22+t24;
+  let subtotal=0;
+  document.querySelectorAll('.purch-mat-row').forEach(function(row){
+    const inputs=row.querySelectorAll('input');
+    subtotal+=(parseInt(inputs[0].value)||0)*(parseFloat(inputs[1].value)||0);
+  });
   const discount=parseFloat(document.getElementById('pDiscount').value)||0;
   const total=Math.max(0,subtotal-discount);
   document.getElementById('purchSubtotal').textContent='$'+subtotal.toFixed(2);
@@ -4804,12 +4721,16 @@ function updatePurchEst() {
 }
 
 async function savePurchase() {
-  const pickets=parseInt(document.getElementById('pPickets').value)||0;
-  const pp=parseFloat(document.getElementById('pPP').value)||3.66;
-  const t22=parseInt(document.getElementById('p22').value)||0;
-  const t22p=parseFloat(document.getElementById('p22p').value)||3.23;
-  const t24=parseInt(document.getElementById('p24').value)||0;
-  const t24p=parseFloat(document.getElementById('p24p').value)||4.17;
+  let pickets=0,pp=3.66,t22=0,t22p=3.23,t24=0,t24p=4.17;
+  document.querySelectorAll('.purch-mat-row').forEach(function(row){
+    const sel=row.querySelector('select');
+    const inputs=row.querySelectorAll('input');
+    const qty=parseInt(inputs[0].value)||0;
+    const price=parseFloat(inputs[1].value)||0;
+    if (sel.value==='pickets'){pickets=qty;pp=price;}
+    else if (sel.value==='twobytwo'){t22=qty;t22p=price;}
+    else if (sel.value==='twobyfour'){t24=qty;t24p=price;}
+  });
   const discount=parseFloat(document.getElementById('pDiscount').value)||0;
   const calcTotal=Math.max(0,pickets*pp+t22*t22p+t24*t24p-discount);
   const overrideTotal=parseFloat(document.getElementById('pTotal').value);
@@ -5135,19 +5056,19 @@ function downloadCSV(filename, csvStr) {
 }
 function csvEscape(v) { const s=String(v||''); return s.includes(',')|| s.includes('"')||s.includes('\n') ? '"'+s.replace(/"/g,'""')+'"' : s; }
 function exportOrdersCSV() {
-  const rows = [['Name','Contact','Size','Style','Price','Status','Payment','Pickup Date','Add-ons']];
+  const rows = [['Name','Contact','Size','Product','Price','Status','Payment','Pickup Date','Add-ons']];
   allOrders.forEach(o=>{
     const itemRows = getItemRows(o);
     const sizeSummary = itemRows.length ? itemRows.map(it=>`${it.qty||1}x${it.size||''}`).join('; ') : (o.size||'');
-    const styleSummary = itemRows.length ? itemRows.map(it=>it.style||'Standard').join('; ') : (o.style||'');
+    const productSummary = itemRows.length ? itemRows.map(it=>it.style||'Standard').join('; ') : (o.style||'');
     const addons = getItemAddons(o).join('; ');
-    rows.push([o.name||'',o.contact||'',sizeSummary,styleSummary,o.price||0,o.status||'',o.payment||'',o.pickup_date||'',addons]);
+    rows.push([o.name||'',o.contact||'',sizeSummary,productSummary,o.price||0,o.status||'',o.payment||'',o.pickup_date||'',addons]);
   });
   downloadCSV('rmk-orders.csv', rows.map(r=>r.map(csvEscape).join(',')).join('\n'));
   showToast('Orders exported!','success');
 }
 function exportSalesCSV() {
-  const rows = [['Date','Buyer','Size','Qty','Style','Price','Payment','Notes']];
+  const rows = [['Date','Buyer','Size','Qty','Product','Price','Payment','Notes']];
   allSales.forEach(s=>{
     rows.push([s.sale_date||'',s.name||'',s.size||'',s.qty||1,s.style||'',s.price||0,s.payment||'',s.notes||'']);
   });
@@ -5198,8 +5119,8 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 // ===== INIT =====
 buildStdTable();
 loadAddonSettings();
-loadStyleSettings();
-populateStyleSelects();
+loadProductSettings();
+populateProductSelects();
 setHomeGreeting();
 // Apply saved dark mode preference
 if (localStorage.getItem('rmk_theme') === 'dark') applyDarkMode(true);

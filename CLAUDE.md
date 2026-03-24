@@ -48,7 +48,7 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 ### Pages
 - **Home** (`page-home`) — KPI cards, low-stock alert, activity feed, tile nav grid
 - **Orders** (`page-orders`) — 4 tabs: Active → Ready to Sell → Sales History → Quotes
-- **Materials** (`page-materials`) — Stock levels + Lowes purchase log + Cut List Calculator tab + Styles tab
+- **Materials** (`page-materials`) — Stock levels + Lowes purchase log + Cut List Calculator tab + Products tab + Add-ons tab
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
 - **Analytics** (`page-analytics`) — P&L cards + revenue/profit/best-seller charts
 
@@ -60,8 +60,11 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - Recent Activity feed shows booking *creation* time, not pickup date (avoids future timestamps showing as "just now")
 - `_pendingQuoteId` — module-level var set when converting a quote to an order. `saveOrder()` clears it (and deletes the source quote) on both success and error paths to prevent leaks.
 - `openOrderModal(order, prefill)` — optional second param lets `convertQuoteToOrder()` pre-populate the order modal from a quote without an existing order object
-- Style management lives in Materials → Styles tab. `addStyle()`, `renameStyle(idx)`, `deleteStyle(idx)` are the management functions. `populateStyleSelects()` refreshes all style dropdowns (`iStyle`, `sStyle`, `cl-style`) app-wide.
-- Saved cut lists are grouped by style in `loadSavedCutLists()`. `cl.style = null` renders in Uncategorized group.
+- Product management lives in Materials → Products tab. `addProduct()`, `renameProduct(idx)`, `deleteProduct(idx)` are the management functions. `populateProductSelects()` refreshes all product dropdowns (`iProduct`, `sProduct`, `cl-product`) app-wide.
+- Saved cut lists are grouped by product in `loadSavedCutLists()`. `cl.style = null` (DB column) renders in Uncategorized group.
+- Add-on management lives in Materials → Add-ons tab. `ADDONS` array (`[{id, label, base, scales}, ...]`) stored in `localStorage` as `rmk_addons`. `addNewAddon()`, `deleteAddon(idx)`, `saveAddonField(idx, key, value)` manage the list. `renderAddonsTab()` re-renders the inline-editable grid.
+- Order modal add-ons: rendered as checkboxes + editable price inputs via `renderOrderAddons(savedIds, savedPrices)`. Per-order prices stored on `items.add_on_prices` (id→price object). `getAddonTotalFromOrder()` reads checked boxes. Pickup Date + Pickup Time are on the same row.
+- Purchase modal: materials use a dynamic dropdown-based row system (`#pMaterialRows`). `addPurchaseMaterialRow(matType, qty, price)` adds a row; material dropdown auto-fills price from `PURCH_MAT_PRICES`. Total override field (`#pTotal`) always pre-fills from saved `item.total` when editing.
 
 ### Cut List Calculator (Materials → Cut List tab)
 Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
@@ -84,7 +87,7 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
   - Pickets: $3.38 → **$3.66**
   - 2×2s: $2.98 → **$3.23**
   - 2×4s: $3.85 → **$4.17**
-- **Planter styles**: Dynamic — stored in `PRODUCT_STYLES` (localStorage key `rmk_styles`). Defaults: Standard, Vertical, Tiered, Dog Bowl. Managed via the Styles tab on the Materials page. All three material inputs (pickets, 2×2s, 2×4s) are always visible for any style; breakdown only renders rows for materials with qty > 0.
+- **Planter products**: Dynamic — stored in `PRODUCT_TYPES` (localStorage key `rmk_products`). Defaults: Standard, Vertical, Tiered, Dog Bowl. Managed via the Products tab on the Materials page. All three material inputs (pickets, 2×2s, 2×4s) are always visible for any product; breakdown only renders rows for materials with qty > 0.
 
 ## Standard Planter Sizes & Prices
 Stored in `STANDARD_SIZES`. 8 sizes have hardcoded `pickets`; 16×16×16 and 36×12×16 use formula fallback.

@@ -28,7 +28,7 @@ test('all 4 materials tabs switch the active panel', async ({ page }) => {
 
   // Switch to Styles (index 3)
   await tabs.nth(3).click();
-  await expect(page.locator('#mtab-styles')).toHaveClass(/active/);
+  await expect(page.locator('#mtab-products')).toHaveClass(/active/);
 
   // Switch back to Stock (index 0)
   await tabs.nth(0).click();
@@ -44,9 +44,9 @@ test('Cut List quote button starts disabled', async ({ page }) => {
   await expect(page.locator('#cl-quote-btn')).toBeDisabled();
 });
 
-test('Styles tab renders style list with at least one style', async ({ page }) => {
+test('Products tab renders product list with at least one style', async ({ page }) => {
   const tabs = page.locator('#page-materials .tab-btn');
   await tabs.nth(3).click();
-  await expect(page.locator('#mtab-styles')).toHaveClass(/active/);
-  await expect(page.locator('#styles-list div').first()).toBeVisible();
+  await expect(page.locator('#mtab-products')).toHaveClass(/active/);
+  await expect(page.locator('#products-list div').first()).toBeVisible();
 });
