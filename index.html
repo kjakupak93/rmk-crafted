@@ -1965,10 +1965,14 @@ body {
     </div>
     <div class="form-group">
       <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
-      <div id="orderAddonList" style="margin-top:4px"></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select class="form-control" id="oAddonSelect" style="flex:1"><option value="">— Select add-on —</option></select>
+        <button type="button" class="btn-secondary" style="padding:6px 14px;white-space:nowrap;flex-shrink:0" onclick="addOrderAddon()">+ Add</button>
+      </div>
+      <div id="orderAddonList" style="margin-top:6px"></div>
     </div>
-    <div class="form-group" style="max-width:180px"><label>Payment</label><select class="form-control" id="oPayment" onchange="onPaymentChange(this.value)"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select><span id="oVenmoFeeWrap" style="display:none;align-items:center;gap:4px;margin-top:6px;"><span style="font-size:0.85em;color:var(--text-muted)">+$</span><input class="form-control" type="number" id="oVenmoFee" min="0" step="0.01" style="width:70px" placeholder="0" onchange="onVenmoFeeChange(this.value)"><span style="font-size:0.85em;color:var(--text-muted)">fee</span></span></div>
     <div class="form-row">
+      <div class="form-group"><label>Payment</label><select class="form-control" id="oPayment" onchange="onPaymentChange(this.value)"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select><span id="oVenmoFeeWrap" style="display:none;align-items:center;gap:4px;margin-top:6px;"><span style="font-size:0.85em;color:var(--text-muted)">+$</span><input class="form-control" type="number" id="oVenmoFee" min="0" step="0.01" style="width:70px" placeholder="0" onchange="onVenmoFeeChange(this.value)"><span style="font-size:0.85em;color:var(--text-muted)">fee</span></span></div>
       <div class="form-group"><label>Status</label><select class="form-control" id="oStatus"><option value="pending">Pending</option><option value="building">Building</option><option value="ready">Ready for Pickup</option><option value="completed">Completed</option></select></div>
     </div>
     <div class="form-row">
@@ -2352,6 +2356,7 @@ function loadAddonSettings() {
       else localStorage.removeItem('rmk_addons'); // clear corrupt data
     }
   } catch(e) { localStorage.removeItem('rmk_addons'); }
+  populateAddonSelect();
   renderOrderAddons();
   renderInvAddons();
 }
@@ -2392,26 +2397,74 @@ function renderAddonsTab() {
       '<button class="icon-btn" style="color:var(--red)" onclick="deleteAddon(' + i + ')" title="Delete">🗑</button>' +
     '</div>'
   ).join('');
+  populateAddonSelect();
+}
+function populateAddonSelect() {
+  const sel = document.getElementById('oAddonSelect');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select add-on —</option>' +
+    ADDONS.map(a => '<option value="' + esc(a.id) + '">' + esc(a.label) + '</option>').join('');
+  if (prev && ADDONS.some(a => a.id === prev)) sel.value = prev;
+}
+function appendOrderAddonRow(id, label, price) {
+  const container = document.getElementById('orderAddonList');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'addon-row';
+  row.dataset.id = id;
+  const nameSpan = document.createElement('span');
+  nameSpan.style.cssText = 'flex:1;font-size:13px;font-weight:500';
+  nameSpan.textContent = label;
+  const priceInput = document.createElement('input');
+  priceInput.type = 'number';
+  priceInput.min = '0';
+  priceInput.value = price;
+  priceInput.className = 'form-control';
+  priceInput.style.cssText = "width:80px;font-family:'DM Mono',monospace;font-size:13px;text-align:right";
+  priceInput.addEventListener('input', updateOrderTotal);
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'icon-btn';
+  removeBtn.style.color = 'var(--red)';
+  removeBtn.title = 'Remove';
+  removeBtn.textContent = '×';
+  removeBtn.addEventListener('click', () => { row.remove(); updateOrderTotal(); });
+  row.appendChild(nameSpan);
+  row.appendChild(priceInput);
+  row.appendChild(removeBtn);
+  container.appendChild(row);
+}
+function addOrderAddon() {
+  const sel = document.getElementById('oAddonSelect');
+  const id = sel ? sel.value : '';
+  if (!id) return;
+  const addon = ADDONS.find(a => a.id === id);
+  if (!addon) return;
+  if (document.querySelector('#orderAddonList [data-id="' + id + '"]')) {
+    showToast('Already added', 'error'); return;
+  }
+  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+  const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
+  appendOrderAddonRow(id, addon.label, addonPrice(addon.id, dims.l, dims.w, dims.h));
+  sel.value = '';
+  updateOrderTotal();
 }
 function renderOrderAddons(savedIds, savedPrices) {
   savedIds = savedIds || [];
   savedPrices = savedPrices || {};
+  populateAddonSelect();
   const container = document.getElementById('orderAddonList');
   if (!container) return;
-  if (!ADDONS.length) { container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No add-ons configured. Add some in Materials → Add-ons.</p>'; return; }
+  container.innerHTML = '';
   const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
   const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
-  container.innerHTML = ADDONS.map(a => {
-    const isChecked = savedIds.includes(a.id);
-    const price = isChecked && savedPrices[a.id] !== undefined ? savedPrices[a.id] : addonPrice(a.id, dims.l, dims.w, dims.h);
-    return '<div class="addon-row">' +
-      '<input type="checkbox" data-id="' + esc(a.id) + '"' + (isChecked ? ' checked' : '') +
-        ' style="width:16px;height:16px;flex-shrink:0;cursor:pointer" onchange="updateOrderTotal()">' +
-      '<span style="flex:1;font-size:13px;font-weight:500">' + esc(a.label) + '</span>' +
-      '<input type="number" min="0" data-id="' + esc(a.id) + '" value="' + price +
-        '" class="form-control" style="width:80px;font-family:\'DM Mono\',monospace;font-size:13px;text-align:right" oninput="updateOrderTotal()">' +
-    '</div>';
-  }).join('');
+  savedIds.forEach(id => {
+    const addon = ADDONS.find(a => a.id === id);
+    if (!addon) return;
+    const price = savedPrices[id] !== undefined ? savedPrices[id] : addonPrice(id, dims.l, dims.w, dims.h);
+    appendOrderAddonRow(id, addon.label, price);
+  });
 }
 function renderInvAddons(savedIds) {
   savedIds = savedIds || [];
@@ -3181,8 +3234,8 @@ function addonPrice(id, l, w, h) {
 }
 function getAddonTotalFromOrder() {
   let total = 0;
-  document.querySelectorAll('#orderAddonList input[type="checkbox"]:checked').forEach(cb => {
-    const priceIn = document.querySelector('#orderAddonList input[type="number"][data-id="'+cb.dataset.id+'"]');
+  document.querySelectorAll('#orderAddonList .addon-row').forEach(row => {
+    const priceIn = row.querySelector('input[type="number"]');
     total += parseFloat(priceIn?.value) || 0;
   });
   return total;
@@ -3369,10 +3422,10 @@ async function saveOrder() {
   if (!itemRows.length||!itemRows[0].size) {showToast('At least one item with a size is required','error');return;}
   const selectedAddons = [];
   const addonPrices = {};
-  document.querySelectorAll('#orderAddonList input[type="checkbox"]:checked').forEach(cb => {
-    const id = cb.dataset.id;
+  document.querySelectorAll('#orderAddonList .addon-row').forEach(row => {
+    const id = row.dataset.id;
     selectedAddons.push(id);
-    const priceIn = document.querySelector('#orderAddonList input[type="number"][data-id="'+id+'"]');
+    const priceIn = row.querySelector('input[type="number"]');
     addonPrices[id] = parseFloat(priceIn?.value) || 0;
   });
   const addonTotal = getAddonTotalFromOrder();
