@@ -50,7 +50,10 @@ jobs:
           fi
 
       - name: Run e2e tests
-        run: npx playwright test --project=e2e
+        # --workers=1 prevents cross-file DB interference: parallel files share
+        # Supabase and one file's afterAll cleanup deletes [TEST]% rows that
+        # another file is actively testing.
+        run: npx playwright test --project=e2e --workers=1
 
       - uses: actions/upload-artifact@v4
         if: failure()
