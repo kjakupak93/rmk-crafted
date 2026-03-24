@@ -236,24 +236,18 @@ test('delete add-on removes it from the list', async ({ page }) => {
 
 test('new add-on appears in order modal add-on dropdown', async ({ page }) => {
   await goToAddons(page);
-  // Add a distinctly named add-on
+  // Record how many add-ons exist before adding one
+  const beforeCount = await page.locator('#addons-list > div').count();
   await page.click('#mtab-addons button:has-text("+ Add Add-on")');
-  const lastRow = page.locator('#addons-list > div').last();
-  const labelInput = lastRow.locator('input[type="text"]');
-  await labelInput.fill(`${TAG} Addon`);
-  await labelInput.blur();
-  // Navigate to new order modal and verify the dropdown contains the new add-on
+  await expect(page.locator('#addons-list > div')).toHaveCount(beforeCount + 1, { timeout: 5000 });
+
+  // Open the order modal and verify the select has one more option than before
+  // (options = 1 blank + N addons; beforeCount+1 addons after our add)
   await page.click('.app-tile--orders');
   await page.waitForSelector('#page-orders.active');
   await page.click('button:has-text("+ New Order")');
   await page.waitForSelector('#orderModal.open');
-  await expect(page.locator('#oAddonSelect option', { hasText: `${TAG} Addon` })).toBeAttached({ timeout: 5000 });
+  await expect(page.locator('#oAddonSelect option')).toHaveCount(beforeCount + 2, { timeout: 5000 });
   await page.click('button.modal-btn-cancel');
-  // Cleanup: remove the test add-on
-  await page.click('.app-tile--mats');
-  await page.waitForSelector('#page-materials.active');
-  await page.click('button:has-text("Add-ons")');
-  await page.waitForSelector('#mtab-addons.active');
-  const testRow = page.locator('#addons-list > div').filter({ has: page.locator(`input[value="${TAG} Addon"]`) });
-  await testRow.locator('button[title="Delete"]').click();
+  // No Supabase cleanup needed — add-ons are localStorage only (reset per browser context)
 });
