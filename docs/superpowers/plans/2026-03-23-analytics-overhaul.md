@@ -57,9 +57,9 @@ test('shows 3 section headers', async ({ page }) => {
 ```bash
 npx playwright test tests/analytics.spec.ts --project=chromium
 ```
-Expected: all tests fail (elements don't exist yet)
+Expected: the 4 new tests fail; the 5 existing tests still pass.
 
-- [ ] **Step 4: Add CSS for section header and 5-column KPI grid**
+- [ ] **Step 3: Add CSS for section header and 5-column KPI grid**
 
 In `index.html`, find the existing `.analytics-pnl` CSS rule (in the `/* ── Analytics page ── */` block). Replace it:
 
@@ -100,13 +100,15 @@ Find the `.analytics-pnl` div in the HTML (3 `.summary-card` divs). After the `p
 ```html
 <div class="summary-card c-sand">
   <div class="val" id="pnl-units">—</div>
-  <div class="lbl" id="pnl-units-lbl">Units Sold</div>
+  <div class="lbl">Units Sold</div>
 </div>
 <div class="summary-card c-blue">
   <div class="val" id="pnl-aov">—</div>
-  <div class="lbl" id="pnl-aov-lbl">Avg Order Value</div>
+  <div class="lbl">Avg Order Value</div>
 </div>
 ```
+
+Note: No `-lbl` IDs on these two cards — the labels are static and never updated by JS.
 
 - [ ] **Step 2: Replace the single `.analytics-grid` with 3 sectioned grids**
 
@@ -214,6 +216,8 @@ git add index.html tests/analytics.spec.ts
 git commit -m "feat: analytics page — 5 KPI cards, 3 sectioned grids, new chart canvases"
 ```
 
+Note: After this commit, navigating to the Analytics page will log Chart.js errors for `chart-cumulative`, `chart-units-by-product`, and `chart-revenue-by-product` (canvases exist in DOM but chart render code hasn't been added yet). This is expected and resolves after Task 7.
+
 ---
 
 ### Task 4: Update `loadAnalytics()` — fetch style and populate filter dropdown
@@ -275,13 +279,14 @@ document.getElementById('pnl-profit-lbl').textContent = pnlLabels[2];
 
 After it, add:
 ```js
-const unitsInRange = analyticsSales.filter(s => inBounds(s.sale_date)).length;
-const avgOrderValue = unitsInRange > 0 ? Math.round(pnlRev / unitsInRange) : 0;
+const salesInRange = analyticsSales.filter(s => inBounds(s.sale_date));
+const unitsInRange = salesInRange.reduce((sum, s) => sum + (s.qty || 1), 0);
+const avgOrderValue = salesInRange.length > 0 ? Math.round(pnlRev / salesInRange.length) : 0;
 document.getElementById('pnl-units').textContent = unitsInRange;
 document.getElementById('pnl-aov').textContent = '$' + avgOrderValue;
 ```
 
-Note: The HTML already has the static labels "Units Sold" and "Avg Order Value" — no JS label update needed for these two cards. The other three cards update their labels dynamically via `pnlLabels` as before.
+Note: `unitsInRange` sums `qty` (not row count) since a single sale row can represent multiple planters. `avgOrderValue` divides by transaction count (`salesInRange.length`), not unit count, since price is per transaction. The HTML labels are static — no JS label update needed for these two cards. The other three cards update their labels via `pnlLabels` as before.
 
 - [ ] **Step 2: Verify KPI cards show values**
 
@@ -411,11 +416,13 @@ analyticsSales.forEach(s => {
   if (s.sale_date) {
 ```
 
-Add the filter check after `if (!s.size) return;`:
+Add the product filter check after `if (!s.size) return;`:
 
 ```js
 if (bestSellersProductFilter !== 'all' && (s.style || 'Standard') !== bestSellersProductFilter) return;
 ```
+
+Important: the Best Sellers chart uses `keys.includes(k)` (bucket-based) for its range guard — not `inBounds()` like the other charts. Do NOT change this guard. The two mechanisms are intentionally different: `inBounds` uses date bounds, `keys.includes` uses the bucket keys array. Both achieve range filtering; changing one to match the other would break the "all-time" bucket behavior for Best Sellers.
 
 - [ ] **Step 2: Verify filter works**
 
