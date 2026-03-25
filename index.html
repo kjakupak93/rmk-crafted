@@ -2594,31 +2594,50 @@ function addProduct(name) {
   populateProductSelects();
   return true;
 }
+let _editingProductIdx = null; // index or 'new'
 function promptAddProduct() {
-  const name = prompt('Product name:');
-  if (!name || !name.trim()) return;
-  if (addProduct(name)) {
-    renderProductsTab();
-    showToast('Product added!');
-  }
+  _editingProductIdx = 'new';
+  renderProductsTab();
 }
-function renameProduct(idx) {
+function startProductRename(idx) {
+  _editingProductIdx = idx;
+  renderProductsTab();
+}
+function cancelProductRename() {
+  _editingProductIdx = null;
+  renderProductsTab();
+}
+function saveProductRename(idx) {
+  const inp = document.getElementById('prod-rename-inp');
+  if (!inp) return;
+  const trimmed = inp.value.trim();
   const oldName = PRODUCT_TYPES[idx];
-  if (oldName === undefined) return;
-  const newName = prompt('New name:', oldName);
-  if (!newName || !newName.trim()) return;
-  const trimmed = newName.trim();
-  if (trimmed.toLowerCase() === oldName.toLowerCase()) return;
-  if (PRODUCT_TYPES.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
+  if (!trimmed) return;
+  if (trimmed.toLowerCase() === oldName.toLowerCase()) { cancelProductRename(); return; }
+  if (PRODUCT_TYPES.some((s, i) => i !== idx && s.toLowerCase() === trimmed.toLowerCase())) {
     showToast('A product with that name already exists', 'error');
     return;
   }
   PRODUCT_TYPES[idx] = trimmed;
   localStorage.setItem('rmk_products', JSON.stringify(PRODUCT_TYPES));
   populateProductSelects();
+  _editingProductIdx = null;
   renderProductsTab();
   showToast('Product renamed!');
 }
+function saveNewProduct() {
+  const inp = document.getElementById('prod-add-inp');
+  if (!inp) return;
+  const trimmed = inp.value.trim();
+  if (!trimmed) return;
+  if (addProduct(trimmed)) {
+    _editingProductIdx = null;
+    renderProductsTab();
+    showToast('Product added!');
+  }
+}
+// keep legacy name for any existing callers
+function renameProduct(idx) { startProductRename(idx); }
 async function deleteProduct(idx) {
   const name = PRODUCT_TYPES[idx];
   if (name === undefined) return;
@@ -2644,33 +2663,40 @@ async function deleteProduct(idx) {
 function renderProductsTab() {
   const container = document.getElementById('products-list');
   if (!container) return;
-  if (!PRODUCT_TYPES.length) {
-    container.textContent = 'No products yet.';
-    return;
-  }
-  container.innerHTML = PRODUCT_TYPES.map((s, i) =>
-    '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
+  const rows = PRODUCT_TYPES.map((s, i) => {
+    if (_editingProductIdx === i) {
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
+        '<input id="prod-rename-inp" class="form-control" type="text" value="' + esc(s) + '" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\')saveProductRename(' + i + ');else if(event.key===\'Escape\')cancelProductRename()">' +
+        '<button class="btn-primary" style="font-size:12px;padding:4px 10px" onclick="saveProductRename(' + i + ')">Save</button>' +
+        '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="cancelProductRename()">Cancel</button>' +
+        '</div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
       '<span style="flex:1;font-size:15px;font-weight:600;color:var(--navy)">' + esc(s) + '</span>' +
-      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="renameProduct(' + i + ')">Rename</button>' +
+      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="startProductRename(' + i + ')">Rename</button>' +
       '<button class="icon-btn" style="color:var(--red)" onclick="deleteProduct(' + i + ')" title="Delete">🗑</button>' +
-    '</div>'
-  ).join('');
+      '</div>';
+  });
+  if (_editingProductIdx === 'new') {
+    rows.push('<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
+      '<input id="prod-add-inp" class="form-control" type="text" placeholder="Product name" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\')saveNewProduct();else if(event.key===\'Escape\')cancelProductRename()">' +
+      '<button class="btn-primary" style="font-size:12px;padding:4px 10px" onclick="saveNewProduct()">Add</button>' +
+      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="cancelProductRename()">Cancel</button>' +
+      '</div>');
+  }
+  if (!rows.length) { container.textContent = 'No products yet.'; return; }
+  container.innerHTML = rows.join(''); // all user content escaped via esc()
+  const activeInp = document.getElementById(_editingProductIdx === 'new' ? 'prod-add-inp' : 'prod-rename-inp');
+  if (activeInp) { activeInp.focus(); if (_editingProductIdx !== 'new') activeInp.select(); }
 }
 function onClProductChange(sel) {
   if (sel.value !== '__new__') return;
   const prev = sel.dataset.prev || '';
-  const name = prompt('New product name:');
-  if (!name || !name.trim()) {
-    sel.value = prev;
-    return;
-  }
-  if (!addProduct(name)) {
-    sel.value = prev;
-    return;
-  }
-  renderProductsTab();
-  sel.value = name.trim();
-  showToast('Product added!');
+  sel.value = prev;
+  // Navigate to Products tab where the user can add a new product inline
+  const btn = document.querySelector('#page-materials .tab-btn[onclick*="products"]');
+  if (btn) showMaterialsTab('products', btn);
+  promptAddProduct();
 }
 let currentPage = 'home';
 let analyticsRange = 'year';
