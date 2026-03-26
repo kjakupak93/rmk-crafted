@@ -1,8 +1,7 @@
 // tests/e2e/helpers/cleanup.ts
 
-const SUPABASE_URL = 'https://mfsejmfmyuvhuclzuitc.supabase.co';
-const ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc2VqbWZteXV2aHVjbHp1aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTgzODksImV4cCI6MjA4NzYzNDM4OX0.Ve8dY-CvGqCMSWfifd6HvrDvmrJo4J00auhos8aezpY';
+const SUPABASE_URL = process.env.SUPABASE_URL!;
+const ANON_KEY = process.env.SUPABASE_ANON_KEY!;
 
 /** Maps table name → column used for [TEST]% pattern matching */
 const TAG_COLUMN: Record<string, string> = {
@@ -25,7 +24,7 @@ async function getAuthToken(): Promise<string> {
       apikey: ANON_KEY,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email: 'kristen@rmkcrafted.com', password: 'REDACTED_PASSWORD' }),
+    body: JSON.stringify({ email: process.env.TEST_EMAIL!, password: process.env.TEST_PASSWORD! }),
   });
   if (!res.ok) {
     const text = await res.text();

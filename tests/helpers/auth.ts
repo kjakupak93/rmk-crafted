@@ -13,8 +13,8 @@ export async function login(page: Page): Promise<void> {
   const gate = page.locator('#pin-gate');
   const gateVisible = await gate.isVisible().catch(() => false);
   if (gateVisible) {
-    await page.fill('#auth-email', 'kristen@rmkcrafted.com');
-    await page.fill('#auth-password', 'REDACTED_PASSWORD');
+    await page.fill('#auth-email', process.env.TEST_EMAIL!);
+    await page.fill('#auth-password', process.env.TEST_PASSWORD!);
     await page.press('#auth-password', 'Enter');
     await gate.waitFor({ state: 'hidden', timeout: 15000 });
   }

@@ -229,10 +229,8 @@ test('order status badges render correct colours for all four states', async ({ 
     maxDiffPixelRatio: 0.02,
   });
 
-  // Full active list with all badge variants — broadest regression baseline
-  await expect(page.locator('#activeOrdersList')).toHaveScreenshot('order-status-badges-all.png', {
-    maxDiffPixelRatio: 0.02,
-  });
+  // NOTE: a full-list screenshot was removed — it was non-deterministic when
+  // orders.spec.ts runs in parallel and adds orders that appear in the list.
 });
 
 // =============================================================================

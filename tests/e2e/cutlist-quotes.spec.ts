@@ -150,7 +150,9 @@ test('save cut list with a style groups it under that style in saved list', asyn
 test('creating new style from cut list dropdown adds it and selects it', async ({ page }) => {
   const newProductName = `${TAG} NewStyle`;
   await goToCutList(page);
-  page.once('dialog', d => d.accept(newProductName));
   await page.selectOption('#cl-product', '__new__');
+  // Inline input appears below the dropdown (no prompt, no navigation)
+  await page.fill('#cl-new-prod-inp', newProductName);
+  await page.press('#cl-new-prod-inp', 'Enter');
   await expect(page.locator('#cl-product')).toHaveValue(newProductName, { timeout: 5000 });
 });

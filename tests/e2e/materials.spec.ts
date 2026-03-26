@@ -168,8 +168,9 @@ test('load cut list restores name; delete removes it from saved list', async ({ 
 test('add product from Products tab appears in list', async ({ page }) => {
   const productName = `${TAG} TestStyle`;
   await goToProducts(page);
-  page.once('dialog', d => d.accept(productName));
   await page.click('#mtab-products button:has-text("+ Add Product")');
+  await page.fill('#prod-add-inp', productName);
+  await page.press('#prod-add-inp', 'Enter');
   await expect(page.locator('#products-list').getByText(productName)).toBeVisible({ timeout: 5000 });
 });
 
@@ -177,12 +178,16 @@ test('rename product from Products tab updates name in list', async ({ page }) =
   const original = `${TAG} RenameMe`;
   const renamed = `${TAG} Renamed`;
   await goToProducts(page);
-  page.once('dialog', d => d.accept(original));
+  // Add product using inline input
   await page.click('#mtab-products button:has-text("+ Add Product")');
+  await page.fill('#prod-add-inp', original);
+  await page.press('#prod-add-inp', 'Enter');
   await expect(page.locator('#products-list').getByText(original)).toBeVisible({ timeout: 5000 });
+  // Rename using inline input
   const row = page.locator('#products-list div').filter({ hasText: original });
-  page.once('dialog', d => d.accept(renamed));
   await row.locator('button:has-text("Rename")').click();
+  await page.fill('#prod-rename-inp', renamed);
+  await page.press('#prod-rename-inp', 'Enter');
   await expect(page.locator('#products-list').getByText(renamed)).toBeVisible({ timeout: 5000 });
   await expect(page.locator('#products-list').getByText(original)).toHaveCount(0);
 });
@@ -190,9 +195,12 @@ test('rename product from Products tab updates name in list', async ({ page }) =
 test('delete product with no cut lists removes it from list', async ({ page }) => {
   const productName = `${TAG} DeleteMe`;
   await goToProducts(page);
-  page.once('dialog', d => d.accept(productName));
+  // Add product using inline input
   await page.click('#mtab-products button:has-text("+ Add Product")');
+  await page.fill('#prod-add-inp', productName);
+  await page.press('#prod-add-inp', 'Enter');
   await expect(page.locator('#products-list').getByText(productName)).toBeVisible({ timeout: 5000 });
+  // Delete (still uses confirm() dialog)
   const row = page.locator('#products-list div').filter({ hasText: productName });
   page.once('dialog', d => d.accept());
   await row.locator('.icon-btn').click();
