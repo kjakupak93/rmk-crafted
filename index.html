@@ -2046,7 +2046,7 @@ body {
 <!-- Inventory modal -->
 <div class="modal-overlay" id="invModal">
   <div class="modal">
-    <h2>Add Ready-to-Sell Item</h2>
+    <h2 id="invModalTitle">Add Ready-to-Sell Item</h2>
     <input type="hidden" id="editInvId">
     <div class="form-row">
       <div class="form-group"><label>Size (L×W×H)</label><input class="form-control" type="text" id="iSize" placeholder="36×16×16"></div>
@@ -3963,6 +3963,7 @@ async function loadInventory() {
   const totalVal=(data||[]).reduce((s,i)=>s+((i.price||0)*(i.qty||0)),0);
   document.getElementById('inv-stat-count').textContent=totalQty;
   document.getElementById('inv-stat-value').textContent='$'+totalVal.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+  _allInvItems = data;
   if (!data||!data.length) {grid.innerHTML=emptyState('📦','No ready-to-sell items yet.');return;}
   grid.innerHTML=data.map(item=>`<div class="inv-card">
     <div><div class="inv-size">${esc(item.size)}"</div><div class="inv-product">${esc(item.style)}</div></div>
@@ -3977,6 +3978,7 @@ async function loadInventory() {
     ${item.notes?`<div style="font-size:12px;color:var(--text-muted)">${esc(item.notes)}</div>`:''}
     <div style="display:flex;gap:6px;margin-top:4px">
       <button class="icon-btn" style="flex:1;width:auto;padding:5px 8px;font-size:11px" data-size="${item.size}" data-product="${item.style||'Standard'}" data-price="${item.price}" onclick="openListingModal(this.dataset.size,this.dataset.product,this.dataset.price)">📣 List</button>
+      <button class="icon-btn" onclick="openEditInvModal('${item.id}')">✏️</button>
       <button class="icon-btn" onclick="deleteInvItem('${item.id}')">🗑️</button>
     </div>
   </div>`).join('');
@@ -3984,6 +3986,7 @@ async function loadInventory() {
 
 function openInvModal() {
   document.getElementById('editInvId').value='';
+  document.getElementById('invModalTitle').textContent='Add Ready-to-Sell Item';
   ['iSize','iNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('iPrice').value='';
   document.getElementById('iQty').value=1;
@@ -3992,13 +3995,29 @@ function openInvModal() {
   openModal('invModal');
 }
 
+let _allInvItems = [];
+function openEditInvModal(id) {
+  const item = _allInvItems.find(i=>i.id===id);
+  if (!item) return;
+  document.getElementById('editInvId').value=id;
+  document.getElementById('invModalTitle').textContent='Edit Ready-to-Sell Item';
+  document.getElementById('iSize').value=item.size||'';
+  document.getElementById('iPrice').value=item.price||'';
+  document.getElementById('iQty').value=item.qty||1;
+  document.getElementById('iNotes').value=item.notes||'';
+  populateProductSelects(item.style||'Standard');
+  renderInvAddons(item.add_ons||[]);
+  openModal('invModal');
+}
+
 async function saveInvItem() {
+  const id=document.getElementById('editInvId').value;
   const addons = Array.from(document.querySelectorAll('#invAddonList input[type="checkbox"]:checked')).map(cb=>cb.dataset.id);
   const payload={size:document.getElementById('iSize').value,style:document.getElementById('iProduct').value,price:parseFloat(document.getElementById('iPrice').value)||0,qty:parseInt(document.getElementById('iQty').value)||1,notes:document.getElementById('iNotes').value,add_ons:addons.length?addons:null};
   if (!payload.size) {showToast('Size required','error');return;}
-  const {error}=await sb.from('inventory').insert(payload);
+  const {error}=id ? await sb.from('inventory').update(payload).eq('id',id) : await sb.from('inventory').insert(payload);
   if (error) {showToast('Error saving','error');return;}
-  showToast('Item added!','success'); closeModal('invModal'); loadInventory(); loadHomeStats();
+  showToast(id?'Item updated!':'Item added!','success'); closeModal('invModal'); loadInventory(); loadHomeStats();
 }
 
 async function adjustInvQty(id, currentQty, delta) {
