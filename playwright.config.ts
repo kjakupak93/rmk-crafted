@@ -4,7 +4,10 @@ config(); // load .env into process.env
 
 export default defineConfig({
   globalSetup: './tests/global-setup.ts',
-  workers: 2,
+  // e2e tests write to a real Supabase DB and are serial per-file; running two
+  // files in parallel causes concurrent API calls that exceed assertion timeouts.
+  // Smoke tests are read-only so 1 worker is still fine for them.
+  workers: 1,
   use: {
     baseURL: 'http://localhost:8080',
   },
