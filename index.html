@@ -4808,12 +4808,18 @@ async function saveCutList() {
   const picket_len = 72;
 
   // If editing an existing saved list, update it; otherwise insert
-  const existingId = document.getElementById('cl-name').dataset.savedId || null;
+  const nameEl = document.getElementById('cl-name');
+  const existingId = nameEl.dataset.savedId || null;
   let error;
   if (existingId) {
     ({ error } = await sb.from('cut_lists').update({ name, kerf, cuts, stock_types, notes, style, updated_at: new Date().toISOString() }).eq('id', existingId));
   } else {
-    ({ error } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types, notes, style }));
+    // Block duplicate names
+    const duplicate = allCutLists.find(cl => cl.name.trim().toLowerCase() === name.toLowerCase());
+    if (duplicate) { showToast(`A cut list named "${duplicate.name}" already exists`, 'error'); return; }
+    const { data: inserted, error: insertErr } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types, notes, style }).select().single();
+    error = insertErr;
+    if (!insertErr && inserted) nameEl.dataset.savedId = inserted.id;
   }
   if (error) { showToast('Save failed', 'error'); console.error(error); return; }
   showToast('Cut list saved!');
