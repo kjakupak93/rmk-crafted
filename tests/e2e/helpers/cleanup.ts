@@ -107,6 +107,41 @@ export async function restoreOrderPayments(ids: string[]): Promise<void> {
 }
 
 /**
+ * Snapshot all stock rows (type + qty). Call before any test that modifies stock.
+ */
+export async function snapshotStock(): Promise<{ type: string; qty: number }[]> {
+  const token = await getAuthToken();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/stock?select=type,qty`,
+    { headers: makeHeaders(token) },
+  );
+  if (!res.ok) return [];
+  return res.json();
+}
+
+/**
+ * Restore stock qtys from a snapshot. Call in afterAll to undo any changes.
+ */
+export async function restoreStock(snapshot: { type: string; qty: number }[]): Promise<void> {
+  if (!snapshot.length) return;
+  const token = await getAuthToken();
+  for (const row of snapshot) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/stock?type=eq.${row.type}`,
+      {
+        method: 'PATCH',
+        headers: makeHeaders(token),
+        body: JSON.stringify({ qty: row.qty }),
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text();
+      console.warn(`cleanup: PATCH stock/${row.type} failed — ${res.status} ${text}`);
+    }
+  }
+}
+
+/**
  * Delete a specific row by ID. Used for tables without a tag column
  * (e.g. availability_windows).
  */

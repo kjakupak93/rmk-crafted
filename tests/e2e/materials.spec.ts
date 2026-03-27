@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { login } from '../helpers/auth';
-import { cleanupTestData } from './helpers/cleanup';
+import { cleanupTestData, snapshotStock, restoreStock } from './helpers/cleanup';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -50,12 +50,16 @@ async function confirmDelete(page: Page): Promise<void> {
   await page.click('#confirmOkBtn');
 }
 
+let stockSnapshot: { type: string; qty: number }[] = [];
+
 test.beforeAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
+  stockSnapshot = await snapshotStock();
 });
 
 test.afterAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
+  await restoreStock(stockSnapshot);
 });
 
 test('add purchase appears in Purchases log', async ({ page }) => {
