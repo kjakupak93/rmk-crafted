@@ -13,7 +13,7 @@ async function goToOrders(page: Page) {
 }
 
 async function createOrder(page: Page, name: string, payment = 'unpaid'): Promise<void> {
-  await page.click('button:has-text("+ New Order")');
+  await page.click('#page-orders button:has-text("+ New Order")');
   await page.waitForSelector('#orderModal.open');
   await page.fill('#oName', name);
   await page.locator('.item-size').fill('36×16×16');
@@ -247,7 +247,7 @@ test('add-on selected in order modal is saved and reflected in order total', asy
   await goToOrders(page);
   const name = `${TAG} Addon Order`;
 
-  await page.click('button:has-text("+ New Order")');
+  await page.click('#page-orders button:has-text("+ New Order")');
   await page.waitForSelector('#orderModal.open');
   await page.fill('#oName', name);
   await page.locator('.item-size').fill('36×16×16');
@@ -273,7 +273,7 @@ test('multi-item order — total reflects both items', async ({ page }) => {
   await goToOrders(page);
   const name = `${TAG} Multi Item`;
 
-  await page.click('button:has-text("+ New Order")');
+  await page.click('#page-orders button:has-text("+ New Order")');
   await page.waitForSelector('#orderModal.open');
   await page.fill('#oName', name);
 

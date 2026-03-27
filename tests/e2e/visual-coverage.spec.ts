@@ -182,7 +182,7 @@ test('order status badges render correct colours for all four states', async ({ 
 
   // Helper: create an order via the UI and return its card locator
   async function createOrder(name: string, pickupDate?: string) {
-    await page.click('button:has-text("+ New Order")');
+    await page.click('#page-orders button:has-text("+ New Order")');
     await page.waitForSelector('#orderModal.open');
     await page.fill('#oName', name);
     await page.locator('.item-size').fill('36×16×16');

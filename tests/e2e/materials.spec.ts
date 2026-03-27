@@ -258,7 +258,7 @@ test('new add-on appears in order modal add-on dropdown', async ({ page }) => {
   await login(page);
   await page.click('.app-tile--orders');
   await page.waitForSelector('#page-orders.active');
-  await page.click('button:has-text("+ New Order")');
+  await page.click('#page-orders button:has-text("+ New Order")');
   await page.waitForSelector('#orderModal.open');
   // options = 1 blank "— Select add-on —" + (beforeCount + 1) addons
   await expect(page.locator('#oAddonSelect option')).toHaveCount(beforeCount + 2, { timeout: 5000 });
