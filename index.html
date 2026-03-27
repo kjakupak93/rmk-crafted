@@ -3589,7 +3589,7 @@ function openOrderModal(order, prefill) {
   document.getElementById('oStatus').value='pending';
   document.getElementById('oItemsContainer').innerHTML='';
   if (prefill) {
-    addOrderItem('', 'Standard', 1, prefill.price || 0);
+    addOrderItem(prefill.size || '', 'Standard', 1, prefill.price || 0);
   } else {
     addOrderItem();
   }
@@ -3605,7 +3605,9 @@ function convertQuoteToOrder(id) {
   const quote = allQuotes.find(q => q.id === id);
   if (!quote) return;
   _pendingQuoteId = quote.id;
-  openOrderModal(null, { name: quote.name || '', notes: quote.notes || '', price: quote.price });
+  const sizeMatch = (quote.cut_list_name || '').match(/\d+[×x]\d+[×x]\d+/i);
+  const size = sizeMatch ? sizeMatch[0].replace(/x/gi, '×') : '';
+  openOrderModal(null, { name: quote.name || '', notes: quote.notes || '', price: quote.price, size });
 }
 
 function _getVenmoFeeDefault() {

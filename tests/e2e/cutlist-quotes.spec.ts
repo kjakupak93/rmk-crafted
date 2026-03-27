@@ -164,6 +164,33 @@ test('saving a quote auto-navigates to the Quotes tab', async ({ page }) => {
   await expect(page.locator('#otab-quotes tr').filter({ hasText: quoteName })).toBeVisible({ timeout: 10000 });
 });
 
+test('convert quote carries size from cut list name into order modal', async ({ page }) => {
+  const size = '36×16×16';
+  const cutListName = `${TAG} ${size} Standard`;
+  const quoteName = `${TAG} Size Carry`;
+
+  await goToCutList(page);
+  await addPartRowAndRun(page, cutListName);
+  await expect(page.locator('#cl-quote-btn')).not.toBeDisabled({ timeout: 5000 });
+  await page.click('#cl-quote-btn');
+  await page.waitForSelector('#createQuoteModal.open');
+  await page.fill('#cqName', quoteName);
+  await page.click('button:has-text("Create Quote")');
+
+  // Auto-nav from Task 2 brings us to Orders > Quotes tab
+  await expect(page.locator('#page-orders')).toHaveClass(/active/, { timeout: 5000 });
+  await expect(page.locator('#otab-quotes')).toHaveClass(/active/, { timeout: 5000 });
+  const quoteRow = page.locator('#otab-quotes tr').filter({ hasText: quoteName });
+  await expect(quoteRow).toBeVisible({ timeout: 10000 });
+
+  await quoteRow.locator('button:has-text("Convert")').click();
+  await page.waitForSelector('#orderModal.open');
+
+  // Size field should be pre-filled from the cut list name
+  const sizeVal = await page.locator('#oItemsContainer .item-size').first().inputValue();
+  expect(sizeVal).toBe(size);
+});
+
 test('creating new style from cut list dropdown adds it and selects it', async ({ page }) => {
   const newProductName = `${TAG} NewStyle`;
   await goToCutList(page);
