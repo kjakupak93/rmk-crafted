@@ -59,7 +59,7 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - `saveBooking()` — when editing a booking that has a linked `order_id`, also syncs `orders.pickup_date` and `orders.pickup_time`
 - Recent Activity feed shows booking *creation* time, not pickup date (avoids future timestamps showing as "just now")
 - `_pendingQuoteId` — module-level var set when converting a quote to an order. `saveOrder()` clears it (and deletes the source quote) on both success and error paths to prevent leaks.
-- `openOrderModal(order, prefill)` — optional second param lets `convertQuoteToOrder()` pre-populate the order modal from a quote without an existing order object
+- `openOrderModal(order, prefill)` — optional second param lets `convertQuoteToOrder()` pre-populate the order modal from a quote without an existing order object. `prefill` accepts `{ name, notes, price, size }` — `size` pre-fills the first item row's size field and is extracted via regex from `quote.cut_list_name`.
 - Product management lives in Materials → Products tab. `addProduct()`, `renameProduct(idx)`, `deleteProduct(idx)` are the management functions. `populateProductSelects()` refreshes all product dropdowns (`iProduct`, `sProduct`, `cl-product`) app-wide.
 - Saved cut lists are grouped by product in `loadSavedCutLists()`. `cl.style = null` (DB column) renders in Uncategorized group.
 - Add-on management lives in Materials → Add-ons tab. `ADDONS` array (`[{id, label, base, scales}, ...]`) stored in `localStorage` as `rmk_addons`. `addNewAddon()`, `deleteAddon(idx)`, `saveAddonField(idx, key, value)` manage the list. `renderAddonsTab()` re-renders the inline-editable grid.
@@ -79,7 +79,7 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
 
 **Stock short names**: `CL_DEFAULT_STOCK` entries have a `shortName` field used in dropdowns (e.g. `Picket 6'`); full `name` used in diagram headers.
 
-**Quote button**: `#cl-quote-btn` is disabled by default; `runCutListBins()` enables it after a successful run. `openCreateQuoteModal()` pre-fills price from `clLastRunBoardCounts` and notes from `#cl-name`. `saveQuote()` inserts to the `quotes` table. `convertQuoteToOrder(id)` opens the order modal pre-filled with quote data and sets `_pendingQuoteId`; `saveOrder()` deletes the quote on completion.
+**Quote button**: `#cl-quote-btn` is disabled by default; `runCutListBins()` enables it after a successful run. `openCreateQuoteModal()` pre-fills price from `clLastRunBoardCounts` and notes from `#cl-name`. `saveQuote()` inserts to the `quotes` table, then auto-navigates to Orders → Quotes tab via `goTo('orders')` + clicking `#orders-tabs .tab-btn[onclick*="quotes"]`. `convertQuoteToOrder(id)` opens the order modal pre-filled with quote data (including size extracted via regex from `cut_list_name`) and sets `_pendingQuoteId`; `saveOrder()` deletes the quote on completion.
 
 ## Business / Pricing
 - **Pricing formula**: ~$10 per picket (e.g. 10 pickets → ~$100)
