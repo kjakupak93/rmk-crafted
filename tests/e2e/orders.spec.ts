@@ -164,7 +164,7 @@ test('complete order via Venmo payment moves to Sales History', async ({ page })
   await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
 });
 
-test('Skip — not paid yet closes payment modal and order stays in Active', async ({ page }) => {
+test('Skip — stays in Active until paid closes payment modal and order stays in Active', async ({ page }) => {
   await goToOrders(page);
   const name = `${TAG} Skip Complete`;
   await createOrder(page, name, 'unpaid');
