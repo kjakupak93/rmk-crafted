@@ -14,6 +14,12 @@ test('4 nav tiles are present', async ({ page }) => {
   await expect(page.locator('.app-tile')).toHaveCount(4);
 });
 
+test('+ New Order shortcut button opens the order modal', async ({ page }) => {
+  await expect(page.locator('button:has-text("+ New Order")').first()).toBeVisible();
+  await page.locator('button:has-text("+ New Order")').first().click();
+  await expect(page.locator('#orderModal')).toHaveClass(/open/, { timeout: 5000 });
+});
+
 test('dark mode toggle sets and clears data-theme on <html>', async ({ page }) => {
   // Clear any persisted theme from previous runs, then reload
   // NOTE: reload re-triggers the IIFE which shows #pin-gate again, so login() is required after
