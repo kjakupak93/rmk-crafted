@@ -2142,6 +2142,10 @@ body {
     </div>
     <div class="form-group" id="sVenmoFeeWrap" style="display:none"><label>Venmo Fee ($)</label><input class="form-control" type="number" id="sVenmoFee" placeholder="0" min="0" step="0.01"></div>
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="sNotes" placeholder="Optional"></div>
+    <div class="form-group">
+      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
+      <div id="saleAddonList" style="margin-top:4px"></div>
+    </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('saleModal')">Cancel</button>
       <button class="modal-btn-primary" onclick="saveSale()">Log Sale</button>
@@ -2470,6 +2474,7 @@ function loadAddonSettings() {
   populateAddonSelect();
   renderOrderAddons();
   renderInvAddons();
+  renderSaleAddons();
 }
 function saveAddons() {
   localStorage.setItem('rmk_addons', JSON.stringify(ADDONS));
@@ -2592,10 +2597,8 @@ function renderOrderAddons(savedIds, savedPrices) {
     appendOrderAddonRow(id, addon.label, price);
   });
 }
-function renderInvAddons(savedIds) {
-  savedIds = savedIds || [];
-  const container = document.getElementById('invAddonList');
-  if (!container) return;
+function _renderAddonCheckboxes(container, savedIds) {
+  savedIds = (savedIds || []).map(a => typeof a === 'string' ? a : a.id);
   if (!ADDONS.length) { container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No add-ons configured.</p>'; return; }
   container.innerHTML = ADDONS.map(a =>
     '<div class="addon-row">' +
@@ -2604,6 +2607,16 @@ function renderInvAddons(savedIds) {
       '<span style="font-size:13px;font-weight:500">' + esc(a.label) + '</span>' +
     '</div>'
   ).join('');
+}
+function renderInvAddons(savedIds) {
+  const container = document.getElementById('invAddonList');
+  if (!container) return;
+  _renderAddonCheckboxes(container, savedIds || []);
+}
+function renderSaleAddons(savedIds) {
+  const container = document.getElementById('saleAddonList');
+  if (!container) return;
+  _renderAddonCheckboxes(container, savedIds || []);
 }
 const DEFAULT_STYLES = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
 let PRODUCT_TYPES = [...DEFAULT_STYLES];
@@ -3765,7 +3778,8 @@ async function saveOrder() {
     const saleItemRows=payload.items?.rows||[];
     const saleQty=saleItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
     const saleSizeStr=saleItemRows.length>1?saleItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(payload.size||'');
-    await sb.from('sales').insert({name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||'',venmo_fee:payload.venmo_fee||0});
+    const _saleAo=(payload.items?.add_ons||[]).map(id=>{const a=ADDONS.find(x=>x.id===id);const p=payload.items?.add_on_prices?.[id]??0;return a?{id:a.id,label:a.label,price:p}:null;}).filter(Boolean);
+    await sb.from('sales').insert({name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||'',venmo_fee:payload.venmo_fee||0,add_ons:_saleAo.length?_saleAo:null});
   }
   // Sync pickup date+time → schedule_bookings and block off slot
   const pickupDate = payload.pickup_date;
@@ -3923,7 +3937,8 @@ async function _doCompleteOrder(data, payment) {
     const compItemRows=data.items?.rows||[];
     const compQty=compItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
     const compSizeStr=compItemRows.length>1?compItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(data.size||'');
-    await sb.from('sales').insert({name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes,venmo_fee:data.venmo_fee||0});
+    const _compAo=(data.items?.add_ons||[]).map(id=>{const a=ADDONS.find(x=>x.id===id);const p=data.items?.add_on_prices?.[id]??0;return a?{id:a.id,label:a.label,price:p}:null;}).filter(Boolean);
+    await sb.from('sales').insert({name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes,venmo_fee:data.venmo_fee||0,add_ons:_compAo.length?_compAo:null});
     const _cost = estimateOrderCost(data);
     const _profit = data.price - _cost;
     const _margin = data.price > 0 ? Math.round((_profit / data.price) * 100) : 0;
@@ -4193,7 +4208,7 @@ function renderSalesTable() {
   if (!data.length) {tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted)">No sales in this period.</td></tr>';return;}
   tbody.innerHTML=data.map(s=>`<tr>
     <td>${(d=>{if(!d)return '';const[y,m,dy]=d.split('-');return `${parseInt(m)}/${parseInt(dy)}/${y}`;})(s.sale_date)}</td>
-    <td style="font-family:'DM Mono',monospace">${esc(s.size)||''}</td>
+    <td style="font-family:'DM Mono',monospace">${esc(s.size)||''}${s.add_ons&&s.add_ons.length?`<div style="font-size:11px;color:var(--ocean);margin-top:2px">✨ ${s.add_ons.map(a=>esc(typeof a==='string'?a:a.label||a.id)).join(' · ')}</div>`:''}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${s.qty||1}</td>
     <td>${esc(s.style)||''}</td>
     <td>${esc(s.name)||'—'}</td>
@@ -4228,6 +4243,7 @@ function openSaleModal() {
   document.getElementById('sVenmoFee').value='';
   document.getElementById('sVenmoFeeWrap').style.display='none';
   populateProductSelects();
+  renderSaleAddons();
   openModal('saleModal');
 }
 
@@ -4248,12 +4264,14 @@ function editSale(id) {
   document.getElementById('sVenmoFeeWrap').style.display = s.payment==='venmo' ? 'block' : 'none';
   document.getElementById('sVenmoFee').value = _svf > 0 ? _svf : '';
   document.getElementById('sNotes').value = s.notes||'';
+  renderSaleAddons(s.add_ons||[]);
   openModal('saleModal');
 }
 
 async function saveSale() {
   const _spmt=document.getElementById('sPayment').value;
-  const payload={name:document.getElementById('sName').value,size:document.getElementById('sSize').value,style:document.getElementById('sProduct').value,price:parseFloat(document.getElementById('sPrice').value)||0,qty:parseInt(document.getElementById('sQty').value)||1,payment:_spmt,venmo_fee:_spmt==='venmo'?(parseFloat(document.getElementById('sVenmoFee').value)||0):0,sale_date:document.getElementById('sDate').value,notes:document.getElementById('sNotes').value};
+  const _saleAddons=Array.from(document.querySelectorAll('#saleAddonList input[type="checkbox"]:checked')).map(cb=>{const a=ADDONS.find(x=>x.id===cb.dataset.id);return a?{id:a.id,label:a.label}:null;}).filter(Boolean);
+  const payload={name:document.getElementById('sName').value,size:document.getElementById('sSize').value,style:document.getElementById('sProduct').value,price:parseFloat(document.getElementById('sPrice').value)||0,qty:parseInt(document.getElementById('sQty').value)||1,payment:_spmt,venmo_fee:_spmt==='venmo'?(parseFloat(document.getElementById('sVenmoFee').value)||0):0,sale_date:document.getElementById('sDate').value,notes:document.getElementById('sNotes').value,add_ons:_saleAddons.length?_saleAddons:null};
   if (!payload.size||!payload.price) {showToast('Size and price required','error');return;}
   if (editingSaleId) {
     const {error}=await sb.from('sales').update(payload).eq('id',editingSaleId);
