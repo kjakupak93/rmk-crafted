@@ -4106,7 +4106,7 @@ function renderSalesTable() {
     const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
     data = allSales.filter(s=>{if(!s.sale_date)return false;return new Date(s.sale_date+'T00:00:00')>=weekAgo;});
   }
-  const total=data.reduce((s,x)=>s+(x.price||0),0);
+  const total=data.reduce((s,x)=>s+(x.price||0)+(x.venmo_fee||0),0);
   const count=data.reduce((s,x)=>s+(x.qty||1),0);
   const avg=data.length?total/data.length:0;
   document.getElementById('rv-total').textContent='$'+total.toFixed(0);
@@ -4120,7 +4120,7 @@ function renderSalesTable() {
     <td style="font-family:'DM Mono',monospace;text-align:center">${s.qty||1}</td>
     <td>${esc(s.style)||''}</td>
     <td>${esc(s.name)||'—'}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500">${(()=>{const _c=estimateOrderCost({size:s.size,price:s.price});const _p=s.price>0?Math.round(((s.price-_c)/s.price)*100):0;const _f=!s.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);return '$'+Number(s.price)+' <span style="color:'+marginColor(_p)+';font-size:0.8em;margin-left:4px">'+(_f?'~':'')+_p+'%</span>';})()}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500">${(()=>{const _vf=s.venmo_fee||0;const _total=s.price+_vf;const _c=estimateOrderCost({size:s.size,price:s.price});const _p=_total>0?Math.round(((_total-_c)/_total)*100):0;const _f=!s.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);return '$'+Number(_total)+(_vf>0?` <span style="color:var(--text-muted);font-size:0.8em">(+$${_vf} fee)</span>`:'')+' <span style="color:'+marginColor(_p)+';font-size:0.8em;margin-left:4px">'+(_f?'~':'')+_p+'%</span>';})()}</td>
     <td><span class="badge badge-${(s.payment||'').toLowerCase()}">${esc(s.payment)||''}</span></td>
     <td style="color:var(--text-muted);font-size:12px">${esc(s.notes)||''}</td>
     <td style="display:flex;gap:4px">
