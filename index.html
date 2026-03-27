@@ -4801,6 +4801,8 @@ async function saveQuote() {
   if (error) { showToast('Error saving quote', 'error'); return; }
   showToast('Quote created!', 'success');
   closeModal('createQuoteModal');
+  goTo('orders');
+  document.querySelector('#orders-tabs .tab-btn[onclick*="quotes"]')?.click();
 }
 
 async function saveCutList() {

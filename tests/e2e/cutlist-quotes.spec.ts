@@ -147,6 +147,23 @@ test('save cut list with a style groups it under that style in saved list', asyn
   await expect(page.locator('#cl-saved-list')).toContainText(cutListName);
 });
 
+test('saving a quote auto-navigates to the Quotes tab', async ({ page }) => {
+  const quoteName = `${TAG} AutoNav`;
+  const cutListName = `${TAG} CL AutoNav`;
+  await goToCutList(page);
+  await addPartRowAndRun(page, cutListName);
+  await expect(page.locator('#cl-quote-btn')).not.toBeDisabled({ timeout: 5000 });
+  await page.click('#cl-quote-btn');
+  await page.waitForSelector('#createQuoteModal.open');
+  await page.fill('#cqName', quoteName);
+  await page.click('button:has-text("Create Quote")');
+
+  // After saving, should auto-navigate to Orders > Quotes tab
+  await expect(page.locator('#page-orders')).toHaveClass(/active/, { timeout: 5000 });
+  await expect(page.locator('#otab-quotes')).toHaveClass(/active/, { timeout: 5000 });
+  await expect(page.locator('#otab-quotes tr').filter({ hasText: quoteName })).toBeVisible({ timeout: 10000 });
+});
+
 test('creating new style from cut list dropdown adds it and selects it', async ({ page }) => {
   const newProductName = `${TAG} NewStyle`;
   await goToCutList(page);
