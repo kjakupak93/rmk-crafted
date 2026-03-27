@@ -54,5 +54,5 @@ test('sales history price cells show a margin badge', async ({ page }) => {
   await expect(rows).not.toHaveCount(0);
   // Price cell is the 6th column (index 5); should contain a % span
   const priceCell = rows.first().locator('td').nth(5);
-  await expect(priceCell.locator('span')).toContainText('%');
+  await expect(priceCell.locator('span').filter({ hasText: '%' })).toContainText('%');
 });
