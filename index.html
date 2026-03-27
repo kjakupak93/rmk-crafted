@@ -4208,7 +4208,7 @@ function renderSalesTable() {
   if (!data.length) {tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted)">No sales in this period.</td></tr>';return;}
   tbody.innerHTML=data.map(s=>`<tr>
     <td>${(d=>{if(!d)return '';const[y,m,dy]=d.split('-');return `${parseInt(m)}/${parseInt(dy)}/${y}`;})(s.sale_date)}</td>
-    <td style="font-family:'DM Mono',monospace">${esc(s.size)||''}${s.add_ons&&s.add_ons.length?`<div style="font-size:11px;color:var(--ocean);margin-top:2px">✨ ${s.add_ons.map(a=>esc(typeof a==='string'?a:a.label||a.id)).join(' · ')}</div>`:''}</td>
+    <td style="font-family:'DM Mono',monospace">${esc(s.size)||''}${s.add_ons&&s.add_ons.length?`<div style="font-size:11px;color:var(--ocean);margin-top:2px">✨ ${s.add_ons.map(a=>{const _lbl=esc(typeof a==='string'?a:a.label||a.id);const _p=typeof a==='object'&&a.price?` (+$${a.price})`:'';return _lbl+_p;}).join(' · ')}</div>`:''}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${s.qty||1}</td>
     <td>${esc(s.style)||''}</td>
     <td>${esc(s.name)||'—'}</td>
