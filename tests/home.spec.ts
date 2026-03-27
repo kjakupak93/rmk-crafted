@@ -15,8 +15,9 @@ test('4 nav tiles are present', async ({ page }) => {
 });
 
 test('+ New Order shortcut button opens the order modal', async ({ page }) => {
-  await expect(page.locator('button:has-text("+ New Order")').first()).toBeVisible();
-  await page.locator('button:has-text("+ New Order")').first().click();
+  const btn = page.locator('#page-home button:has-text("+ New Order")');
+  await expect(btn).toBeVisible();
+  await btn.click();
   await expect(page.locator('#orderModal')).toHaveClass(/open/, { timeout: 5000 });
 });
 
