@@ -1064,6 +1064,9 @@ body {
 
 /* ── Analytics page ── */
 #page-analytics { max-width: 880px; margin: 0 auto; padding: 32px 24px 80px; }
+.analytics-year-toggle { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.analytics-year-toggle button { padding: 6px 18px; border: 1px solid var(--warm-gray); border-radius: 20px; background: white; color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 32px; font-weight: 600; }
+.analytics-year-toggle button.active { background: var(--sand); color: white; border-color: var(--sand); }
 .analytics-range-toggle { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
 .analytics-range-toggle button { padding: 8px 16px; border: 1px solid var(--warm-gray); border-radius: 20px; background: white; color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 36px; }
 .analytics-range-toggle button.active { background: var(--navy); color: white; border-color: var(--navy); }
@@ -1264,6 +1267,8 @@ body {
 /* Analytics dark mode */
 [data-theme="dark"] .chart-card { background: #162534 !important; border-color: #2C4255 !important; }
 [data-theme="dark"] .chart-card h3 { color: var(--text-muted); }
+[data-theme="dark"] .analytics-year-toggle button { background: #162534; border-color: #2C4255; color: var(--text-muted); }
+[data-theme="dark"] .analytics-year-toggle button.active { background: var(--sand); border-color: var(--sand); color: #091420; }
 [data-theme="dark"] .analytics-range-toggle button { background: #162534; border-color: #2C4255; color: var(--text-muted); }
 [data-theme="dark"] .analytics-range-toggle button.active { background: #7BADC8; border-color: #7BADC8; color: #091420; }
 [data-theme="dark"] .analytics-section-header { border-color: #2C4255; }
@@ -1665,6 +1670,8 @@ body {
       <div class="sales-filter-tabs">
         <button class="sales-filter-btn" onclick="setSalesFilter('week',this)">This Week</button>
         <button class="sales-filter-btn" onclick="setSalesFilter('month',this)">This Month</button>
+        <button class="sales-filter-btn" onclick="setSalesFilter('2026',this)">2026</button>
+        <button class="sales-filter-btn" onclick="setSalesFilter('2025',this)">2025</button>
         <button class="sales-filter-btn active" onclick="setSalesFilter('all',this)">All Time</button>
       </div>
       <div class="table-wrap">
@@ -1777,6 +1784,8 @@ body {
         <button class="sales-filter-btn" onclick="setPurchasesFilter('lastweek',this)">Last Week</button>
         <button class="sales-filter-btn" onclick="setPurchasesFilter('month',this)">This Month</button>
         <button class="sales-filter-btn" onclick="setPurchasesFilter('lastmonth',this)">Last Month</button>
+        <button class="sales-filter-btn" onclick="setPurchasesFilter('2026',this)">2026</button>
+        <button class="sales-filter-btn" onclick="setPurchasesFilter('2025',this)">2025</button>
         <button class="sales-filter-btn active" onclick="setPurchasesFilter('all',this)">All Time</button>
       </div>
       <div class="table-wrap">
@@ -1982,12 +1991,17 @@ body {
       </div>
     </div>
 
+    <div class="analytics-year-toggle">
+      <button class="active" onclick="setAnalyticsYear(2026,this)">2026</button>
+      <button onclick="setAnalyticsYear(2025,this)">2025</button>
+      <button onclick="setAnalyticsYear(null,this)">All Years</button>
+    </div>
     <div class="analytics-range-toggle">
       <button id="range-btn-month" onclick="setAnalyticsRange('month',this)">This Month</button>
       <button id="range-btn-lastmonth" onclick="setAnalyticsRange('lastmonth',this)">Last Month</button>
       <button id="range-btn-3m" onclick="setAnalyticsRange('3m',this)">Last 3M</button>
       <button id="range-btn-6m" onclick="setAnalyticsRange('6m',this)">Last 6M</button>
-      <button id="range-btn-year" class="active" onclick="setAnalyticsRange('year',this)">This Year</button>
+      <button id="range-btn-year" class="active" onclick="setAnalyticsRange('year',this)">Full Year</button>
       <button id="range-btn-12m" onclick="setAnalyticsRange('12m',this)">Last 12M</button>
       <button id="range-btn-all" onclick="setAnalyticsRange('all',this)">All Time</button>
     </div>
@@ -2778,6 +2792,7 @@ function onClProductChange(sel) {
 }
 let currentPage = 'home';
 let analyticsRange = 'year';
+let analyticsYear = new Date().getFullYear(); // default to current year; null = all years
 let chartRevenueSpend = null, chartSizes = null;
 let chartMarginTrend = null, chartMarginBySize = null;
 let chartCumulative = null, chartUnitsByProduct = null, chartRevenueByProduct = null;
@@ -2908,6 +2923,13 @@ function setAnalyticsRange(range, btn) {
   renderAnalyticsCharts();
 }
 
+function setAnalyticsYear(year, btn) {
+  analyticsYear = year;
+  document.querySelectorAll('.analytics-year-toggle button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderAnalyticsCharts();
+}
+
 function setAnalyticsProductFilter(filter) {
   bestSellersProductFilter = filter;
   renderAnalyticsCharts();
@@ -2934,8 +2956,10 @@ function getAnalyticsBuckets() {
     return buckets;
   }
   if (analyticsRange === 'year') {
+    const yr = analyticsYear || now.getFullYear();
+    const maxMonth = yr === now.getFullYear() ? now.getMonth() : 11;
     const r = [];
-    for (let m = 0; m <= now.getMonth(); m++) { const d = new Date(now.getFullYear(), m, 1); r.push({key:mKey(d),label:mLabel(d)}); }
+    for (let m = 0; m <= maxMonth; m++) { const d = new Date(yr, m, 1); r.push({key:mKey(d),label:mLabel(d)}); }
     return r;
   }
   const steps = analyticsRange === '3m' ? 2 : analyticsRange === '6m' ? 5 : 11;
@@ -2970,7 +2994,9 @@ function getAnalyticsDateBounds() {
     return { start: fmt(new Date(now.getFullYear(), now.getMonth() - 5, 1)), end: today };
   }
   if (analyticsRange === 'year') {
-    return { start: `${now.getFullYear()}-01-01`, end: today };
+    const yr = analyticsYear || now.getFullYear();
+    const end = yr === now.getFullYear() ? today : `${yr}-12-31`;
+    return { start: `${yr}-01-01`, end };
   }
   if (analyticsRange === '12m') {
     return { start: fmt(new Date(now.getFullYear(), now.getMonth() - 11, 1)), end: today };
@@ -2984,6 +3010,11 @@ function renderAnalyticsCharts() {
   const gridColor = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
   const legendColor = dark ? '#6B8A99' : '#666';
 
+  // Apply year filter to data before charting
+  const yrStr = analyticsYear ? String(analyticsYear) : null;
+  const analyticsSalesFiltered = yrStr ? analyticsSales.filter(s => s.sale_date && s.sale_date.startsWith(yrStr)) : analyticsSales;
+  const analyticsPurchasesFiltered = yrStr ? analyticsPurchases.filter(p => p.purchase_date && p.purchase_date.startsWith(yrStr)) : analyticsPurchases;
+
   const buckets = getAnalyticsBuckets();
   const keys = buckets.map(b => b.key);
   const bucketLabels = buckets.map(b => b.label);
@@ -2992,8 +3023,8 @@ function renderAnalyticsCharts() {
   // ── P&L summary cards ──
   const bounds = getAnalyticsDateBounds();
   const inBounds = date => !date ? false : (!bounds.start || date >= bounds.start) && (!bounds.end || date <= bounds.end);
-  const pnlRev = analyticsSales.filter(s => inBounds(s.sale_date)).reduce((sum,s) => sum+(s.price||0), 0);
-  const pnlCost = analyticsPurchases.filter(p => inBounds(p.purchase_date)).reduce((sum,p) => sum+(p.total||0), 0);
+  const pnlRev = analyticsSalesFiltered.filter(s => inBounds(s.sale_date)).reduce((sum,s) => sum+(s.price||0), 0);
+  const pnlCost = analyticsPurchasesFiltered.filter(p => inBounds(p.purchase_date)).reduce((sum,p) => sum+(p.total||0), 0);
   const pnlNet = pnlRev - pnlCost;
   document.getElementById('pnl-revenue').textContent = '$'+Math.round(pnlRev);
   document.getElementById('pnl-cost').textContent = '$'+Math.round(pnlCost);
@@ -3012,7 +3043,7 @@ function renderAnalyticsCharts() {
   document.getElementById('pnl-revenue-lbl').textContent = pnlLabels[0];
   document.getElementById('pnl-cost-lbl').textContent = pnlLabels[1];
   document.getElementById('pnl-profit-lbl').textContent = pnlLabels[2];
-  const salesInRange = analyticsSales.filter(s => inBounds(s.sale_date));
+  const salesInRange = analyticsSalesFiltered.filter(s => inBounds(s.sale_date));
   const unitsInRange = salesInRange.reduce((sum, s) => sum + (s.qty || 1), 0);
   const avgOrderValue = salesInRange.length > 0 ? Math.round(pnlRev / salesInRange.length) : 0;
   document.getElementById('pnl-units').textContent = unitsInRange;
@@ -3030,12 +3061,12 @@ function renderAnalyticsCharts() {
   }
 
   const revByBucket = {}, costByBucket = {};
-  analyticsSales.forEach(s => {
+  analyticsSalesFiltered.forEach(s => {
     if (!s.sale_date) return;
     const k = getBucketKey(s.sale_date);
     if (k) revByBucket[k] = (revByBucket[k]||0) + (s.price||0);
   });
-  analyticsPurchases.forEach(p => {
+  analyticsPurchasesFiltered.forEach(p => {
     if (!p.purchase_date) return;
     const k = getBucketKey(p.purchase_date);
     if (k) costByBucket[k] = (costByBucket[k]||0) + (p.total||0);
@@ -3095,7 +3126,7 @@ function renderAnalyticsCharts() {
 
   // ── Best Sellers (filter by range) ──
   const sizeCnt = {};
-  analyticsSales.forEach(s => {
+  analyticsSalesFiltered.forEach(s => {
     if (!s.size) return;
     if (bestSellersProductFilter !== 'all' && (s.style || 'Standard') !== bestSellersProductFilter) return;
     if (s.sale_date) {
@@ -3123,7 +3154,7 @@ function renderAnalyticsCharts() {
 
   // ── Units by Product & Revenue by Product ──
   const productUnits = {}, productRevenue = {};
-  analyticsSales.forEach(s => {
+  analyticsSalesFiltered.forEach(s => {
     if (!inBounds(s.sale_date)) return;
     const prod = s.style || 'Standard';
     productUnits[prod] = (productUnits[prod] || 0) + (s.qty || 1);
@@ -3168,7 +3199,7 @@ function renderAnalyticsCharts() {
 
   // ── Margin Trend ──
   const _mrgSum = {}, _mrgCnt = {};
-  analyticsSales.forEach(s => {
+  analyticsSalesFiltered.forEach(s => {
     if (!s.sale_date || !s.price) return;
     const k = isWeekly ? getBucketKey(s.sale_date) : s.sale_date.slice(0,7);
     if (!k || !keys.includes(k)) return;
@@ -3192,9 +3223,9 @@ function renderAnalyticsCharts() {
     }
   });
 
-  // ── Margin by Size (all-time, unchanged) ──
+  // ── Margin by Size (filtered by selected year) ──
   const _szMrgSum = {}, _szMrgCnt = {}, _szProfSum = {};
-  analyticsSales.forEach(s => {
+  analyticsSalesFiltered.forEach(s => {
     if (!s.size || s.size.includes('+') || !s.price) return;
     const cost = estimateOrderCost({ size: s.size, price: s.price });
     const mp = (s.price - cost) / s.price * 100;
@@ -4149,6 +4180,8 @@ function renderSalesTable() {
   } else if (salesFilter === 'week') {
     const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
     data = allSales.filter(s=>{if(!s.sale_date)return false;return new Date(s.sale_date+'T00:00:00')>=weekAgo;});
+  } else if (salesFilter === '2025' || salesFilter === '2026') {
+    data = allSales.filter(s=>s.sale_date&&s.sale_date.startsWith(salesFilter));
   }
   const total=data.reduce((s,x)=>s+(x.price||0)+(x.venmo_fee||0),0);
   const count=data.reduce((s,x)=>s+(x.qty||1),0);
@@ -5002,13 +5035,6 @@ async function loadPurchases() {
   const {data,error}=await sb.from('purchases').select('*').order('purchase_date',{ascending:false});
   if (error) {showToast('Error loading purchases','error');return;}
   allPurchases=data||[];
-  // Compute all-time stats (never filtered)
-  const totalSpent=allPurchases.reduce((s,p)=>s+(p.total||0),0);
-  const trips=allPurchases.length;
-  const avg=trips>0?totalSpent/trips:0;
-  document.getElementById('pur-stat-total').textContent='$'+totalSpent.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('pur-stat-trips').textContent=trips;
-  document.getElementById('pur-stat-avg').textContent='$'+avg.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   renderPurchaseList();
 }
 
@@ -5023,6 +5049,7 @@ function renderPurchaseList() {
     if (purchasesFilter==='all') return true;
     if (!p.purchase_date) return false;
     const d=new Date(p.purchase_date+'T00:00:00');
+    if (purchasesFilter==='2025'||purchasesFilter==='2026') return p.purchase_date.startsWith(purchasesFilter);
     if (purchasesFilter==='lastweek') {
       const dow=now.getDay(); // 0=Sun
       const lastMon=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(dow===0?6:dow-1)-7);
@@ -5036,6 +5063,13 @@ function renderPurchaseList() {
     }
     return true;
   });
+  // Update stats to reflect current filter
+  const totalSpent=filtered.reduce((s,p)=>s+(p.total||0),0);
+  const trips=filtered.length;
+  const avg=trips>0?totalSpent/trips:0;
+  document.getElementById('pur-stat-total').textContent='$'+totalSpent.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('pur-stat-trips').textContent=trips;
+  document.getElementById('pur-stat-avg').textContent='$'+avg.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   if (!filtered.length) {tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted)">No purchases in this period.</td></tr>';return;}
   tbody.innerHTML=filtered.map(p=>`<tr>
     <td>${p.purchase_date||''}</td>
