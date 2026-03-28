@@ -2511,8 +2511,22 @@ async function saveAddons() {
 }
 async function saveAddonField(idx, key, value) {
   if (!ADDONS[idx]) return;
+  const oldLabel = ADDONS[idx].label;
+  const addonId = ADDONS[idx].id;
   ADDONS[idx][key] = value;
   await saveAddons();
+  // Cascade: if label changed, update historical sales records
+  if (key === 'label' && value !== oldLabel) {
+    const { data: allSales } = await sb.from('sales').select('id, add_ons').not('add_ons', 'is', null);
+    if (allSales) {
+      const affected = allSales.filter(s => Array.isArray(s.add_ons) && s.add_ons.some(a => a.id === addonId));
+      await Promise.all(affected.map(s =>
+        sb.from('sales').update({
+          add_ons: s.add_ons.map(a => a.id === addonId ? { ...a, label: value } : a)
+        }).eq('id', s.id)
+      ));
+    }
+  }
 }
 async function addNewAddon() {
   ADDONS.push({id:'addon_'+Date.now(), label:'New Add-on', base:0, scales:false});
