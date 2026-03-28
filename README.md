@@ -12,7 +12,7 @@
 
 A single-page web app that manages every part of the RMK Crafted workflow:
 
-- **Home Dashboard** — at-a-glance KPI cards (this month's revenue, YTD, ready-to-sell count, amount owed) with trend badges showing ▲/▼ % vs prior period, plus a tile grid linking to every section and a **+ New Order** shortcut button
+- **Home Dashboard** — at-a-glance KPI cards (this month's revenue, YTD, ready-to-sell count, amount owed) with trend badges showing ▲/▼ % vs prior period, plus a tile grid linking to every section. The hero card contains a prominent gold **+ New Order** button for quick access without navigating away
 - **Order & Inventory Tracker** — manage active orders, ready-to-sell stock, and sales history
 - **Material Cost Tracker** — track cedar stock levels and Lowes purchases
 - **Pickup Scheduler** — manage availability, view upcoming pickups, sync with customer bookings
@@ -64,7 +64,11 @@ All data is stored in Supabase (cloud) so it works across any device. The dashbo
 
 **Ready-to-Sell Inventory tab** — finished boxes not tied to a specific order. Use +/− to adjust quantity as items sell.
 
-**Sales History tab** — auto-populated when an order is completed. Shows running totals for total revenue, cash, and Venmo.
+**Sales History tab** — auto-populated when an order is completed, or logged manually via **+ Log Sale**. Shows running totals for total revenue, units, and average order value. Filter by **This Week · This Month · 2026 · 2025 · All Time**.
+
+Each row shows the sale date, size (with any add-ons listed below as `✨ Sealant (+$20) · Casters (+$40)`), qty, product type, buyer name, price with margin %, payment method, and notes. Tap ✏️ to edit or 🗑️ to delete any record.
+
+**Log a Sale manually** — the sale modal includes: Date · Size · Qty · Product · Price · Payment (cash or Venmo + fee) · Notes · Add-ons (same checkbox list as orders). Completing an order automatically captures any add-ons from the order into the sales record.
 
 **Quotes tab** — saved quotes generated from the Cut List Calculator. Each row shows the quote name, price, picket count, and estimated margin. Tap **Convert** to open the New Order modal pre-filled with the quote's details (name, price, notes, and size if the cut list name contains a dimension like `36×16×16`) — saving the order automatically deletes the quote. After creating a quote, the app navigates directly to the Quotes tab. Tap **Delete** to remove a quote without converting.
 
@@ -81,7 +85,7 @@ Stock color coding: 🔴 Low · 🟠 Medium · 🟢 Good
 
 Use +/− buttons to adjust as you build or receive materials.
 
-**Lowes Purchase Log tab** — log every materials run. Select materials from a dropdown (auto-fills price per unit), enter quantities, add notes and a total override. Records date, store, and cost. Tracks total materials spend over time.
+**Lowes Purchase Log tab** — log every materials run. Select materials from a dropdown (auto-fills price per unit), enter quantities, add notes and a total override. Records date, store, and cost. Tracks total materials spend over time. Filter by **Last Week · This Month · Last Month · 2026 · 2025 · All Time**.
 
 > Note: Logging a purchase does **not** auto-update stock levels. Update the Stock Levels tab manually.
 
@@ -219,7 +223,8 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 | Add open availability | Scheduler → Calendar → click day → + Add Slot |
 | Log a materials purchase | Material Tracker → Lowes Purchase Log → + Log Purchase |
 | Update stock levels | Material Tracker → Stock Levels → +/− buttons |
-| View sales revenue | Orders → Sales History tab |
+| View sales revenue | Orders → Sales History tab (filter by year or period) |
+| Log a sale manually | Orders → Sales History tab → + Log Sale |
 | View revenue trends | Analytics tile on home → range toggle for time window |
 | Plan a build's cuts | Materials → Cut List tab → add parts → Calculate → Save |
 | Load a saved cut list | Materials → Cut List tab → Saved Cut Lists (bottom) → Load |
@@ -252,9 +257,9 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 
 | Table | Contents |
 |---|---|
-| `orders` | All orders — includes `pickup_date`, `pickup_time`, `customer_booked` |
-| `inventory` | Ready-to-sell inventory |
-| `sales` | Completed sales history |
+| `orders` | All orders — includes `pickup_date`, `pickup_time`, `customer_booked`, `items` (JSONB with rows, add-ons, prices) |
+| `inventory` | Ready-to-sell inventory — includes `add_ons` (JSONB array of IDs) |
+| `sales` | Completed sales history — includes `add_ons` (JSONB array of `{id, label, price}` objects, denormalized at write time) |
 | `purchases` | Lowes purchase log |
 | `stock` | Material stock levels |
 | `schedule_slots` | Open availability slots |
@@ -271,8 +276,8 @@ The project has a two-tier Playwright test suite. See [`tests/README.md`](tests/
 
 | Suite | Command | Tests | What it covers |
 |---|---|---|---|
-| Smoke | `npx playwright test --project=smoke` | 22 | UI presence, navigation, no data writes |
-| E2E | `npx playwright test --project=e2e` | 42 | Full workflows with real Supabase reads/writes |
+| Smoke | `npx playwright test --project=smoke` | 28 | UI presence, navigation, no data writes |
+| E2E | `npx playwright test --project=e2e` | 59 | Full workflows with real Supabase reads/writes |
 
 Both suites run automatically on every push to `main` via GitHub Actions (`.github/workflows/e2e.yml`).
 
