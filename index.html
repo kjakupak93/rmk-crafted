@@ -2681,9 +2681,10 @@ async function loadProductSettings() {
         if (Array.isArray(parsed) && parsed.length > 0) PRODUCT_TYPES = parsed;
       } catch(e) { /* ignore */ }
     }
-    await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
-    localStorage.removeItem('rmk_products');
+    const { error: migrateErr } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
+    if (!migrateErr) localStorage.removeItem('rmk_products');
   }
+  populateProductSelects();
 }
 function populateProductSelects(selectedVal) {
   const styleOpts = PRODUCT_TYPES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
@@ -2776,12 +2777,13 @@ async function deleteProduct(idx) {
     ? count + ' cut list(s) use this product. They\'ll be moved to Uncategorized. Delete product "' + name + '"?'
     : 'Delete product "' + name + '"?';
   if (!confirm(msg)) return;
+  const newList = PRODUCT_TYPES.filter(s => s !== name);
+  const { error: saveErr } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(newList) }, { onConflict: 'key' });
+  if (saveErr) { showToast('Failed to save product list', 'error'); return; }
   if (count > 0) {
     await sb.from('cut_lists').update({ style: null }).eq('style', name);
   }
-  PRODUCT_TYPES = PRODUCT_TYPES.filter(s => s !== name);
-  const { error: saveErr } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
-  if (saveErr) { showToast('Failed to save product list', 'error'); return; }
+  PRODUCT_TYPES = newList;
   populateProductSelects();
   renderProductsTab();
   showToast('Product deleted');
