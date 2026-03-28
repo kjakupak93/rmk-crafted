@@ -294,10 +294,10 @@ Both suites run automatically on every push to `main` via GitHub Actions (`.gith
 
 ## Security Notes
 
-- The dashboard is protected by a PIN gate (set in `index.html` — search for `const PIN`)
-- The Supabase publishable/anon key in the source code is intentional and safe — it's designed for public-facing browser apps
-- `.mcp.json` is in `.gitignore` to prevent GitHub PAT tokens from being committed
-- No authentication system is needed — this is a solo-use internal tool
+- **Authentication** — the dashboard uses Supabase Auth (email/password via `signInWithPassword`). The `#pin-gate` overlay appears immediately on load and is dismissed once `onAuthStateChange` confirms a valid session. Sessions persist across reloads; a Sign Out button in the header clears the session.
+- **Row Level Security** — all business tables (`orders`, `sales`, `inventory`, etc.) require the `authenticated` role. The public `schedule.html` booking page uses a narrow anon policy: SELECT + UPDATE on `orders`, INSERT on `schedule_bookings` only.
+- **Supabase anon key** — the anon key in source code is intentional and safe. It's designed for browser apps and only grants what RLS policies explicitly allow.
+- **Secrets out of git** — `.mcp.json` (Claude Code MCP config with GitHub PAT) and `.env` (Supabase credentials for the test suite) are both in `.gitignore` and never committed.
 
 ---
 
