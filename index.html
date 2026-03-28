@@ -2396,12 +2396,26 @@ window.sb = sb;
     document.body.style.overflow = '';
   }
 
+  let _settingsLoaded = false;
+  async function loadSettings() {
+    if (_settingsLoaded) return;
+    _settingsLoaded = true;
+    await Promise.all([loadAddonSettings(), loadProductSettings()]);
+    populateProductSelects();
+  }
+
   sb.auth.getSession().then(({ data: { session } }) => {
-    if (session) hideGate();
+    if (session) { hideGate(); loadSettings(); }
   });
 
   sb.auth.onAuthStateChange((event, session) => {
-    if (session) hideGate(); else showGate();
+    if (session) {
+      hideGate();
+      loadSettings();
+    } else {
+      showGate();
+      _settingsLoaded = false;
+    }
   });
 })();
 
@@ -5662,9 +5676,6 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 
 // ===== INIT =====
 buildStdTable();
-loadAddonSettings();
-loadProductSettings();
-populateProductSelects();
 setHomeGreeting();
 // Apply saved dark mode preference
 if (localStorage.getItem('rmk_theme') === 'dark') applyDarkMode(true);
