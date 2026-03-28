@@ -180,10 +180,10 @@ To add open availability: select a day → **+ Add Slot** → enter start and en
 Customers never see the dashboard. They only see this page, accessed via a direct link:
 
 ```
-https://kjakupak93.github.io/rmk-crafted/schedule.html?order=ORDER_ID
+https://kjakupak93.github.io/rmk-crafted/schedule.html?token=BOOKING_TOKEN
 ```
 
-The `?order=` parameter links their booking to a specific order. Always share via the 🔗 **Share booking link** button on the order card — it generates the correct URL automatically.
+The `?token=` parameter links their booking to a specific order via a UUID booking token. Always share via the 🔗 **Share booking link** button on the order card — it generates the correct URL automatically.
 
 **What the customer sees:**
 1. Calendar of available dates
@@ -295,7 +295,7 @@ Both suites run automatically on every push to `main` via GitHub Actions (`.gith
 ## Security Notes
 
 - **Authentication** — the dashboard uses Supabase Auth (email/password via `signInWithPassword`). The `#pin-gate` overlay appears immediately on load and is dismissed once `onAuthStateChange` confirms a valid session. Sessions persist across reloads; a Sign Out button in the header clears the session.
-- **Row Level Security** — all business tables (`orders`, `sales`, `inventory`, etc.) require the `authenticated` role. The public `schedule.html` booking page uses a narrow anon policy: SELECT + UPDATE on `orders`, INSERT on `schedule_bookings` only.
+- **Row Level Security** — all business tables (`orders`, `sales`, `inventory`, etc.) require the `authenticated` role. Anon users have **no direct access** to the `orders` table. The public `schedule.html` booking page accesses orders exclusively through two SECURITY DEFINER RPC functions: `get_order_by_token(uuid)` (resolves an order by its booking token) and `book_order_pickup(uuid, date, text)` (writes the pickup date/time back to the order). Anon INSERT on `schedule_bookings` requires a valid `order_id` linked to an unbooked order. The `settings` table has no anon access.
 - **Supabase anon key** — the anon key in source code is intentional and safe. It's designed for browser apps and only grants what RLS policies explicitly allow.
 - **Secrets out of git** — `.mcp.json` (Claude Code MCP config with GitHub PAT) and `.env` (Supabase credentials for the test suite) are both in `.gitignore` and never committed.
 
