@@ -2234,7 +2234,7 @@ body {
     </div>
     <div class="form-row">
       <div class="form-group"><label>Pickup Date</label><input class="form-control" type="date" id="bkDate"></div>
-      <div class="form-group"><label>Pickup Time</label><input class="form-control" type="time" id="bkTime" value="10:00"></div>
+      <div class="form-group"><label>Pickup Time</label><input class="form-control" type="time" id="bkTime"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Planter Size</label><input class="form-control" type="text" id="bkSize" placeholder="36×16×16"></div>
@@ -5398,7 +5398,7 @@ function openBookingModal() {
   document.getElementById('editBookingOrderId').value='';
   document.getElementById('bookingModalTitle').textContent='Book a Pickup';
   document.getElementById('bookingModalSaveBtn').textContent='Book Pickup';
-  ['bkName','bkContact','bkSize','bkNotes'].forEach(f=>document.getElementById(f).value='');
+  ['bkName','bkContact','bkTime','bkSize','bkNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('bkAmount').value='';
   document.getElementById('bkDate').value=selectedDate||'';
   openModal('bookingModal');
@@ -5414,7 +5414,7 @@ async function editBooking(id) {
   document.getElementById('bkName').value=data.name||'';
   document.getElementById('bkContact').value=data.contact||'';
   document.getElementById('bkDate').value=data.booking_date||'';
-  document.getElementById('bkTime').value=data.pickup_time||'10:00';
+  document.getElementById('bkTime').value=data.pickup_time||'';
   document.getElementById('bkSize').value=data.size||'';
   document.getElementById('bkAmount').value=data.amount||'';
   document.getElementById('bkPayment').value=data.payment||'cash';
