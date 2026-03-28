@@ -2748,12 +2748,13 @@ async function saveProductRename(idx) {
   const { error } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
   if (error) { showToast('Failed to save product', 'error'); PRODUCT_TYPES[idx] = oldName; return; }
   // Cascade: update all records that reference the old product name
-  await Promise.all([
+  const cascadeResults = await Promise.all([
     sb.from('orders').update({ style: trimmed }).eq('style', oldName),
     sb.from('sales').update({ style: trimmed }).eq('style', oldName),
     sb.from('inventory').update({ style: trimmed }).eq('style', oldName),
     sb.from('cut_lists').update({ style: trimmed }).eq('style', oldName),
   ]);
+  if (cascadeResults.some(r => r.error)) showToast('Product renamed but some records could not be updated', 'error');
   populateProductSelects();
   _editingProductIdx = null;
   renderProductsTab();
