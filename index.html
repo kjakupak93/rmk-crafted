@@ -2397,11 +2397,15 @@ window.sb = sb;
   }
 
   let _settingsLoaded = false;
+  let _settingsResolve = null;
+  window._settingsReady = new Promise(res => { _settingsResolve = res; });
   async function loadSettings() {
     if (_settingsLoaded) return;
     _settingsLoaded = true;
     await Promise.all([loadAddonSettings(), loadProductSettings()]);
     populateProductSelects();
+    window._settingsDidLoad = true;
+    if (_settingsResolve) { _settingsResolve(); _settingsResolve = null; }
   }
 
   sb.auth.getSession().then(({ data: { session } }) => {
@@ -2415,6 +2419,8 @@ window.sb = sb;
     } else {
       showGate();
       _settingsLoaded = false;
+      window._settingsDidLoad = false;
+      window._settingsReady = new Promise(res => { _settingsResolve = res; });
     }
   });
 })();
@@ -2544,11 +2550,13 @@ async function saveAddonField(idx, key, value) {
   }
 }
 async function addNewAddon() {
+  await window._settingsReady;
   ADDONS.push({id:'addon_'+Date.now(), label:'New Add-on', base:0, scales:false});
   await saveAddons();
   renderAddonsTab();
 }
 async function deleteAddon(idx) {
+  await window._settingsReady;
   ADDONS.splice(idx, 1);
   await saveAddons();
   renderAddonsTab();
@@ -2721,6 +2729,7 @@ function populateProductSelects(selectedVal) {
   }
 }
 async function addProduct(name) {
+  await window._settingsReady;
   const trimmed = name.trim();
   if (!trimmed) return false;
   if (PRODUCT_TYPES.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
@@ -2870,10 +2879,10 @@ function onClProductChange(sel) {
   sel.parentNode.appendChild(wrapper);
   inp.focus();
   function cleanup() { wrapper.remove(); }
-  function save() {
+  async function save() {
     const trimmed = inp.value.trim();
     if (!trimmed) return;
-    if (addProduct(trimmed)) {
+    if (await addProduct(trimmed)) {
       renderProductsTab();
       sel.value = trimmed;
       cleanup();

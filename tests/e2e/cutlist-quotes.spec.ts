@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { login } from '../helpers/auth';
-import { cleanupTestData } from './helpers/cleanup';
+import { cleanupTestData, resetSettings } from './helpers/cleanup';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -44,6 +44,7 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await cleanupTestData(['quotes', 'orders', 'cut_lists']);
+  await resetSettings();
 });
 
 test('Quote button becomes enabled after running cut list', async ({ page }) => {

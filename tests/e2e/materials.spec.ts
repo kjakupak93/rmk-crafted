@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { login } from '../helpers/auth';
-import { cleanupTestData, snapshotStock, restoreStock } from './helpers/cleanup';
+import { cleanupTestData, snapshotStock, restoreStock, resetSettings } from './helpers/cleanup';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -12,8 +12,13 @@ async function goToMaterials(page: Page) {
   await page.waitForSelector('#page-materials.active');
 }
 
+async function waitForSettings(page: Page) {
+  await page.waitForFunction(() => (window as any)._settingsDidLoad === true, { timeout: 10000 });
+}
+
 async function goToProducts(page: Page) {
   await goToMaterials(page);
+  await waitForSettings(page);
   await page.click('button:has-text("Products")');
   await page.waitForSelector('#mtab-products.active');
 }
@@ -54,11 +59,13 @@ let stockSnapshot: { type: string; qty: number }[] = [];
 
 test.beforeAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
+  await resetSettings();
   stockSnapshot = await snapshotStock();
 });
 
 test.afterAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
+  await resetSettings();
   await restoreStock(stockSnapshot);
 });
 
@@ -223,6 +230,7 @@ test('deleting the last remaining product shows error and keeps it', async ({ pa
 
 async function goToAddons(page: Page) {
   await goToMaterials(page);
+  await waitForSettings(page);
   await page.click('button:has-text("Add-ons")');
   await page.waitForSelector('#mtab-addons.active');
 }
@@ -236,14 +244,15 @@ test('add new add-on from Add-ons tab appears in list', async ({ page }) => {
 
 test('delete add-on removes it from the list', async ({ page }) => {
   await goToAddons(page);
+  const rows = page.locator('#addons-list > div');
+  const beforeCount = await rows.count();
   // Add one first so we have a safe target to delete
   await page.click('#mtab-addons button:has-text("+ Add Add-on")');
-  const rows = page.locator('#addons-list > div');
-  const countAfterAdd = await rows.count();
-  await expect(rows).toHaveCount(countAfterAdd);
+  // Wait for the async add to complete and render
+  await expect(rows).toHaveCount(beforeCount + 1, { timeout: 5000 });
   // Delete the last row
   await rows.last().locator('button[title="Delete"]').click();
-  await expect(rows).toHaveCount(countAfterAdd - 1, { timeout: 5000 });
+  await expect(rows).toHaveCount(beforeCount, { timeout: 5000 });
 });
 
 test('new add-on appears in order modal add-on dropdown', async ({ page }) => {
@@ -263,5 +272,5 @@ test('new add-on appears in order modal add-on dropdown', async ({ page }) => {
   // options = 1 blank "— Select add-on —" + (beforeCount + 1) addons
   await expect(page.locator('#oAddonSelect option')).toHaveCount(beforeCount + 2, { timeout: 5000 });
   await page.click('button.modal-btn-cancel');
-  // No Supabase cleanup needed — add-ons are localStorage only (reset per browser context)
+  // Add-on cleanup handled by afterAll resetSettings()
 });

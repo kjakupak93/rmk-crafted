@@ -156,3 +156,33 @@ export async function cleanupById(table: string, id: string): Promise<void> {
     console.warn(`cleanup: DELETE ${table}/${id} failed — ${res.status} ${text}`);
   }
 }
+
+const DEFAULT_ADDONS = [
+  { id: 'sealant',  label: 'Sealant',       base: 20, scales: true  },
+  { id: 'liner',    label: 'Fabric Liner',   base: 15, scales: true  },
+  { id: 'casters',  label: 'Casters',        base: 40, scales: false },
+  { id: 'shelf',    label: 'Bottom Shelf',   base: 30, scales: true  },
+];
+const DEFAULT_PRODUCTS = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
+
+/**
+ * Reset the settings table rows for 'addons' and 'products' back to defaults.
+ * Call in beforeAll/afterAll for any test suite that mutates these settings.
+ */
+export async function resetSettings(): Promise<void> {
+  const token = await getAuthToken();
+  const headers = makeHeaders(token);
+  for (const { key, value } of [
+    { key: 'addons',    value: JSON.stringify(DEFAULT_ADDONS)   },
+    { key: 'products',  value: JSON.stringify(DEFAULT_PRODUCTS) },
+  ]) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/settings?key=eq.${key}`,
+      { method: 'PATCH', headers, body: JSON.stringify({ value }) },
+    );
+    if (!res.ok) {
+      const text = await res.text();
+      console.warn(`cleanup: PATCH settings/${key} failed — ${res.status} ${text}`);
+    }
+  }
+}
