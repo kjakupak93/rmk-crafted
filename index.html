@@ -2515,16 +2515,17 @@ async function saveAddonField(idx, key, value) {
   const addonId = ADDONS[idx].id;
   ADDONS[idx][key] = value;
   await saveAddons();
-  // Cascade: if label changed, update historical sales records
   if (key === 'label' && value !== oldLabel) {
-    const { data: allSales } = await sb.from('sales').select('id, add_ons').not('add_ons', 'is', null);
+    const { data: allSales, error: fetchErr } = await sb.from('sales').select('id, add_ons').not('add_ons', 'is', null);
+    if (fetchErr) { showToast('Failed to update historical sales', 'error'); return; }
     if (allSales) {
       const affected = allSales.filter(s => Array.isArray(s.add_ons) && s.add_ons.some(a => a.id === addonId));
-      await Promise.all(affected.map(s =>
+      const results = await Promise.all(affected.map(s =>
         sb.from('sales').update({
           add_ons: s.add_ons.map(a => a.id === addonId ? { ...a, label: value } : a)
         }).eq('id', s.id)
       ));
+      if (results.some(r => r.error)) showToast('Some historical sales could not be updated', 'error');
     }
   }
 }
