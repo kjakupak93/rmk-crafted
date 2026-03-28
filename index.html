@@ -943,7 +943,7 @@ body {
   /* ── Touch targets ── */
   .icon-btn { width: 44px; height: 44px; font-size: 15px; }
   .qty-btn { width: 40px; height: 40px; }
-  .filter-btn { padding: 8px 12px; min-height: 36px; }
+  .filter-btn { padding: 8px 12px; min-height: 36px; white-space: nowrap; flex-shrink: 0; }
   .sales-filter-btn { padding: 7px 12px; }
   .cal-nav-btn { padding: 10px 14px; min-height: 44px; }
 
@@ -956,6 +956,8 @@ body {
   .home-hero-cta { width: 100%; }
   .btn-new-order { width: 100%; justify-content: center; }
   .home-hero-greeting { font-size: 21px; }
+  .home-hero-pills { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+  .hero-pill { flex-shrink: 0; }
 
   /* ── KPI / summary card values ── */
   .summary-card .val { font-size: 20px; }
@@ -1019,6 +1021,9 @@ body {
 
   /* ── Cut list table: min-width reduction (allows scrolling) ── */
   #cut-list-calc .data-table { min-width: 380px; }
+
+  /* ── Sales table: enough width for all 9 columns to scroll ── */
+  #otab-sales .data-table { min-width: 640px; }
 
   /* ── Card top + actions ── */
   .card-top { flex-wrap: wrap; }
@@ -5327,7 +5332,7 @@ async function loadDayDetail() {
   (bRes.data||[]).forEach(b=>{
     const pi={cash:'💵',venmo:'💙',tbd:'❓'}[b.payment]||'';
     html+=`<div class="slot-card booked">
-      <div class="slot-time">${fmtTime(b.pickup_time)}</div>
+      <div class="slot-time">${b.pickup_time ? fmtTime(b.pickup_time) : '—'}</div>
       <div class="slot-info"><div class="slot-buyer">${esc(b.name)}${b.contact?' ('+esc(b.contact)+')':''}</div><div class="slot-details">${b.size?esc(b.size)+'"':''} ${b.amount?'$'+b.amount:''} ${pi} ${b.notes?'· '+esc(b.notes):''}</div></div>
       <span class="slot-badge booked">Booked</span>
       <button class="icon-btn" title="Edit" onclick="editBooking('${b.id}')">✏️</button>
