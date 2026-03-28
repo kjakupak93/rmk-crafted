@@ -38,15 +38,15 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ## E2E Suite (`tests/e2e/*.spec.ts`)
 
-59 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
+61 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
 
 | File | Tests | Coverage |
 |---|---|---|
 | `orders.spec.ts` | 11 | Create, edit, advance status (pending→building→ready), complete unpaid (Cash + Venmo), skip payment, prepaid bypass, delete, filter, add-on saved on order, multi-item, mark all paid (Cash + Venmo) |
 | `cutlist-quotes.spec.ts` | 9 | Quote button enables after run, modal pre-fill, save quote, auto-nav to Quotes tab after save, convert to order, size carried from cut list name, delete, product saved with cut list, product grouping in saved list |
 | `materials.spec.ts` | 15 | Add/edit/delete purchase, run cut list, save cut list, re-save updates existing record, load + delete cut list, stock +/− buttons, add product, rename product, delete product, product persists across reload, add/delete add-on, new add-on appears in order modal dropdown |
-| `scheduler.spec.ts` | 10 | Add/edit/delete slot, book/edit/delete pickup, quick book, booking edit syncs order pickup time, add/delete availability window |
-| `inventory-sales.spec.ts` | 8 | Add inventory, adjust qty (+/−), qty → 0 removes item, delete inventory, log/edit/delete sale, sale with add-on shows label+price in history |
+| `scheduler.spec.ts` | 11 | Add/edit/delete slot, book/edit/delete pickup, quick book, booking edit syncs order pickup time, add/delete availability window, booking shows — when time not set |
+| `inventory-sales.spec.ts` | 9 | Add inventory, adjust qty (+/−), qty → 0 removes item, delete inventory, log/edit/delete sale, sale with add-on shows label+price in history, add-on resilience (localStorage cleared) |
 | `visual-coverage.spec.ts` | 4 | Cut list board diagram, calendar dot states, order status badge colours (all four states), quote margin badge |
 
 ### Authentication

@@ -161,3 +161,28 @@ test('log a sale with an add-on shows add-on label and price in sales history', 
   // Add-on label renders inside the size cell (td index 1)
   await expect(row.locator('td').nth(1)).toContainText('✨');
 });
+
+test('add-on row preserved in edit modal when ADDONS not in localStorage', async ({ page }) => {
+  await goToSalesTab(page);
+  // First log a sale with an add-on so we have a record to edit
+  const name = `${TAG} AddonResilience`;
+  await page.click('button:has-text("+ Log Sale")');
+  await page.waitForSelector('#saleModal.open');
+  await page.fill('#sName', name);
+  await page.fill('#sDate', new Date().toISOString().split('T')[0]);
+  await page.fill('#sSize', '36×16×16');
+  await page.fill('#sPrice', '80');
+  await page.check('#saleAddonList input[type="checkbox"]:first-of-type');
+  await page.click('button[onclick="saveSale()"]');
+  await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
+
+  // Clear ADDONS from localStorage to simulate a fresh session
+  await page.evaluate(() => localStorage.removeItem('rmk_addons'));
+
+  // Edit the sale — the add-on row must still be present (not silently dropped)
+  const row = page.locator('#salesBody tr').filter({ hasText: name });
+  await row.locator('button:has-text("✏️")').click();
+  await page.waitForSelector('#saleModal.open');
+  // Add-on checkbox area should not be empty
+  await expect(page.locator('#saleAddonList')).not.toBeEmpty();
+});

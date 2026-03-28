@@ -118,7 +118,7 @@ This app supports dark mode. When adding new UI elements or pages, ensure they w
 Two-tier Playwright suite — see `tests/README.md` for full details.
 
 - **Smoke** (`tests/*.spec.ts`) — 23 tests, read-only, runs in parallel. Covers page load, navigation, and UI presence for all pages.
-- **E2E** (`tests/e2e/*.spec.ts`) — 59 tests, writes real data to Supabase, serial per file. Run with `npx playwright test --project=e2e`.
+- **E2E** (`tests/e2e/*.spec.ts`) — 61 tests, writes real data to Supabase, serial per file. Run with `npx playwright test --project=e2e`.
 
 E2E coverage by file:
 
@@ -128,7 +128,7 @@ E2E coverage by file:
 | `cutlist-quotes.spec.ts` | Quote button enable, modal pre-fill, save/convert/delete quote |
 | `materials.spec.ts` | Purchase CRUD, cut list run/save/re-save UPDATE/load-delete, stock +/−, add/rename/delete product, add/delete add-on, new add-on syncs to order modal dropdown |
 | `scheduler.spec.ts` | Slot CRUD, booking CRUD, quick book, booking edit syncs `orders.pickup_time`, availability window add/delete |
-| `inventory-sales.spec.ts` | Inventory add/qty-adjust/qty→0-removes/delete, sale log/edit/delete, sale with add-on shows label+price in history |
+| `inventory-sales.spec.ts` | Inventory add/qty-adjust/qty→0-removes/delete, sale log/edit/delete, sale with add-on shows label+price in history, add-on resilience (ADDONS cleared from localStorage) |
 | `visual-coverage.spec.ts` | Cut list board diagram, calendar dot states, order status badge colours, quote margin badge |
 
 **When adding new features:** add E2E tests for any new CRUD operations or non-obvious side effects. Update the counts in `tests/README.md` and `README.md`.
