@@ -976,7 +976,7 @@ body {
   /* ── Order item rows in modal ── */
   .order-item-row { flex-wrap: wrap; }
   .order-item-row .item-size { flex: 1 1 120px; }
-  .order-item-row .item-product { flex: 1 1 80px; }
+  .order-item-row .item-product { flex: 1 1 110px; }
   .order-item-row .item-qty { flex: 0 0 54px; }
   .order-item-row .item-price { flex: 0 0 72px; }
 
@@ -985,6 +985,19 @@ body {
   .modal {
     max-height: 88vh;
     padding: 20px 16px 20px;
+  }
+  .modal-actions {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top: 1px solid var(--warm-gray);
+    z-index: 1;
+  }
+  [data-theme="dark"] .modal-actions {
+    background: #162534;
+    border-top-color: #2C4255;
   }
 
   /* ── Table wrap: already has -webkit-overflow-scrolling: touch in base style ── */
