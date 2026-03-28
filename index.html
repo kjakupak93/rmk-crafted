@@ -2506,7 +2506,8 @@ async function loadAddonSettings() {
   renderSaleAddons();
 }
 async function saveAddons() {
-  await sb.from('settings').upsert({ key: 'addons', value: JSON.stringify(ADDONS) }, { onConflict: 'key' });
+  const { error } = await sb.from('settings').upsert({ key: 'addons', value: JSON.stringify(ADDONS) }, { onConflict: 'key' });
+  if (error) showToast('Failed to save add-on settings', 'error');
 }
 async function saveAddonField(idx, key, value) {
   if (!ADDONS[idx]) return;
