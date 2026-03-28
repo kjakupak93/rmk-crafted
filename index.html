@@ -2405,13 +2405,13 @@ window.sb = sb;
   }
 
   sb.auth.getSession().then(({ data: { session } }) => {
-    if (session) { hideGate(); loadSettings(); }
+    if (session) { hideGate(); loadSettings().catch(err => console.error('Settings load failed:', err)); }
   });
 
   sb.auth.onAuthStateChange((event, session) => {
     if (session) {
       hideGate();
-      loadSettings();
+      loadSettings().catch(err => console.error('Settings load failed:', err));
     } else {
       showGate();
       _settingsLoaded = false;
@@ -2698,7 +2698,6 @@ async function loadProductSettings() {
     const { error: migrateErr } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
     if (!migrateErr) localStorage.removeItem('rmk_products');
   }
-  populateProductSelects();
 }
 function populateProductSelects(selectedVal) {
   const styleOpts = PRODUCT_TYPES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
