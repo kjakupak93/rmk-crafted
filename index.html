@@ -2593,9 +2593,9 @@ function renderOrderAddons(savedIds, savedPrices) {
   const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
   savedIds.forEach(id => {
     const addon = ADDONS.find(a => a.id === id);
-    if (!addon) return;
-    const price = savedPrices[id] !== undefined ? savedPrices[id] : addonPrice(id, dims.l, dims.w, dims.h);
-    appendOrderAddonRow(id, addon.label, price);
+    const label = addon ? addon.label : '(custom add-on)';
+    const price = savedPrices[id] !== undefined ? savedPrices[id] : (addon ? addonPrice(id, dims.l, dims.w, dims.h) : 0);
+    appendOrderAddonRow(id, label, price);
   });
 }
 function _renderAddonCheckboxes(container, savedIds) {
@@ -3630,8 +3630,9 @@ function orderCardHTML(o) {
     : `${esc(o.size)||''}" — ${esc(o.style)||'Standard'}`;
   const contactSuffix = o.contact ? ` · ${esc(o.contact)}` : '';
   const addonIds = getItemAddons(o);
+  const resolvedAddonLabels = addonIds.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?esc(a.label):'(custom)';});
   const addonBadges = addonIds.length
-    ? `<div class="meta-item" style="color:var(--ocean)">✨ ${addonIds.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?esc(a.label):id;}).join(' · ')}</div>`
+    ? `<div class="meta-item" style="color:var(--ocean)">✨ ${resolvedAddonLabels.join(' · ')}</div>`
     : '';
   return `<div class="order-card s-${o.status}${overdueClass}">
     <div class="card-title">${esc(o.name)}</div>
