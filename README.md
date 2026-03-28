@@ -238,20 +238,29 @@ The `?order=` parameter links their booking to a specific order. Always share vi
 
 | Layer | Tool |
 |---|---|
-| Hosting | GitHub Pages (free) |
-| Database | Supabase (cloud Postgres) |
-| Frontend | Vanilla HTML/CSS/JS — single file per page |
+| Hosting | GitHub Pages — auto-deploys on every push to `main` (~60s) |
+| Database | Supabase (cloud Postgres + Row Level Security) |
+| Auth | Supabase Auth (email/password), session-based |
+| Frontend | Vanilla HTML/CSS/JS — no build step, no framework, single file per page |
 | Charts | Chart.js v4 (CDN) |
-| Dev tooling | Claude Code + Claude in Chrome |
+| Fonts | Playfair Display · DM Mono · DM Sans — self-hosted WOFF2 in `fonts/` (no CDN dependency) |
+| Testing | Playwright v1.42 — two-tier smoke + e2e suite |
+| CI | GitHub Actions (`.github/workflows/e2e.yml`) — runs on every push to `main` |
+| Dev tooling | Claude Code |
 
 **Files:**
-- `index.html` — entire dashboard (PIN-protected)
-- `schedule.html` — public customer booking page
+- `index.html` — entire dashboard (auth-protected; CSS → HTML → JS, all in one file)
+- `schedule.html` — public customer booking page (no auth required)
+- `fonts/` — self-hosted WOFF2 font files + `fonts.css`
 - `manifest.json` — PWA manifest (enables "Add to Home Screen" on mobile)
-- `sw.js` — service worker that caches the app and auto-reloads when a new version is deployed
+- `sw.js` — service worker: caches app shell, auto-reloads on new deploy (`skipWaiting` + `controllerchange`)
 - `icon.png` — 1024×1024 app icon
+- `playwright.config.ts` — Playwright config (defines smoke and e2e projects, local Python HTTP server)
+- `package.json` — dev dependencies: `@playwright/test`, `dotenv`
+- `tests/` — Playwright test suite (see [`tests/README.md`](tests/README.md))
 - `CLAUDE.md` — project memory for Claude Code sessions
-- `.mcp.json` — local Claude Code config (in `.gitignore`, never committed)
+- `.mcp.json` — local Claude Code MCP config (`.gitignore`'d, never committed)
+- `.env` — local Supabase credentials used by the test suite (`.gitignore`'d, never committed)
 
 **Database tables:**
 
