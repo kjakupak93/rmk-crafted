@@ -631,7 +631,7 @@
   // ── Init ──
   async function init() {
     const params = new URLSearchParams(window.location.search);
-    const bookingToken = params.get('token') || params.get('order'); // ?order= fallback for old links
+    const bookingToken = params.get('token');
 
     if (!bookingToken) {
       showError('No order linked', 'This link doesn\'t have an order attached. Ask RMK Crafted to resend your booking link.');
@@ -639,12 +639,8 @@
     }
 
     let data, error;
-    if (params.get('token')) {
-      ({ data, error } = await sb.from('orders').select('*').eq('booking_token', bookingToken).maybeSingle());
-    } else {
-      // Legacy ?order=<id> links
-      ({ data, error } = await sb.from('orders').select('*').eq('id', bookingToken).maybeSingle());
-    }
+    ({ data: data, error } = await sb.rpc('get_order_by_token', { p_token: bookingToken }));
+    if (!error && Array.isArray(data)) data = data[0] ?? null;
 
     if (error || !data) {
       showError('Order not found', 'We couldn\'t find your order. This link may be invalid or expired. Please reach out to RMK Crafted directly.');
@@ -808,6 +804,8 @@
     if (!selectedTime) { alert('Please select a pickup time.'); return; }
     if (!valid) return;
 
+    if (window._bookingSubmitted) return;
+    window._bookingSubmitted = true;
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
     btn.innerHTML = '<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite"></div> Confirming…';
@@ -829,19 +827,20 @@
       if (bookingErr) throw bookingErr;
 
       // 2. Update the order with pickup details + customer_booked flag
-      const orderUpdate = {
-        pickup_date: selectedDate,
-        pickup_time: selectedTime,
-        customer_booked: true,
-      };
-      const { error: orderErr } = await sb.from('orders').update(orderUpdate).eq('id', orderId);
+      const bookingToken = new URLSearchParams(window.location.search).get('token');
+      const { error: orderErr } = await sb.rpc('book_order_pickup', {
+        p_token: bookingToken,
+        p_pickup_date: selectedDate,
+        p_pickup_time: selectedTime,
+      });
       if (orderErr) throw orderErr;
 
       // Show success
       showSuccess(name, selectedDate, selectedTime);
 
     } catch (err) {
-      console.error(err);
+      console.error('Booking submission failed');
+      window._bookingSubmitted = false;
       btn.disabled = false;
       btn.innerHTML = '<span>Confirm Pickup</span> <span>→</span>';
       alert('Something went wrong — please try again or contact RMK Crafted directly.');
