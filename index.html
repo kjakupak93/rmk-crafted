@@ -2481,36 +2481,46 @@ let ADDONS = [
   {id:'casters', label:'Casters', base:40, scales:false},
   {id:'shelf', label:'Bottom Shelf', base:30, scales:true}
 ];
-function loadAddonSettings() {
-  try {
-    const saved = localStorage.getItem('rmk_addons');
-    if (saved) {
-      const parsed = JSON.parse(saved);
+async function loadAddonSettings() {
+  const { data: row } = await sb.from('settings').select('value').eq('key', 'addons').single();
+  if (row) {
+    try {
+      const parsed = JSON.parse(row.value);
       if (Array.isArray(parsed) && parsed.length > 0) ADDONS = parsed;
-      else localStorage.removeItem('rmk_addons'); // clear corrupt data
+    } catch(e) { /* ignore corrupt */ }
+  } else {
+    // First load: migrate from localStorage if present, else keep defaults
+    const lsVal = localStorage.getItem('rmk_addons');
+    if (lsVal) {
+      try {
+        const parsed = JSON.parse(lsVal);
+        if (Array.isArray(parsed) && parsed.length > 0) ADDONS = parsed;
+      } catch(e) { /* ignore */ }
     }
-  } catch(e) { localStorage.removeItem('rmk_addons'); }
+    await sb.from('settings').upsert({ key: 'addons', value: JSON.stringify(ADDONS) }, { onConflict: 'key' });
+    localStorage.removeItem('rmk_addons');
+  }
   populateAddonSelect();
   renderOrderAddons();
   renderInvAddons();
   renderSaleAddons();
 }
-function saveAddons() {
-  localStorage.setItem('rmk_addons', JSON.stringify(ADDONS));
+async function saveAddons() {
+  await sb.from('settings').upsert({ key: 'addons', value: JSON.stringify(ADDONS) }, { onConflict: 'key' });
 }
-function saveAddonField(idx, key, value) {
+async function saveAddonField(idx, key, value) {
   if (!ADDONS[idx]) return;
   ADDONS[idx][key] = value;
-  saveAddons();
+  await saveAddons();
 }
-function addNewAddon() {
+async function addNewAddon() {
   ADDONS.push({id:'addon_'+Date.now(), label:'New Add-on', base:0, scales:false});
-  saveAddons();
+  await saveAddons();
   renderAddonsTab();
 }
-function deleteAddon(idx) {
+async function deleteAddon(idx) {
   ADDONS.splice(idx, 1);
-  saveAddons();
+  await saveAddons();
   renderAddonsTab();
 }
 function renderAddonsTab() {
@@ -4232,7 +4242,7 @@ function renderSalesTable() {
     <td style="font-family:'DM Mono',monospace;text-align:center">${s.qty||1}</td>
     <td>${esc(s.style)||''}</td>
     <td>${esc(s.name)||'—'}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500;white-space:nowrap">${(()=>{const _vf=s.venmo_fee||0;const _total=s.price+_vf;const _c=estimateOrderCost({size:s.size,price:s.price});const _p=_total>0?Math.round(((_total-_c)/_total)*100):0;const _f=!s.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);return '$'+Number(_total)+(_vf>0?` <span style="color:var(--text-muted);font-size:0.8em">(+$${_vf})</span>`:'')+' <span style="color:'+marginColor(_p)+';font-size:0.8em;margin-left:4px">'+(_f?'~':'')+_p+'%</span>';})()}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500;white-space:nowrap">${(()=>{const _vf=s.venmo_fee||0;const _total=s.price+_vf;const _c=estimateOrderCost({size:s.size,price:s.price});const _p=s.price>0?Math.round(((s.price-_c)/s.price)*100):0;const _f=!s.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);return '$'+Number(_total)+(_vf>0?` <span style="color:var(--text-muted);font-size:0.8em">(+$${_vf})</span>`:'')+' <span style="color:'+marginColor(_p)+';font-size:0.8em;margin-left:4px">'+(_f?'~':'')+_p+'%</span>';})()}</td>
     <td><span class="badge badge-${(s.payment||'').toLowerCase()}">${esc(s.payment)||''}</span></td>
     <td style="color:var(--text-muted);font-size:12px">${esc(s.notes)||''}</td>
     <td style="display:flex;gap:4px">
