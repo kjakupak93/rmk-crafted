@@ -2665,15 +2665,25 @@ function renderSaleAddons(savedIds) {
 }
 const DEFAULT_STYLES = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
 let PRODUCT_TYPES = [...DEFAULT_STYLES];
-function loadProductSettings() {
-  try {
-    const saved = localStorage.getItem('rmk_products');
-    if (saved) {
-      const parsed = JSON.parse(saved);
+async function loadProductSettings() {
+  const { data: row } = await sb.from('settings').select('value').eq('key', 'products').single();
+  if (row) {
+    try {
+      const parsed = JSON.parse(row.value);
       if (Array.isArray(parsed) && parsed.length > 0) PRODUCT_TYPES = parsed;
-      else localStorage.removeItem('rmk_products');
+    } catch(e) { /* ignore corrupt */ }
+  } else {
+    // First load: migrate from localStorage if present, else keep defaults
+    const lsVal = localStorage.getItem('rmk_products');
+    if (lsVal) {
+      try {
+        const parsed = JSON.parse(lsVal);
+        if (Array.isArray(parsed) && parsed.length > 0) PRODUCT_TYPES = parsed;
+      } catch(e) { /* ignore */ }
     }
-  } catch(e) { localStorage.removeItem('rmk_products'); }
+    await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
+    localStorage.removeItem('rmk_products');
+  }
 }
 function populateProductSelects(selectedVal) {
   const styleOpts = PRODUCT_TYPES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
@@ -2696,7 +2706,7 @@ function populateProductSelects(selectedVal) {
     }
   }
 }
-function addProduct(name) {
+async function addProduct(name) {
   const trimmed = name.trim();
   if (!trimmed) return false;
   if (PRODUCT_TYPES.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
@@ -2704,7 +2714,8 @@ function addProduct(name) {
     return false;
   }
   PRODUCT_TYPES.push(trimmed);
-  localStorage.setItem('rmk_products', JSON.stringify(PRODUCT_TYPES));
+  const { error } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
+  if (error) { showToast('Failed to save product', 'error'); PRODUCT_TYPES.pop(); return false; }
   populateProductSelects();
   return true;
 }
@@ -2739,12 +2750,12 @@ function saveProductRename(idx) {
   renderProductsTab();
   showToast('Product renamed!');
 }
-function saveNewProduct() {
+async function saveNewProduct() {
   const inp = document.getElementById('prod-add-inp');
   if (!inp) return;
   const trimmed = inp.value.trim();
   if (!trimmed) return;
-  if (addProduct(trimmed)) {
+  if (await addProduct(trimmed)) {
     _editingProductIdx = null;
     renderProductsTab();
     showToast('Product added!');
@@ -2769,7 +2780,8 @@ async function deleteProduct(idx) {
     await sb.from('cut_lists').update({ style: null }).eq('style', name);
   }
   PRODUCT_TYPES = PRODUCT_TYPES.filter(s => s !== name);
-  localStorage.setItem('rmk_products', JSON.stringify(PRODUCT_TYPES));
+  const { error: saveErr } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
+  if (saveErr) { showToast('Failed to save product list', 'error'); return; }
   populateProductSelects();
   renderProductsTab();
   showToast('Product deleted');
