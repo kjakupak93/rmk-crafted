@@ -2733,7 +2733,7 @@ function cancelProductRename() {
   _editingProductIdx = null;
   renderProductsTab();
 }
-function saveProductRename(idx) {
+async function saveProductRename(idx) {
   const inp = document.getElementById('prod-rename-inp');
   if (!inp) return;
   const trimmed = inp.value.trim();
@@ -2745,7 +2745,15 @@ function saveProductRename(idx) {
     return;
   }
   PRODUCT_TYPES[idx] = trimmed;
-  localStorage.setItem('rmk_products', JSON.stringify(PRODUCT_TYPES));
+  const { error } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
+  if (error) { showToast('Failed to save product', 'error'); PRODUCT_TYPES[idx] = oldName; return; }
+  // Cascade: update all records that reference the old product name
+  await Promise.all([
+    sb.from('orders').update({ style: trimmed }).eq('style', oldName),
+    sb.from('sales').update({ style: trimmed }).eq('style', oldName),
+    sb.from('inventory').update({ style: trimmed }).eq('style', oldName),
+    sb.from('cut_lists').update({ style: trimmed }).eq('style', oldName),
+  ]);
   populateProductSelects();
   _editingProductIdx = null;
   renderProductsTab();
