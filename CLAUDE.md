@@ -34,7 +34,7 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 | `schedule_slots` | Open pickup time slots on the calendar |
 | `schedule_bookings` | Booked customer pickups |
 | `availability_windows` | Recurring availability windows for the share message |
-| `cut_lists` | Saved cut lists — columns: `id`, `name`, `kerf`, `cuts` (JSONB), `stock_types` (JSONB), `notes`, `style` (text, nullable), `created_at`, `updated_at` |
+| `cut_lists` | Saved cut lists — columns: `id`, `name`, `kerf`, `cuts` (JSONB), `stock_types` (JSONB), `notes`, `style` (text, nullable), `product_options` (JSONB, nullable), `created_at`, `updated_at` |
 | `quotes` | Quotes generated from cut lists — columns: `id`, `name`, `price`, `cut_list_id`, `cut_list_name`, `picket_count`, `notes`, `created_at` |
 
 RLS is enabled on all tables. All business tables require `authenticated` role. Anon has **no direct SELECT or UPDATE on `orders`** — the `schedule.html` booking flow uses two SECURITY DEFINER RPC functions instead: `get_order_by_token(uuid)` (SELECT, returns one order row by token) and `book_order_pickup(uuid, date, text)` (UPDATE, writes pickup date/time). Anon EXECUTE is granted on both functions; anon has no direct table access. Anon INSERT on `schedule_bookings` requires a valid `order_id` linked to an unbooked order. The `settings` table has no anon access. The `orders` table has a `booking_token` UUID column (indexed) — `schedule.html` resolves orders by `?token=<uuid>` only (legacy `?order=<id>` parameter removed).

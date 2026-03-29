@@ -824,11 +824,13 @@ body {
 .form-control:focus { border-color: var(--ocean); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .order-items { display:flex; flex-direction:column; gap:6px; margin-bottom:4px; }
-.order-item-row { display:flex; gap:6px; align-items:center; }
-.order-item-row .item-size { flex:2; min-width:0; }
-.order-item-row .item-product { flex:1; min-width:0; }
-.order-item-row .item-qty { flex:0 0 54px; }
-.order-item-row .item-price { flex:0 0 72px; }
+.order-item-row { display:flex; flex-direction:column; align-items:stretch; gap:4px; }
+.order-item-row .item-controls { display:flex; gap:6px; align-items:center; }
+.order-item-row .item-controls .item-size { flex:2; min-width:0; }
+.order-item-row .item-controls .item-product { flex:1; min-width:0; }
+.order-item-row .item-controls .item-qty { flex:0 0 54px; }
+.order-item-row .item-controls .item-price { flex:0 0 72px; }
+.order-item-row .item-options { display:flex; gap:8px; flex-wrap:wrap; }
 .order-items-total { text-align:right; font-size:13px; color:var(--text-muted); padding:2px 0 6px; }
 .order-items-total strong { color:var(--navy); font-family:'DM Mono',monospace; }
 .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
@@ -976,11 +978,11 @@ body {
   .section-header > div { flex-wrap: wrap; gap: 6px; }
 
   /* ── Order item rows in modal ── */
-  .order-item-row { flex-wrap: wrap; }
-  .order-item-row .item-size { flex: 1 1 120px; }
-  .order-item-row .item-product { flex: 1 1 110px; }
-  .order-item-row .item-qty { flex: 0 0 54px; }
-  .order-item-row .item-price { flex: 0 0 72px; }
+  .order-item-row .item-controls { flex-wrap: wrap; }
+  .order-item-row .item-controls .item-size { flex: 1 1 120px; }
+  .order-item-row .item-controls .item-product { flex: 1 1 110px; }
+  .order-item-row .item-controls .item-qty { flex: 0 0 54px; }
+  .order-item-row .item-controls .item-price { flex: 0 0 72px; }
 
   /* ── Modals ── */
   .modal-overlay { padding: 12px; align-items: center; }
@@ -1864,6 +1866,7 @@ body {
           <select class="std-input" id="cl-product" onfocus="this.dataset.prev=this.value" onchange="onClProductChange(this)">
             <option value="">— No product —</option>
           </select>
+          <div id="cl-product-options" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
         </div>
 
         <!-- Cut rows -->
@@ -2402,7 +2405,7 @@ window.sb = sb;
   async function loadSettings() {
     if (_settingsLoaded) return;
     _settingsLoaded = true;
-    await Promise.all([loadAddonSettings(), loadProductSettings()]);
+    await Promise.all([loadAddonSettings(), loadProductSettings(), loadProductOptions()]);
     populateProductSelects();
     window._settingsDidLoad = true;
     if (_settingsResolve) { _settingsResolve(); _settingsResolve = null; }
@@ -2687,6 +2690,7 @@ function renderSaleAddons(savedIds) {
 }
 const DEFAULT_STYLES = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
 let PRODUCT_TYPES = [...DEFAULT_STYLES];
+let PRODUCT_OPTIONS = {}; // { [productName]: [{id, label, choices:[]}] }
 async function loadProductSettings() {
   const { data: row } = await sb.from('settings').select('value').eq('key', 'products').single();
   if (row) {
@@ -2706,6 +2710,59 @@ async function loadProductSettings() {
     const { error: migrateErr } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
     if (!migrateErr) localStorage.removeItem('rmk_products');
   }
+}
+async function loadProductOptions() {
+  const { data: row } = await sb.from('settings').select('value').eq('key', 'product_options').single();
+  if (row) {
+    try {
+      const parsed = JSON.parse(row.value);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) PRODUCT_OPTIONS = parsed;
+    } catch(e) { /* ignore corrupt */ }
+  }
+}
+async function saveProductOptions() {
+  const { error } = await sb.from('settings').upsert({ key: 'product_options', value: JSON.stringify(PRODUCT_OPTIONS) }, { onConflict: 'key' });
+  if (error) showToast('Failed to save option settings', 'error');
+  return !error;
+}
+function renderProductOptionSelects(productName, savedOptions, containerEl) {
+  if (!containerEl) return;
+  const opts = PRODUCT_OPTIONS[productName] || [];
+  while (containerEl.firstChild) containerEl.removeChild(containerEl.firstChild);
+  if (!opts.length) return;
+  opts.forEach(opt => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:3px;min-width:130px';
+    const lbl = document.createElement('label');
+    lbl.style.cssText = 'font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:.03em';
+    lbl.textContent = opt.label;
+    const sel = document.createElement('select');
+    sel.className = 'form-control';
+    sel.dataset.optionId = opt.id;
+    sel.style.cssText = 'font-size:13px;padding:4px 8px;height:32px';
+    const blankOpt = document.createElement('option');
+    blankOpt.value = '';
+    blankOpt.textContent = '— Select —';
+    sel.appendChild(blankOpt);
+    opt.choices.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c;
+      o.textContent = c;
+      if (c === (savedOptions||{})[opt.id]) o.selected = true;
+      sel.appendChild(o);
+    });
+    wrap.appendChild(lbl);
+    wrap.appendChild(sel);
+    containerEl.appendChild(wrap);
+  });
+}
+function readProductOptionSelects(containerEl) {
+  if (!containerEl) return null;
+  const result = {};
+  containerEl.querySelectorAll('select[data-option-id]').forEach(sel => {
+    if (sel.value) result[sel.dataset.optionId] = sel.value;
+  });
+  return Object.keys(result).length ? result : null;
 }
 function populateProductSelects(selectedVal) {
   const styleOpts = PRODUCT_TYPES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
@@ -2727,6 +2784,8 @@ function populateProductSelects(selectedVal) {
       clStyleEl.value = '';
     }
   }
+  const clOptsEl = document.getElementById('cl-product-options');
+  if (clOptsEl) { while (clOptsEl.firstChild) clOptsEl.removeChild(clOptsEl.firstChild); }
 }
 async function addProduct(name) {
   await window._settingsReady;
@@ -2743,6 +2802,8 @@ async function addProduct(name) {
   return true;
 }
 let _editingProductIdx = null; // index or 'new'
+let _expandedProductOptions = null; // index of product whose options panel is open
+let _editingOptionState = null; // { productIdx, optionIdx | 'new' }
 function promptAddProduct() {
   _editingProductIdx = 'new';
   renderProductsTab();
@@ -2769,6 +2830,11 @@ async function saveProductRename(idx) {
   PRODUCT_TYPES[idx] = trimmed;
   const { error } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(PRODUCT_TYPES) }, { onConflict: 'key' });
   if (error) { showToast('Failed to save product', 'error'); PRODUCT_TYPES[idx] = oldName; return; }
+  if (PRODUCT_OPTIONS[oldName] !== undefined) {
+    PRODUCT_OPTIONS[trimmed] = PRODUCT_OPTIONS[oldName];
+    delete PRODUCT_OPTIONS[oldName];
+    await saveProductOptions();
+  }
   // Cascade: update all records that reference the old product name
   const cascadeResults = await Promise.all([
     sb.from('orders').update({ style: trimmed }).eq('style', oldName),
@@ -2815,9 +2881,60 @@ async function deleteProduct(idx) {
     await sb.from('cut_lists').update({ style: null }).eq('style', name);
   }
   PRODUCT_TYPES = newList;
+  if (PRODUCT_OPTIONS[name] !== undefined) {
+    delete PRODUCT_OPTIONS[name];
+    await saveProductOptions();
+  }
   populateProductSelects();
   renderProductsTab();
   showToast('Product deleted');
+}
+function _renderOptionsPanel(productIdx) {
+  const name = PRODUCT_TYPES[productIdx];
+  const opts = PRODUCT_OPTIONS[name] || [];
+  let html = '<div style="padding:10px 0 6px 16px;border-left:2px solid var(--warm-gray);margin-bottom:4px">';
+  if (opts.length) {
+    opts.forEach((opt, oi) => {
+      if (_editingOptionState && _editingOptionState.productIdx === productIdx && _editingOptionState.optionIdx === oi) {
+        html += '<div style="display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--sand-pale);border-radius:6px;margin-bottom:6px">' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+          '<div style="flex:1;min-width:120px"><label style="font-size:11px;color:var(--text-muted)">Label</label>' +
+          '<input id="opt-label-' + oi + '" class="form-control" style="font-size:13px" type="text" value="' + esc(opt.label) + '"></div>' +
+          '<div style="flex:2;min-width:160px"><label style="font-size:11px;color:var(--text-muted)">Choices (comma-separated)</label>' +
+          '<input id="opt-choices-' + oi + '" class="form-control" style="font-size:13px" type="text" value="' + esc(opt.choices.join(', ')) + '"></div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px">' +
+          '<button class="btn-primary" style="font-size:12px;padding:4px 10px" onclick="saveOption(' + productIdx + ',' + oi + ')">Save</button>' +
+          '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="cancelEditOption()">Cancel</button>' +
+          '</div></div>';
+      } else {
+        html += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px">' +
+          '<span style="flex:1"><strong style="color:var(--navy)">' + esc(opt.label) + ':</strong> <span style="color:var(--text-muted)">' + opt.choices.map(c => esc(c)).join(' · ') + '</span></span>' +
+          '<button class="btn-secondary" style="font-size:11px;padding:3px 8px" onclick="startEditOption(' + productIdx + ',' + oi + ')">Edit</button>' +
+          '<button class="icon-btn" style="color:var(--red);font-size:13px" onclick="deleteOption(' + productIdx + ',' + oi + ')" title="Delete">🗑</button>' +
+          '</div>';
+      }
+    });
+  } else {
+    html += '<span style="font-size:12px;color:var(--text-muted)">No options yet.</span>';
+  }
+  if (_editingOptionState && _editingOptionState.productIdx === productIdx && _editingOptionState.optionIdx === 'new') {
+    html += '<div style="display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--sand-pale);border-radius:6px;margin-top:6px">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<div style="flex:1;min-width:120px"><label style="font-size:11px;color:var(--text-muted)">Label</label>' +
+      '<input id="opt-label-new" class="form-control" style="font-size:13px" type="text" placeholder="e.g. Stain"></div>' +
+      '<div style="flex:2;min-width:160px"><label style="font-size:11px;color:var(--text-muted)">Choices (comma-separated)</label>' +
+      '<input id="opt-choices-new" class="form-control" style="font-size:13px" type="text" placeholder="e.g. Natural Cedar, Dark Walnut"></div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px">' +
+      '<button class="btn-primary" style="font-size:12px;padding:4px 10px" onclick="saveOption(' + productIdx + ',\'new\')">Add</button>' +
+      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="cancelEditOption()">Cancel</button>' +
+      '</div></div>';
+  } else {
+    html += '<button class="btn-secondary" style="font-size:11px;padding:3px 10px;margin-top:6px" onclick="startAddOption(' + productIdx + ')">+ Add Option</button>';
+  }
+  html += '</div>';
+  return html;
 }
 function renderProductsTab() {
   const container = document.getElementById('products-list');
@@ -2830,11 +2947,19 @@ function renderProductsTab() {
         '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="cancelProductRename()">Cancel</button>' +
         '</div>';
     }
-    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
+    const isExpanded = _expandedProductOptions === i;
+    const optCount = (PRODUCT_OPTIONS[s] || []).length;
+    const optLabel = optCount ? 'Options (' + optCount + ') ' + (isExpanded ? '▴' : '▾') : 'Options ' + (isExpanded ? '▴' : '▾');
+    let row = '<div style="border-bottom:1px solid var(--warm-gray)">' +
+      '<div style="display:flex;align-items:center;gap:10px;padding:10px 0">' +
       '<span style="flex:1;font-size:15px;font-weight:600;color:var(--navy)">' + esc(s) + '</span>' +
       '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="startProductRename(' + i + ')">Rename</button>' +
+      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="toggleProductOptions(' + i + ')">' + optLabel + '</button>' +
       '<button class="icon-btn" style="color:var(--red)" onclick="deleteProduct(' + i + ')" title="Delete">🗑</button>' +
       '</div>';
+    if (isExpanded) row += _renderOptionsPanel(i);
+    row += '</div>';
+    return row;
   });
   if (_editingProductIdx === 'new') {
     rows.push('<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
@@ -2848,8 +2973,66 @@ function renderProductsTab() {
   const activeInp = document.getElementById(_editingProductIdx === 'new' ? 'prod-add-inp' : 'prod-rename-inp');
   if (activeInp) { activeInp.focus(); if (_editingProductIdx !== 'new') activeInp.select(); }
 }
+function toggleProductOptions(idx) {
+  _expandedProductOptions = (_expandedProductOptions === idx) ? null : idx;
+  _editingOptionState = null;
+  renderProductsTab();
+}
+function startEditOption(productIdx, optionIdx) {
+  _editingOptionState = { productIdx, optionIdx };
+  renderProductsTab();
+}
+function startAddOption(productIdx) {
+  _editingOptionState = { productIdx, optionIdx: 'new' };
+  renderProductsTab();
+}
+function cancelEditOption() {
+  _editingOptionState = null;
+  renderProductsTab();
+}
+async function saveOption(productIdx, optionIdx) {
+  const isNew = optionIdx === 'new';
+  const labelEl = document.getElementById(isNew ? 'opt-label-new' : 'opt-label-' + optionIdx);
+  const choicesEl = document.getElementById(isNew ? 'opt-choices-new' : 'opt-choices-' + optionIdx);
+  if (!labelEl || !choicesEl) return;
+  const label = labelEl.value.trim();
+  const choices = choicesEl.value.split(',').map(c => c.trim()).filter(Boolean);
+  if (!label) { showToast('Option label is required', 'error'); return; }
+  if (!choices.length) { showToast('At least one choice is required', 'error'); return; }
+  const name = PRODUCT_TYPES[productIdx];
+  if (!PRODUCT_OPTIONS[name]) PRODUCT_OPTIONS[name] = [];
+  if (isNew) {
+    PRODUCT_OPTIONS[name].push({ id: 'opt_' + Date.now(), label, choices });
+  } else {
+    PRODUCT_OPTIONS[name][optionIdx].label = label;
+    PRODUCT_OPTIONS[name][optionIdx].choices = choices;
+  }
+  const ok = await saveProductOptions();
+  if (ok) {
+    _editingOptionState = null;
+    renderProductsTab();
+    showToast(isNew ? 'Option added!' : 'Option saved!');
+  }
+}
+async function deleteOption(productIdx, optionIdx) {
+  const name = PRODUCT_TYPES[productIdx];
+  const opt = (PRODUCT_OPTIONS[name] || [])[optionIdx];
+  if (!opt) return;
+  if (!confirm('Delete option "' + opt.label + '"?')) return;
+  PRODUCT_OPTIONS[name].splice(optionIdx, 1);
+  if (!PRODUCT_OPTIONS[name].length) delete PRODUCT_OPTIONS[name];
+  const ok = await saveProductOptions();
+  if (ok) {
+    _editingOptionState = null;
+    renderProductsTab();
+    showToast('Option deleted');
+  }
+}
 function onClProductChange(sel) {
-  if (sel.value !== '__new__') return;
+  if (sel.value !== '__new__') {
+    renderProductOptionSelects(sel.value, {}, document.getElementById('cl-product-options'));
+    return;
+  }
   const prev = sel.dataset.prev || '';
   sel.value = prev;
   // Remove any existing inline form
@@ -3704,6 +3887,12 @@ async function loadOrders() {
   document.getElementById('activeOrdersList').innerHTML = filtered.length ? filtered.map(orderCardHTML).join('') : emptyState('📋','No active orders.');
 }
 
+function formatItemOptions(item) {
+  if (!item.options) return '';
+  const opts = PRODUCT_OPTIONS[item.style] || [];
+  const parts = opts.filter(o => item.options[o.id]).map(o => item.options[o.id]);
+  return parts.length ? ' · ' + parts.join(' · ') : '';
+}
 function orderCardHTML(o) {
   const bc={pending:'badge-pending',building:'badge-building',ready:'badge-ready',completed:'badge-completed'}[o.status]||'';
   const bl={pending:'Pending',building:'Building',ready:'Ready for Pickup',completed:'Completed'}[o.status]||o.status;
@@ -3715,7 +3904,7 @@ function orderCardHTML(o) {
   const overdueBadge = isOverdue ? `<span class="badge badge-overdue">Overdue</span>` : '';
   const itemRows = getItemRows(o);
   const subtitleItems = itemRows.length
-    ? itemRows.map(it => `${it.qty||1}× ${esc(it.size)||''}" — ${esc(it.style)||'Standard'}`).join('<br>')
+    ? itemRows.map(it => `${it.qty||1}× ${esc(it.size)||''}" — ${esc(it.style)||'Standard'}${esc(formatItemOptions(it))}`).join('<br>')
     : `${esc(o.size)||''}" — ${esc(o.style)||'Standard'}`;
   const contactSuffix = o.contact ? ` · ${esc(o.contact)}` : '';
   const addonIds = getItemAddons(o);
@@ -3825,7 +4014,7 @@ async function editOrder(id) {
   document.getElementById('oItemsContainer').innerHTML='';
   const itemRows = getItemRows(data);
   const items = itemRows.length ? itemRows : [{size:data.size||'',style:data.style||'Standard',qty:1,price:data.price||0}];
-  items.forEach(item => addOrderItem(item.size, item.style||'Standard', item.qty||1, item.price||0));
+  items.forEach(item => addOrderItem(item.size, item.style||'Standard', item.qty||1, item.price||0, item.options||null));
   const savedAddonIds = getItemAddons(data);
   const savedAddonPrices = data.items?.add_on_prices || {};
   renderOrderAddons(savedAddonIds, savedAddonPrices);
@@ -4098,23 +4287,69 @@ function copyListing() {
   }).catch(() => showToast('Could not copy — please copy manually', 'error'));
 }
 
-function addOrderItem(size='', style='Standard', qty=1, price='') {
+function addOrderItem(size='', style='Standard', qty=1, price='', savedOptions=null) {
   const container = document.getElementById('oItemsContainer');
   const row = document.createElement('div');
   row.className = 'order-item-row';
-  row.innerHTML = `
-    <input class="form-control item-size" type="text" placeholder="36×16×16" value="${esc(size)}" style="flex:2;min-width:0" oninput="updateOrderTotal()">
-    <select class="form-control item-product" style="flex:1;min-width:0" onchange="updateOrderTotal()">
-      ${PRODUCT_TYPES.map(s=>`<option${s===style?' selected':''}>${esc(s)}</option>`).join('')}
-    </select>
-    <input class="form-control item-qty" type="number" min="1" value="${qty}" placeholder="1" style="flex:0 0 54px" oninput="updateOrderTotal()">
-    <input class="form-control item-price" type="number" min="0" value="${price}" placeholder="$" style="flex:0 0 72px" oninput="updateOrderTotal()">
-    <button type="button" class="icon-btn" onclick="removeOrderItem(this)" title="Remove item">🗑️</button>`;
+  const controls = document.createElement('div');
+  controls.className = 'item-controls';
+  const sizeInp = document.createElement('input');
+  sizeInp.className = 'form-control item-size';
+  sizeInp.type = 'text';
+  sizeInp.placeholder = '36×16×16';
+  sizeInp.value = size;
+  sizeInp.setAttribute('oninput', 'updateOrderTotal()');
+  const prodSel = document.createElement('select');
+  prodSel.className = 'form-control item-product';
+  PRODUCT_TYPES.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s;
+    o.textContent = s;
+    if (s === style) o.selected = true;
+    prodSel.appendChild(o);
+  });
+  prodSel.setAttribute('onchange', 'onOrderItemProductChange(this)');
+  const qtyInp = document.createElement('input');
+  qtyInp.className = 'form-control item-qty';
+  qtyInp.type = 'number';
+  qtyInp.min = '1';
+  qtyInp.value = qty;
+  qtyInp.placeholder = '1';
+  qtyInp.setAttribute('oninput', 'updateOrderTotal()');
+  const priceInp = document.createElement('input');
+  priceInp.className = 'form-control item-price';
+  priceInp.type = 'number';
+  priceInp.min = '0';
+  priceInp.value = price;
+  priceInp.placeholder = '$';
+  priceInp.setAttribute('oninput', 'updateOrderTotal()');
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'icon-btn';
+  delBtn.setAttribute('onclick', 'removeOrderItem(this)');
+  delBtn.title = 'Remove item';
+  delBtn.textContent = '🗑️';
+  controls.appendChild(sizeInp);
+  controls.appendChild(prodSel);
+  controls.appendChild(qtyInp);
+  controls.appendChild(priceInp);
+  controls.appendChild(delBtn);
+  const optsDiv = document.createElement('div');
+  optsDiv.className = 'item-options';
+  row.appendChild(controls);
+  row.appendChild(optsDiv);
   container.appendChild(row);
+  renderProductOptionSelects(style, savedOptions || {}, optsDiv);
   updateRemoveButtons();
   updateOrderTotal();
 }
 
+function onOrderItemProductChange(selectEl) {
+  const row = selectEl.closest('.order-item-row');
+  const optsDiv = row ? row.querySelector('.item-options') : null;
+  renderProductOptionSelects(selectEl.value, {}, optsDiv);
+  updateOrderTotal();
+}
 function removeOrderItem(btn) {
   const container = document.getElementById('oItemsContainer');
   if (container.children.length <= 1) return;
@@ -4144,12 +4379,17 @@ function updateOrderTotal() {
 
 function getOrderItems() {
   const rows = document.querySelectorAll('#oItemsContainer .order-item-row');
-  return Array.from(rows).map(row => ({
-    size: row.querySelector('.item-size').value.trim(),
-    style: row.querySelector('.item-product').value,
-    qty: parseInt(row.querySelector('.item-qty').value) || 1,
-    price: parseFloat(row.querySelector('.item-price').value) || 0
-  }));
+  return Array.from(rows).map(row => {
+    const item = {
+      size: row.querySelector('.item-size').value.trim(),
+      style: row.querySelector('.item-product').value,
+      qty: parseInt(row.querySelector('.item-qty').value) || 1,
+      price: parseFloat(row.querySelector('.item-price').value) || 0
+    };
+    const opts = readProductOptionSelects(row.querySelector('.item-options'));
+    if (opts) item.options = opts;
+    return item;
+  });
 }
 
 function filterOrders(f,btn) {
@@ -4999,6 +5239,7 @@ async function saveCutList() {
   const notes = (document.getElementById('cl-notes').value || '').trim();
   const styleVal = document.getElementById('cl-product').value;
   const style = (styleVal && styleVal !== '__new__') ? styleVal : null;
+  const product_options = readProductOptionSelects(document.getElementById('cl-product-options'));
   const stock_types = clStockTypes;
   const picket_len = 72;
 
@@ -5007,12 +5248,12 @@ async function saveCutList() {
   const existingId = nameEl.dataset.savedId || null;
   let error;
   if (existingId) {
-    ({ error } = await sb.from('cut_lists').update({ name, kerf, cuts, stock_types, notes, style, updated_at: new Date().toISOString() }).eq('id', existingId));
+    ({ error } = await sb.from('cut_lists').update({ name, kerf, cuts, stock_types, notes, style, product_options, updated_at: new Date().toISOString() }).eq('id', existingId));
   } else {
     // Block duplicate names
     const duplicate = allCutLists.find(cl => cl.name.trim().toLowerCase() === name.toLowerCase());
     if (duplicate) { showToast(`A cut list named "${duplicate.name}" already exists`, 'error'); return; }
-    const { data: inserted, error: insertErr } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types, notes, style }).select().single();
+    const { data: inserted, error: insertErr } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types, notes, style, product_options }).select().single();
     error = insertErr;
     if (!insertErr && inserted) nameEl.dataset.savedId = inserted.id;
   }
@@ -5087,7 +5328,9 @@ function loadCutList(idOrObj) {
   const clStyleEl = document.getElementById('cl-product');
   if (clStyleEl) {
     const storedStyle = cl.style || '';
-    clStyleEl.value = (storedStyle && PRODUCT_TYPES.includes(storedStyle)) ? storedStyle : '';
+    const styleVal = (storedStyle && PRODUCT_TYPES.includes(storedStyle)) ? storedStyle : '';
+    clStyleEl.value = styleVal;
+    renderProductOptionSelects(styleVal, cl.product_options || {}, document.getElementById('cl-product-options'));
   }
   document.getElementById('cl-rows').innerHTML = '';
   document.getElementById('cl-results').style.display = 'none';
