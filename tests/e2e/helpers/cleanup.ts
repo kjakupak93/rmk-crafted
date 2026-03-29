@@ -166,8 +166,42 @@ const DEFAULT_ADDONS = [
 const DEFAULT_PRODUCTS = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
 
 /**
+ * Snapshot current 'addons' and 'products' settings rows.
+ * Call in beforeAll before resetSettings() so real data can be restored after tests.
+ */
+export async function snapshotSettings(): Promise<{ addons: string; products: string }> {
+  const token = await getAuthToken();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/settings?key=in.(addons,products)&select=key,value`,
+    { headers: makeHeaders(token) },
+  );
+  const rows: { key: string; value: string }[] = res.ok ? await res.json() : [];
+  const get = (k: string) => rows.find(r => r.key === k)?.value ?? JSON.stringify(k === 'addons' ? DEFAULT_ADDONS : DEFAULT_PRODUCTS);
+  return { addons: get('addons'), products: get('products') };
+}
+
+/**
+ * Restore 'addons' and 'products' settings rows from a snapshot.
+ * Call in afterAll to undo any changes made during tests.
+ */
+export async function restoreSettings(snapshot: { addons: string; products: string }): Promise<void> {
+  const token = await getAuthToken();
+  const headers = makeHeaders(token);
+  for (const [key, value] of Object.entries(snapshot)) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/settings?key=eq.${key}`,
+      { method: 'PATCH', headers, body: JSON.stringify({ value }) },
+    );
+    if (!res.ok) {
+      const text = await res.text();
+      console.warn(`cleanup: PATCH settings/${key} failed — ${res.status} ${text}`);
+    }
+  }
+}
+
+/**
  * Reset the settings table rows for 'addons' and 'products' back to defaults.
- * Call in beforeAll/afterAll for any test suite that mutates these settings.
+ * Call in beforeAll (after snapshotSettings) to ensure a predictable test baseline.
  */
 export async function resetSettings(): Promise<void> {
   const token = await getAuthToken();

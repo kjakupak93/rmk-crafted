@@ -369,13 +369,10 @@ test('booking row shows — when pickup time is not set', async ({ page }) => {
   await goToScheduler(page);
   await clickFirstAvailableDay(page);
   // Create a booking without a pickup time
-  const today = new Date();
-  const dateStr = today.toISOString().split('T')[0];
   await page.click('button:has-text("+ Book Pickup")');
   await page.waitForSelector('#bookingModal.open');
   await page.fill('#bkName', `${TAG} NoTime`);
-  await page.fill('#bkDate', dateStr);
-  // Leave #bkTime empty
+  // Leave #bkTime empty; #bkDate is pre-filled by openBookingModal() from selectedDate
   await page.click('button[onclick="saveBooking()"]');
   await page.waitForSelector('#bookingModal', { state: 'hidden' });
   // The booking row time cell should show — not blank

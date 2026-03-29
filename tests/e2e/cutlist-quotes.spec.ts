@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { login } from '../helpers/auth';
-import { cleanupTestData, resetSettings } from './helpers/cleanup';
+import { cleanupTestData, snapshotSettings, restoreSettings } from './helpers/cleanup';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -38,13 +38,16 @@ async function createQuote(page: Page, quoteName: string): Promise<void> {
   await expect(page.locator('#createQuoteModal')).not.toHaveClass(/open/, { timeout: 5000 });
 }
 
+let settingsSnapshot: { addons: string; products: string } = { addons: '', products: '' };
+
 test.beforeAll(async () => {
   await cleanupTestData(['quotes', 'orders', 'cut_lists']);
+  settingsSnapshot = await snapshotSettings();
 });
 
 test.afterAll(async () => {
   await cleanupTestData(['quotes', 'orders', 'cut_lists']);
-  await resetSettings();
+  await restoreSettings(settingsSnapshot);
 });
 
 test('Quote button becomes enabled after running cut list', async ({ page }) => {
