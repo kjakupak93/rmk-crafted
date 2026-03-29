@@ -28,7 +28,7 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 |---|---|
 | `orders` | Active and completed customer orders |
 | `inventory` | Ready-to-sell planters in stock |
-| `sales` | Historical sales log — columns include `add_ons` (JSONB, array of `{id, label, price}` objects) |
+| `sales` | Historical sales log — columns include `add_ons` (JSONB, array of `{id, label, price}` objects), `product_options` (JSONB, nullable, mirrors first order item's options e.g. `{stain: "Dark Walnut"}`) |
 | `purchases` | Lowes material purchase log |
 | `stock` | Current material stock levels (3 rows: pickets, twobytwo, twobyfour) |
 | `schedule_slots` | Open pickup time slots on the calendar |
