@@ -27,7 +27,7 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 | File | What it checks |
 |---|---|
-| `auth.spec.ts` | PIN gate: wrong PIN shows error, correct PIN dismisses gate |
+| `auth.spec.ts` | Auth gate: wrong credentials show error, correct email/password dismisses gate |
 | `home.spec.ts` | KPI cards present, nav tiles visible, dark mode toggle, + New Order shortcut opens order modal |
 | `orders.spec.ts` | Orders page tabs, New Order modal, Quotes tab visibility, Sales History margin badges |
 | `materials.spec.ts` | Stock counts load, tab switching (all 5 tabs), Cut List quote button starts disabled, Products tab renders, Add-ons tab renders |
@@ -38,11 +38,11 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ## E2E Suite (`tests/e2e/*.spec.ts`)
 
-67 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
+65 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
 
 | File | Tests | Coverage |
 |---|---|---|
-| `orders.spec.ts` | 16 | Create, edit, advance status (pending→building→ready), complete unpaid (Cash + Venmo), skip payment, prepaid bypass, delete, filter, add-on saved on order, multi-item, mark all paid (Cash + Venmo), product option on card, option restored on edit, option flows to sales history |
+| `orders.spec.ts` | 14 | Create, edit, advance status (pending→building→ready), complete unpaid (Cash + Venmo), skip payment, prepaid bypass, delete, filter, add-on saved on order, multi-item, mark all paid (Cash + Venmo), product option on card, option restored on edit, option flows to sales history |
 | `cutlist-quotes.spec.ts` | 9 | Quote button enables after run, modal pre-fill, save quote, auto-nav to Quotes tab after save, convert to order, size carried from cut list name, delete, product saved with cut list, product grouping in saved list |
 | `materials.spec.ts` | 18 | Add/edit/delete purchase, run cut list, save cut list, re-save updates existing record, load + delete cut list, stock +/− buttons, add product, rename product, delete product, product persists across reload, add/delete add-on, new add-on appears in order modal dropdown, options panel toggle, add option to product, option dropdown in order modal |
 | `scheduler.spec.ts` | 11 | Add/edit/delete slot, book/edit/delete pickup, quick book, booking edit syncs order pickup time, add/delete availability window, booking shows — when time not set |
@@ -51,7 +51,7 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ### Authentication
 
-Each e2e test calls `login(page)` (from `tests/helpers/auth.ts`) which enters the PIN and waits for the PIN gate to be dismissed. After login, each test navigates to its target page via the home tile grid.
+Each e2e test calls `login(page)` (from `tests/helpers/auth.ts`). For the e2e suite, a global setup (`tests/global-setup.ts`) signs in once with `TEST_EMAIL`/`TEST_PASSWORD` and saves Supabase session storage state — each test file starts pre-authenticated. For the smoke suite, `login()` signs in with email/password directly if the gate is visible. After login, each test navigates to its target page via the home tile grid.
 
 ### Data Hygiene
 
@@ -76,7 +76,7 @@ Tables cleaned up per suite:
 
 Both suites run on every push to `main` via `.github/workflows/e2e.yml`. Smoke runs first, then e2e. If either fails, the Playwright HTML report is uploaded as an artifact (retained 7 days).
 
-No secrets are needed — the Supabase anon key and PIN are already in `index.html` (public repo, anon-access app).
+The Supabase anon key is already in `index.html`. `TEST_EMAIL` and `TEST_PASSWORD` must be set as GitHub Actions secrets for the sign-in flow.
 
 ---
 

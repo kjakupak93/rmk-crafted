@@ -319,7 +319,7 @@ The project has a two-tier Playwright test suite. See [`tests/README.md`](tests/
 | Suite | Command | Tests | What it covers |
 |---|---|---|---|
 | Smoke | `npx playwright test --project=smoke` | 28 | UI presence, navigation, no data writes |
-| E2E | `npx playwright test --project=e2e` | 67 | Full workflows with real Supabase reads/writes |
+| E2E | `npx playwright test --project=e2e` | 65 | Full workflows with real Supabase reads/writes |
 
 Both suites run automatically on every push to `main` via GitHub Actions (`.github/workflows/e2e.yml`).
 
