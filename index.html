@@ -67,73 +67,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ===== SHARED HEADER ===== */
-.app-header {
-  background: var(--navy);
-  padding: 0 24px;
-  padding-left: calc(24px + env(safe-area-inset-left, 0px));
-  padding-right: calc(24px + env(safe-area-inset-right, 0px));
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  height: 62px;
-  /* In standalone PWA mode, account for status bar */
-  padding-top: env(safe-area-inset-top, 0px);
-  min-height: calc(62px + env(safe-area-inset-top, 0px));
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  box-shadow: 0 2px 12px rgba(30,77,107,0.25);
-}
-.app-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--sand), var(--ocean-light), var(--sand));
-}
-.header-logo { height: 40px; width: 40px; object-fit: contain; border-radius: 6px; background: white; padding: 2px; flex-shrink: 0; }
-.header-brand { flex: 1; }
-.header-brand h1 { font-family: 'Playfair Display', serif; font-size: 18px; color: white; font-weight: 700; line-height: 1.1; }
-.header-brand p { font-size: 10px; color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; }
-.header-back-btn {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-  font-family: 'DM Mono', monospace;
-  transition: background 0.2s;
-  display: none;
-  min-height: 36px;
-}
-.header-back-btn:hover { background: rgba(255,255,255,0.2); }
-.header-back-btn.visible { display: flex; align-items: center; gap: 6px; }
-
-/* ===== CONNECTION STATUS ===== */
-.conn-bar {
-  padding: 6px 24px;
-  padding-left: calc(24px + env(safe-area-inset-left, 0px));
-  padding-right: calc(24px + env(safe-area-inset-right, 0px));
-  font-size: 11px;
-  font-family: 'DM Mono', monospace;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--warm-gray);
-  background: white;
-}
-.conn-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #ccc;
-  flex-shrink: 0;
-}
-.conn-dot.connected { background: var(--green); box-shadow: 0 0 0 2px rgba(58,125,92,0.2); }
-.conn-dot.error { background: var(--red); }
-.conn-text { color: var(--text-muted); }
 
 /* ===== APP LAYOUT ===== */
 .app-layout {
@@ -503,7 +436,7 @@ body {
   display: flex;
   padding: 0 24px;
   position: sticky;
-  top: calc(62px + env(safe-area-inset-top, 0px));
+  top: 52px;
   z-index: 100;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -1106,14 +1039,6 @@ body {
   /* analytics uses app-container for padding; remove outer page padding on mobile to avoid doubling */
   #page-analytics { padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; }
 
-  /* ── Header ── */
-  .app-header {
-    padding-left: calc(12px + env(safe-area-inset-left, 0px));
-    padding-right: calc(12px + env(safe-area-inset-right, 0px));
-    gap: 10px;
-  }
-  .header-brand h1 { font-size: 16px; }
-
   /* ── Touch targets ── */
   .icon-btn { width: 44px; height: 44px; font-size: 15px; }
   .filter-btn { padding: 8px 12px; min-height: 36px; white-space: nowrap; flex-shrink: 0; }
@@ -1173,14 +1098,6 @@ body {
 
   /* ── Table wrap: already has -webkit-overflow-scrolling: touch in base style ── */
 
-  /* ── Connection bar ── */
-  .conn-bar {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    padding-left: calc(12px + env(safe-area-inset-left, 0px));
-    padding-right: calc(12px + env(safe-area-inset-right, 0px));
-  }
-
   /* ── Cut list table: min-width reduction (allows scrolling) ── */
   #cut-list-calc .data-table { min-width: 380px; }
 
@@ -1216,6 +1133,13 @@ body {
   .input-row { grid-template-columns: 1fr; }
 
   /* ── Mat price row ── */
+  .sidebar { display: none; }
+  .bottom-nav { display: flex; }
+  .header-new-order-btn { display: flex; }
+  .page { padding-bottom: 70px; }
+  #page-home { padding-bottom: 70px; }
+  #page-analytics { padding-bottom: 70px; }
+  .main-header { padding: 0 16px; }
 }
 
 @media (max-width: 820px) {
@@ -1229,9 +1153,9 @@ body {
   #page-home { padding: 24px 20px 60px; }
   /* analytics uses app-container; don't double-pad */
   #page-analytics { padding: 0; }
-  .app-header { padding: 0 20px; }
-  .conn-bar { padding: 6px 20px; }
   .icon-btn { width: 38px; height: 38px; }
+  .sidebar { width: 170px; }
+  .sb-lbl { font-size: 12px; }
 }
 
 /* ── Trend badges on KPI cards ── */
@@ -1258,12 +1182,11 @@ body {
 /* ── Desktop (1025px+) ── */
 @media (min-width: 1025px) {
   /* Increased side padding to breathe */
-  .app-container { padding: 32px 40px 80px; }
-  #page-home { padding: 32px 40px 80px; }
-  #page-analytics { padding: 32px 40px 80px; }
-  .app-header { padding: 0 40px; }
-  .conn-bar { padding: 6px 40px; }
+  .app-container { padding: 28px 28px 60px; }
+  #page-home { padding: 28px 28px 60px; }
+  #page-analytics { padding: 28px 28px 60px; }
   .tabs { padding: 0 40px; }
+  .main-header { padding: 0 28px; }
 
   /* Home: 2-column layout — main content left, nav tiles right */
   #page-home-inner {
