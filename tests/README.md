@@ -38,11 +38,11 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ## E2E Suite (`tests/e2e/*.spec.ts`)
 
-64 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
+66 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
 
 | File | Tests | Coverage |
 |---|---|---|
-| `orders.spec.ts` | 14 | Create, edit, advance status (pending→building→ready), complete unpaid (Cash + Venmo), skip payment, prepaid bypass, delete, filter, add-on saved on order, multi-item, mark all paid (Cash + Venmo), product option on card, option restored on edit, option flows to sales history |
+| `orders.spec.ts` | 16 | Create, edit, advance status (pending→building→ready), complete unpaid (Cash + Venmo), skip payment, prepaid bypass, delete, filter, add-on saved on order, multi-item, mark all paid (Cash + Venmo), product option on card, option restored on edit, option flows to sales history |
 | `cutlist-quotes.spec.ts` | 9 | Quote button enables after run, modal pre-fill, save quote, auto-nav to Quotes tab after save, convert to order, size carried from cut list name, delete, product saved with cut list, product grouping in saved list |
 | `materials.spec.ts` | 17 | Add/edit/delete purchase, run cut list, save cut list, re-save updates existing record, load + delete cut list, add product, rename product, delete product, product persists across reload, add/delete add-on, new add-on appears in order modal dropdown, options panel toggle, add option to product, option dropdown in order modal |
 | `scheduler.spec.ts` | 11 | Add/edit/delete slot, book/edit/delete pickup, quick book, booking edit syncs order pickup time, add/delete availability window, booking shows — when time not set |
