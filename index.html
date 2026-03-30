@@ -978,9 +978,6 @@ body {
     padding-right: calc(12px + env(safe-area-inset-right, 0px));
   }
 
-  /* ── Low-stock banner ── */
-  .low-stock-banner { font-size: 12px; padding: 8px 12px; }
-
   /* ── Cut list table: min-width reduction (allows scrolling) ── */
   #cut-list-calc .data-table { min-width: 380px; }
 
@@ -1078,32 +1075,6 @@ body {
   gap: 6px;
   margin-top: 10px;
 }
-
-/* ===== LOW-STOCK BANNER ===== */
-.low-stock-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #FEF3CD;
-  border: 1.5px solid #F5C842;
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 14px;
-  font-size: 13px;
-  color: #7A5800;
-  gap: 10px;
-}
-.low-stock-banner button {
-  background: none;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  color: #7A5800;
-  opacity: 0.6;
-  flex-shrink: 0;
-  padding: 2px 4px;
-}
-.low-stock-banner button:hover { opacity: 1; }
 
 /* ===== ACTIVITY FEED ===== */
 .activity-feed { margin-bottom: 18px; }
@@ -1236,7 +1207,6 @@ body {
 [data-theme="dark"] .cal-day.selected { background: #1E3347; border-color: #7BADC8; }
 [data-theme="dark"] .cal-day.has-slots { background: #1A2F42; }
 /* Misc */
-[data-theme="dark"] .low-stock-banner { background: #1F1800; border-color: #6A4A00; color: #F5C842; }
 [data-theme="dark"] .calc-result { background: #1E3347; border-color: #2C4255; }
 [data-theme="dark"] .app-tile { color: var(--text); }
 [data-theme="dark"] .app-tile:hover { background: #1E3347 !important; }
@@ -1505,12 +1475,6 @@ body {
       </div>
     </div>
 
-    <!-- Low-stock alert -->
-    <div id="low-stock-alert" style="display:none" class="low-stock-banner">
-      <span>⚠️ <span id="low-stock-msg">Low stock</span>. Restock before building.</span>
-      <button onclick="this.closest('.low-stock-banner').style.display='none'" title="Dismiss">✕</button>
-    </div>
-
     <!-- Activity feed -->
     <div id="home-activity"></div>
 
@@ -1543,12 +1507,7 @@ body {
             <span class="tile-icon" style="font-size:20px">🛒</span>
           </div>
           <div class="tile-name">Materials</div>
-          <div class="tile-desc">Wood stock & purchases</div>
-          <div class="tile-mini-stats">
-            <span class="tms-chip"><span class="tms-val" id="ss-pickets">—</span> pickets</span>
-            <span class="tms-chip"><span class="tms-val" id="ss-twobytwo">—</span> 2×2s</span>
-            <span class="tms-chip"><span class="tms-val" id="ss-twobyfour">—</span> 2×4s</span>
-          </div>
+          <div class="tile-desc">Purchases, cut lists & products</div>
         </div>
       </div>
 
@@ -3463,24 +3422,6 @@ function renderTrendBadge(elId, current, prior) {
   else { el.textContent = `▼ ${abs.toFixed(0)}% vs prior`; el.className = 'trend-badge trend-down'; }
 }
 
-function renderQuoteStockStrip(stock) {
-  const strip = document.getElementById('quoteStockStrip');
-  if (!strip) return;
-  const items = [
-    { key: 'pickets',   label: 'Cedar Pickets' },
-    { key: 'twobytwo',  label: '2×2 Lumber' },
-    { key: 'twobyfour', label: '2×4 Lumber' }
-  ];
-  strip.innerHTML = items.map(({ key, label }) => {
-    const qty = stock[key] ?? '—';
-    const cls = typeof qty === 'number' ? (qty <= 5 ? 'low' : qty <= 15 ? 'medium' : 'good') : '';
-    return `<div class="quote-stock-badge">
-      <span class="qsb-label">${label}</span>
-      <span class="qsb-qty ${cls}">${qty}</span>
-    </div>`;
-  }).join('');
-}
-
 function goTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
@@ -3503,9 +3444,8 @@ async function loadHomeStats() {
     weekEnd.setDate(weekEnd.getDate() + 6);
     const weekEndKey = dateKey(weekEnd);
 
-    const [ordRes, stockRes, bookTodayRes, bookWeekRes, bookFutureRes, salesRes, invRes] = await Promise.all([
+    const [ordRes, bookTodayRes, bookWeekRes, bookFutureRes, salesRes, invRes] = await Promise.all([
       sb.from('orders').select('id,status,price,payment,pickup_date'),
-      sb.from('stock').select('material,qty'),
       sb.from('schedule_bookings').select('booking_date').eq('booking_date', todayKey()),
       sb.from('schedule_bookings').select('booking_date').gte('booking_date', todayKey()).lte('booking_date', weekEndKey),
       sb.from('schedule_bookings').select('booking_date').gt('booking_date', todayKey()).order('booking_date', { ascending: true }).limit(1),
@@ -3536,22 +3476,6 @@ async function loadHomeStats() {
     const elOD = document.getElementById('ss-overdue');
     elOD.textContent = overdue;
     elOD.className = 'tms-val' + (overdue > 0 ? ' low' : '');
-
-    // ── Materials strip ──
-    const stockMap = {};
-    (stockRes.data||[]).forEach(r => { stockMap[r.material] = r.qty||0; });
-    const pickets = stockMap['pickets']||0;
-    const twobytwo = stockMap['twobytwo']||0;
-    const twobyfour = stockMap['twobyfour']||0;
-    const elP = document.getElementById('ss-pickets');
-    const el22 = document.getElementById('ss-twobytwo');
-    const el24 = document.getElementById('ss-twobyfour');
-    elP.textContent = pickets;
-    el22.textContent = twobytwo;
-    el24.textContent = twobyfour;
-    elP.className = 'tms-val' + (pickets < 10 ? ' low' : '');
-    el22.className = 'tms-val' + (twobytwo < 5 ? ' low' : '');
-    el24.className = 'tms-val' + (twobyfour < 5 ? ' low' : '');
 
     // ── Scheduler strip ──
     const weekPickups = (bookWeekRes.data||[]).length;
@@ -3590,19 +3514,6 @@ async function loadHomeStats() {
     const invCount = invItems.reduce((s, i) => s + (i.qty || 0), 0);
     document.getElementById('kpi-inv-count').textContent = invCount;
     document.getElementById('kpi-owed').textContent = '$'+owed.toFixed(0);
-
-    // ── Low-stock alert ──
-    const lowParts = [];
-    if (pickets < 10) lowParts.push(pickets+' pickets');
-    if (twobytwo < 5) lowParts.push(twobytwo+' 2×2s');
-    if (twobyfour < 5) lowParts.push(twobyfour+' 2×4s');
-    const alertEl = document.getElementById('low-stock-alert');
-    if (lowParts.length) {
-      document.getElementById('low-stock-msg').textContent = 'Low stock — '+lowParts.join(' · ');
-      alertEl.style.display = '';
-    } else {
-      alertEl.style.display = 'none';
-    }
 
   } catch(e) { console.error(e); }
 }
