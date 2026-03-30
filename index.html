@@ -124,7 +124,7 @@ body {
 /* ===== HOME SCREEN ===== */
 #page-home {
   padding: 32px 24px 80px;
-  max-width: 880px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 .home-kpi-row {
@@ -267,7 +267,7 @@ body {
 }
 
 /* ===== SHARED APP STYLES ===== */
-.app-container { max-width: 960px; margin: 0 auto; padding: 28px 24px 80px; }
+.app-container { max-width: 1280px; margin: 0 auto; padding: 28px 24px 80px; }
 
 .section-label {
   font-family: 'DM Mono', monospace;
@@ -1038,7 +1038,7 @@ body {
 .trend-flat { color: var(--text-muted); }
 
 /* ── Analytics page ── */
-#page-analytics { max-width: 880px; margin: 0 auto; padding: 32px 24px 80px; }
+#page-analytics { max-width: 1280px; margin: 0 auto; padding: 32px 24px 80px; }
 .analytics-year-toggle { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
 .analytics-year-toggle button { padding: 6px 18px; border: 1px solid var(--warm-gray); border-radius: 20px; background: white; color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 32px; font-weight: 600; }
 .analytics-year-toggle button.active { background: var(--sand); color: white; border-color: var(--sand); }
@@ -1052,7 +1052,59 @@ body {
 .chart-card h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px; }
 .chart-card--full { grid-column: 1 / -1; }
 
+/* ── Desktop (1025px+) ── */
+@media (min-width: 1025px) {
+  /* Increased side padding to breathe */
+  .app-container { padding: 32px 40px 80px; }
+  #page-home { padding: 32px 40px 80px; }
+  #page-analytics { padding: 32px 40px 80px; }
+  .app-header { padding: 0 40px; }
+  .conn-bar { padding: 6px 40px; }
+  .tabs { padding: 0 40px; }
 
+  /* Home: 2-column layout — main content left, nav tiles right */
+  #page-home-inner {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 28px;
+    align-items: start;
+  }
+  .home-side-col .app-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Analytics: 3-column chart grid */
+  .analytics-grid { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* Scheduler: calendar + day detail side-by-side */
+  #stab-calendar {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 0 24px;
+    align-items: start;
+  }
+  #stab-calendar .cal-nav-header { grid-column: 1 / -1; }
+  #stab-calendar #calGrid { grid-column: 1; }
+  #stab-calendar #dayDetail {
+    grid-column: 2;
+    display: block !important;
+    background: white;
+    border: 2px solid var(--warm-gray);
+    border-radius: 12px;
+    padding: 18px 20px;
+    min-height: 160px;
+  }
+  #stab-calendar #dayDetailTitle:empty::before {
+    content: 'Select a day';
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    font-style: italic;
+    display: block;
+    margin-bottom: 8px;
+  }
+}
 
 .customer-booked-badge {
   display: inline-flex;
@@ -1437,6 +1489,7 @@ body {
 <div class="page active" id="page-home">
   <div id="page-home-inner">
 
+    <div class="home-main-col">
     <!-- Hero banner -->
     <div class="home-hero">
       <div class="home-hero-left">
@@ -1477,7 +1530,9 @@ body {
 
     <!-- Activity feed -->
     <div id="home-activity"></div>
+    </div><!-- /.home-main-col -->
 
+    <div class="home-side-col">
     <div class="app-grid">
 
       <!-- Orders -->
@@ -1540,6 +1595,7 @@ body {
         </div>
       </div>
     </div>
+    </div><!-- /.home-side-col -->
   </div>
 </div>
 
