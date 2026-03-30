@@ -480,20 +480,6 @@ body {
 .inv-size { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--navy); }
 .inv-product { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
 .inv-price { font-family: 'DM Mono', monospace; font-size: 20px; color: var(--green); font-weight: 500; }
-.qty-ctrl { display: flex; align-items: center; gap: 10px; }
-.qty-btn {
-  width: 28px; height: 28px;
-  border-radius: 6px;
-  border: 2px solid var(--warm-gray);
-  background: white;
-  cursor: pointer;
-  font-size: 16px; font-weight: 600;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-}
-.qty-btn:hover { border-color: var(--ocean); }
-.qty-num { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; min-width: 24px; text-align: center; }
-
 /* History table */
 .table-wrap { background: white; border: 2px solid var(--warm-gray); border-radius: 12px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
 .data-table { width: 100%; border-collapse: collapse; min-width: 500px; }
@@ -658,14 +644,6 @@ body {
 .std-table-wrap.show { display: block; }
 
 /* ===== MATERIAL TRACKER ===== */
-.stock-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 24px; }
-.stock-card { background: white; border: 2px solid var(--warm-gray); border-radius: 12px; padding: 18px; }
-.stock-icon { font-size: 22px; margin-bottom: 8px; }
-.stock-name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
-.stock-qty { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; }
-.stock-qty.low { color: var(--red); }
-.stock-qty.medium { color: var(--orange); }
-.stock-qty.good { color: var(--green); }
 .quote-stock-strip { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
 .quote-stock-badge { display:flex; align-items:center; gap:6px; background:white; border:1px solid var(--warm-gray); border-radius:8px; padding:6px 12px; font-family:'DM Mono',monospace; font-size:13px; }
 .quote-stock-badge .qsb-label { color:var(--text-muted); font-size:12px; }
@@ -673,19 +651,6 @@ body {
 .quote-stock-badge .qsb-qty.low    { color: var(--red); }
 .quote-stock-badge .qsb-qty.medium { color: var(--orange); }
 .quote-stock-badge .qsb-qty.good   { color: var(--green); }
-.stock-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
-
-.summary-bar {
-  background: var(--navy);
-  border-radius: 12px;
-  padding: 18px 22px;
-  display: flex;
-  gap: 28px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.sbar-item .sval { font-family: 'DM Mono', monospace; font-size: 22px; color: white; font-weight: 500; }
-.sbar-item .slbl { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
 
 .build-calc { background: white; border: 2px solid var(--warm-gray); border-radius: 12px; padding: 18px; margin-bottom: 24px; }
 .build-calc h3 { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--navy); margin-bottom: 4px; }
@@ -944,7 +909,6 @@ body {
 
   /* ── Touch targets ── */
   .icon-btn { width: 44px; height: 44px; font-size: 15px; }
-  .qty-btn { width: 40px; height: 40px; }
   .filter-btn { padding: 8px 12px; min-height: 36px; white-space: nowrap; flex-shrink: 0; }
   .sales-filter-btn { padding: 7px 12px; }
   .cal-nav-btn { padding: 10px 14px; min-height: 44px; }
@@ -1006,10 +970,6 @@ body {
 
   /* ── Table wrap: already has -webkit-overflow-scrolling: touch in base style ── */
 
-  /* ── Summary bar ── */
-  .summary-bar { padding: 14px 16px; gap: 16px; }
-  .sbar-item .sval { font-size: 18px; }
-
   /* ── Connection bar ── */
   .conn-bar {
     padding-top: 5px;
@@ -1056,7 +1016,6 @@ body {
   .input-row { grid-template-columns: 1fr; }
 
   /* ── Mat price row ── */
-  .mat-price-row { flex-wrap: wrap; }
 }
 
 @media (max-width: 820px) {
@@ -1073,7 +1032,6 @@ body {
   .app-header { padding: 0 20px; }
   .conn-bar { padding: 6px 20px; }
   .icon-btn { width: 38px; height: 38px; }
-  .qty-btn { width: 36px; height: 36px; }
 }
 
 /* ── Trend badges on KPI cards ── */
@@ -1309,9 +1267,6 @@ body {
 [data-theme="dark"] .advance-btn-pending:hover  { background: rgba(212,120,42,0.35); }
 [data-theme="dark"] .advance-btn-building { background: rgba(74,134,168,0.15); color: #7BADC8; border-color: rgba(74,134,168,0.5); }
 [data-theme="dark"] .advance-btn-building:hover { background: rgba(74,134,168,0.35); }
-/* Materials page dark mode fixes */
-[data-theme="dark"] .summary-bar { background: #1A2F42; }
-[data-theme="dark"] .mat-price-row { background: #162534 !important; border-color: #2C4255 !important; }
 /* Quote page dark mode fixes */
 [data-theme="dark"] .quote-stock-badge { background: #162534; border-color: #2C4255; }
 
@@ -1710,85 +1665,13 @@ body {
 <!-- ===== MATERIALS ===== -->
 <div class="page" id="page-materials">
   <div class="tabs">
-    <button class="tab-btn active" onclick="showMaterialsTab('stock',this)">📦 Stock</button>
-    <button class="tab-btn" onclick="showMaterialsTab('purchases',this)">🛒 Purchases</button>
+    <button class="tab-btn active" onclick="showMaterialsTab('purchases',this)">🛒 Purchases</button>
     <button class="tab-btn" onclick="showMaterialsTab('cutlist',this)">🪵 Cut List</button>
     <button class="tab-btn" onclick="showMaterialsTab('products',this)">🎨 Products</button>
     <button class="tab-btn" onclick="showMaterialsTab('addons',this)">🔧 Add-ons</button>
   </div>
   <div class="app-container">
-    <div class="tab-panel active" id="mtab-stock">
-      <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Materials</h2>
-      <div class="section-label">Current Stock</div>
-      <div class="stock-grid">
-        <div class="stock-card">
-          <div class="stock-icon">🪵</div>
-          <div class="stock-name">Cedar Pickets</div>
-          <div class="stock-qty" id="sq-pickets">—</div>
-          <div class="stock-meta">on hand · $3.66 each</div>
-          <div class="qty-ctrl">
-            <button class="qty-btn" onclick="adjustStock('pickets',-1)">−</button>
-            <span class="qty-num" id="sd-pickets">0</span>
-            <button class="qty-btn" onclick="adjustStock('pickets',1)">+</button>
-          </div>
-        </div>
-        <div class="stock-card">
-          <div class="stock-icon">📏</div>
-          <div class="stock-name">2×2 Lumber</div>
-          <div class="stock-qty" id="sq-twobytwo">—</div>
-          <div class="stock-meta">on hand · $3.23 each</div>
-          <div class="qty-ctrl">
-            <button class="qty-btn" onclick="adjustStock('twobytwo',-1)">−</button>
-            <span class="qty-num" id="sd-twobytwo">0</span>
-            <button class="qty-btn" onclick="adjustStock('twobytwo',1)">+</button>
-          </div>
-        </div>
-        <div class="stock-card">
-          <div class="stock-icon">🔩</div>
-          <div class="stock-name">2×4 Lumber</div>
-          <div class="stock-qty" id="sq-twobyfour">—</div>
-          <div class="stock-meta">on hand · $4.17 each</div>
-          <div class="qty-ctrl">
-            <button class="qty-btn" onclick="adjustStock('twobyfour',-1)">−</button>
-            <span class="qty-num" id="sd-twobyfour">0</span>
-            <button class="qty-btn" onclick="adjustStock('twobyfour',1)">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="mat-price-row" style="margin:16px 0; padding:14px 16px; background:white; border:1px solid var(--warm-gray); border-radius:10px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-        <label style="font-size:13px; font-weight:600; color:var(--text); white-space:nowrap;">Selling Price per Picket</label>
-        <input class="std-input" type="number" id="matPicketPrice" min="0" step="0.5" placeholder="10" style="width:90px; margin:0;">
-        <button class="btn-primary" style="padding:8px 16px; font-size:13px;" onclick="savePicketPrice()">Save</button>
-        <span style="font-size:12px; color:var(--text-muted);">Sets the default $ per picket for pricing.</span>
-      </div>
-
-      <div class="summary-bar">
-        <div class="sbar-item"><div class="sval" id="mb-spent">$0</div><div class="slbl">Total Spent</div></div>
-        <div class="sbar-item"><div class="sval" id="mb-stock">$0</div><div class="slbl">Stock Value</div></div>
-        <div class="sbar-item"><div class="sval" id="mb-trips">0</div><div class="slbl">Supply Runs</div></div>
-      </div>
-
-      <div class="build-calc">
-        <h3>Build Cost Estimator</h3>
-        <p>Enter materials for a build to see your margin.</p>
-        <div class="calc-grid3">
-          <div class="input-group"><label>Cedar pickets</label><input class="std-input" type="number" id="bc-p" placeholder="0" min="0" oninput="updateBuildCalc()"></div>
-          <div class="input-group"><label>2×2 pieces</label><input class="std-input" type="number" id="bc-22" placeholder="0" min="0" oninput="updateBuildCalc()"></div>
-          <div class="input-group"><label>2×4 pieces</label><input class="std-input" type="number" id="bc-24" placeholder="0" min="0" oninput="updateBuildCalc()"></div>
-        </div>
-        <div class="input-group" style="margin-bottom:12px"><label>Sale / quoted price ($)</label><input class="std-input" type="number" id="bc-price" placeholder="85" min="0" oninput="updateBuildCalc()"></div>
-        <div class="calc-result">
-          <div class="cr-item"><div class="cr-val" id="bc-mat">$0</div><div class="cr-lbl">Material Cost</div></div>
-          <div class="cr-item"><div class="cr-val" id="bc-prof" style="color:var(--green)">$0</div><div class="cr-lbl">Profit</div></div>
-          <div class="cr-item"><div class="cr-val" id="bc-marg">—</div><div class="cr-lbl">Margin</div></div>
-          <div class="cr-item"><div class="cr-val" id="bc-mkup">—</div><div class="cr-lbl">Markup</div></div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="tab-panel" id="mtab-purchases">
+    <div class="tab-panel active" id="mtab-purchases">
       <div class="summary-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
         <div class="summary-card c-sand"><div class="val" id="pur-stat-total">$0</div><div class="lbl">Total Spent</div></div>
         <div class="summary-card"><div class="val" id="pur-stat-trips">0</div><div class="lbl">Supply Trips</div></div>
@@ -2497,7 +2380,6 @@ const STANDARD_SIZES = [
 ];
 const UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17};
 const PICKET_PRICE_PER_UNIT = 10;
-let defaultPicketPrice = PICKET_PRICE_PER_UNIT;
 let ADDONS = [
   {id:'sealant', label:'Sealant', base:20, scales:true},
   {id:'liner', label:'Fabric Liner', base:15, scales:true},
@@ -3092,7 +2974,6 @@ let calYear, calMonth, selectedDate;
 const today = new Date();
 calYear = today.getFullYear();
 calMonth = today.getMonth();
-let stockData = {pickets:0, twobytwo:0, twobyfour:0};
 
 // ===== UTILS =====
 function showToast(msg, type='') {
@@ -3600,16 +3481,6 @@ function renderQuoteStockStrip(stock) {
   }).join('');
 }
 
-async function savePicketPrice() {
-  const val = parseFloat(document.getElementById('matPicketPrice').value);
-  if (!val || val <= 0) { showToast('Enter a valid price', 'error'); return; }
-  const { error } = await sb.from('settings').upsert({ key: 'picket_price', value: String(val) }, { onConflict: 'key' });
-  if (error) { showToast('Error saving price', 'error'); return; }
-  defaultPicketPrice = val;
-  document.getElementById('matPicketPrice').value = val;
-  showToast('Saved', 'success');
-}
-
 function goTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
@@ -3619,7 +3490,7 @@ function goTo(page) {
   currentPage = page;
   window.scrollTo(0,0);
   if (page==='orders') loadOrders();
-  if (page==='materials') { loadStock(); }
+  if (page==='materials') { loadPurchases(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
   if (page==='analytics') loadAnalytics();
 }
@@ -4752,53 +4623,6 @@ async function deleteQuote(id) {
 }
 
 // ===== MATERIALS =====
-async function loadStock() {
-  const {data}=await sb.from('stock').select('*');
-  if (!data) return;
-  const purchases = await sb.from('purchases').select('total');
-  const totalSpent=(purchases.data||[]).reduce((s,p)=>s+(p.total||0),0);
-  data.forEach(row=>{
-    stockData[row.material]=row.qty||0;
-    const qty=row.qty||0;
-    const cls=qty<=5?'low':qty<=15?'medium':'good';
-    const el=document.getElementById('sq-'+row.material);
-    if (el) {el.textContent=qty;el.className='stock-qty '+cls;}
-    const disp=document.getElementById('sd-'+row.material);
-    if (disp) disp.textContent=qty;
-  });
-  const sv=stockData.pickets*UNIT_COSTS.pickets+stockData.twobytwo*UNIT_COSTS.twobytwo+stockData.twobyfour*UNIT_COSTS.twobyfour;
-  document.getElementById('mb-spent').textContent='$'+totalSpent.toFixed(0);
-  document.getElementById('mb-stock').textContent='$'+sv.toFixed(2);
-  document.getElementById('mb-trips').textContent=(purchases.data||[]).length;
-  // Pre-fill the selling price field from the in-memory global (kept in sync by savePicketPrice)
-  const matField = document.getElementById('matPicketPrice');
-  if (matField) matField.value = defaultPicketPrice;
-}
-
-async function adjustStock(material, delta) {
-  const current=stockData[material]||0;
-  const newQty=Math.max(0,current+delta);
-  await sb.from('stock').update({qty:newQty}).eq('material',material);
-  stockData[material]=newQty;
-  loadStock();
-}
-
-function updateBuildCalc() {
-  const p=parseInt(document.getElementById('bc-p').value)||0;
-  const t22=parseInt(document.getElementById('bc-22').value)||0;
-  const t24=parseInt(document.getElementById('bc-24').value)||0;
-  const price=parseFloat(document.getElementById('bc-price').value)||0;
-  const mat=p*UNIT_COSTS.pickets+t22*UNIT_COSTS.twobytwo+t24*UNIT_COSTS.twobyfour;
-  const profit=price-mat;
-  const margin=price?Math.round((profit/price)*100):0;
-  const markup=mat?Math.round((profit/mat)*100):0;
-  document.getElementById('bc-mat').textContent='$'+mat.toFixed(2);
-  document.getElementById('bc-prof').textContent='$'+profit.toFixed(2);
-  document.getElementById('bc-prof').style.color=profit>=0?'var(--green)':'var(--red)';
-  document.getElementById('bc-marg').textContent=price?margin+'%':'—';
-  document.getElementById('bc-mkup').textContent=mat?markup+'%':'—';
-}
-
 // ===== CUT LIST CALCULATOR =====
 const CL_COLORS = ['#1E4D6B','#3A7D5C','#D4782A','#4A86A8','#C9A55A','#7B5EA7','#2E8B8B','#8B4513','#B8860B','#5F9EA0'];
 const CL_STOCK_COLORS = ['#1E4D6B','#3A7D5C','#D4782A','#4A86A8','#C9A55A','#7B5EA7','#2E8B8B'];
@@ -5563,20 +5387,16 @@ async function savePurchase() {
   } else {
     const {error}=await sb.from('purchases').insert(payload);
     if (error) {showToast('Error saving','error');return;}
-    // Update stock only on new purchases
-    await sb.from('stock').update({qty:Math.max(0,(stockData.pickets||0)+pickets)}).eq('material','pickets');
-    await sb.from('stock').update({qty:Math.max(0,(stockData.twobytwo||0)+t22)}).eq('material','twobytwo');
-    await sb.from('stock').update({qty:Math.max(0,(stockData.twobyfour||0)+t24)}).eq('material','twobyfour');
     await logActivity('🛒', payload.store||'Supply run', `Materials purchase — $${total.toFixed(2)}`);
-    showToast('Purchase logged & stock updated!','success');
-    closeModal('purchaseModal'); loadStock(); loadPurchases(); loadRecentActivity();
+    showToast('Purchase logged!','success');
+    closeModal('purchaseModal'); loadPurchases(); loadRecentActivity();
   }
 }
 
 async function deletePurchase(id) {
   showConfirm('Delete this purchase record?', async () => {
     await sb.from('purchases').delete().eq('id',id);
-    showToast('Deleted'); loadPurchases(); loadStock();
+    showToast('Deleted'); loadPurchases();
   });
 }
 

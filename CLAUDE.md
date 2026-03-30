@@ -49,7 +49,7 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 ### Pages
 - **Home** (`page-home`) — KPI cards, low-stock alert, activity feed, tile nav grid
 - **Orders** (`page-orders`) — 4 tabs: Active → Ready to Sell → Sales History → Quotes
-- **Materials** (`page-materials`) — Stock levels + Lowes purchase log + Cut List Calculator tab + Products tab + Add-ons tab
+- **Materials** (`page-materials`) — Lowes purchase log + Cut List Calculator tab + Products tab + Add-ons tab
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
 - **Analytics** (`page-analytics`) — P&L cards + revenue/profit/best-seller charts
 
@@ -119,8 +119,8 @@ This app supports dark mode. When adding new UI elements or pages, ensure they w
 
 Two-tier Playwright suite — see `tests/README.md` for full details.
 
-- **Smoke** (`tests/*.spec.ts`) — 28 tests, read-only, runs in parallel. Covers page load, navigation, and UI presence for all pages.
-- **E2E** (`tests/e2e/*.spec.ts`) — 65 tests, writes real data to Supabase, serial per file. Run with `npx playwright test --project=e2e`.
+- **Smoke** (`tests/*.spec.ts`) — 27 tests, read-only, runs in parallel. Covers page load, navigation, and UI presence for all pages.
+- **E2E** (`tests/e2e/*.spec.ts`) — 64 tests, writes real data to Supabase, serial per file. Run with `npx playwright test --project=e2e`.
 
 E2E coverage by file:
 
@@ -128,7 +128,7 @@ E2E coverage by file:
 |---|---|
 | `orders.spec.ts` | Create/edit/delete order, advance status, complete (Cash + Venmo), skip, prepaid bypass, filter, add-on saved on order, multi-item, mark all paid (Cash + Venmo), product option on card, option restored on edit, option flows to sales history |
 | `cutlist-quotes.spec.ts` | Quote button enable, modal pre-fill, save/convert/delete quote |
-| `materials.spec.ts` | Purchase CRUD, cut list run/save/re-save UPDATE/load-delete, stock +/−, add/rename/delete product, add/delete add-on, new add-on syncs to order modal dropdown, product options panel toggle, add option to product, option dropdown in order modal |
+| `materials.spec.ts` | Purchase CRUD, cut list run/save/re-save UPDATE/load-delete, add/rename/delete product, add/delete add-on, new add-on syncs to order modal dropdown, product options panel toggle, add option to product, option dropdown in order modal |
 | `scheduler.spec.ts` | Slot CRUD, booking CRUD, quick book, booking edit syncs `orders.pickup_time`, availability window add/delete |
 | `inventory-sales.spec.ts` | Inventory add/qty-adjust/qty→0-removes/delete, sale log/edit/delete, sale with add-on shows label+price in history, add-on resilience (ADDONS cleared from localStorage) |
 | `visual-coverage.spec.ts` | Cut list board diagram, calendar dot states, order status badge colours, quote margin badge |

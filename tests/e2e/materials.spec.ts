@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { login } from '../helpers/auth';
-import { cleanupTestData, snapshotStock, restoreStock, resetSettings, snapshotSettings, restoreSettings, SettingsSnapshot } from './helpers/cleanup';
+import { cleanupTestData, resetSettings, snapshotSettings, restoreSettings, SettingsSnapshot } from './helpers/cleanup';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -55,20 +55,17 @@ async function confirmDelete(page: Page): Promise<void> {
   await page.click('#confirmOkBtn');
 }
 
-let stockSnapshot: { type: string; qty: number }[] = [];
 let settingsSnapshot: SettingsSnapshot = { addons: '', products: '', product_options: '{}' };
 
 test.beforeAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
   settingsSnapshot = await snapshotSettings();
   await resetSettings();
-  stockSnapshot = await snapshotStock();
 });
 
 test.afterAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
   await restoreSettings(settingsSnapshot);
-  await restoreStock(stockSnapshot);
 });
 
 test('add purchase appears in Purchases log', async ({ page }) => {
@@ -103,18 +100,6 @@ test('save cut list appears in saved list table', async ({ page }) => {
   await addPartAndRunCutList(page, cutListName);
   await page.click('button[onclick="saveCutList()"]');
   await expect(page.locator('#cl-saved-list').locator('tr').filter({ hasText: cutListName })).toBeVisible({ timeout: 10000 });
-});
-
-test('stock picket +/- buttons update the displayed count', async ({ page }) => {
-  await goToMaterials(page);
-  // Stock tab is the default tab — read current count
-  const before = parseInt(await page.locator('#sd-pickets').innerText(), 10);
-
-  await page.click('button[onclick="adjustStock(\'pickets\',1)"]');
-  await expect(page.locator('#sd-pickets')).toHaveText(String(before + 1), { timeout: 10000 });
-
-  await page.click('button[onclick="adjustStock(\'pickets\',-1)"]');
-  await expect(page.locator('#sd-pickets')).toHaveText(String(before), { timeout: 10000 });
 });
 
 test('edit purchase updates the store name', async ({ page }) => {
