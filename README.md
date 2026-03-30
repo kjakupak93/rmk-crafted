@@ -60,6 +60,8 @@ All data is stored in Supabase (cloud) so it works across any device. The dashbo
 
 **Adding or editing an order** — fields include: Customer Name · Contact · Items (size, product, qty, price) · Add-ons (select from dropdown, price editable per order) · Payment · Status · Pickup Date · Pickup Time · Notes
 
+> **Product-specific options** — if a product has options configured (e.g. Dog Bowl Stand has a Stain option with choices Natural Cedar / Dark Walnut), a dropdown appears inline below the item row as soon as that product is selected. The selected value is saved with the order, shown on the order card subtitle, and carried into the sales history record.
+
 > Setting a **Pickup Date + Time** automatically creates a booking on the Pickup Scheduler calendar. Updating it later updates the calendar too.
 
 **Ready-to-Sell Inventory tab** — finished boxes not tied to a specific order. Use +/− to adjust quantity as items sell.
@@ -89,9 +91,35 @@ Use +/− buttons to adjust as you build or receive materials.
 
 > Note: Logging a purchase does **not** auto-update stock levels. Update the Stock Levels tab manually.
 
-**Products tab** — manage planter product types (Standard, Vertical, Tiered, Dog Bowl, etc.). Add, rename, or delete products. Product list populates the product dropdown in all order and cut list forms.
+**Products tab** — manage planter product types (Standard, Vertical, Tiered, Dog Bowl, etc.).
 
-**Add-ons tab** — manage optional add-ons (Sealant, Fabric Liner, Casters, etc.). Each add-on has a name, base price, and a "Scales" flag that auto-adjusts price with planter size. When creating an order, select add-ons from a dropdown with an editable per-order price.
+| Action | How |
+|---|---|
+| Add product | **+ Add Product** → type name → Enter |
+| Rename product | **Rename** button on row → type new name → Enter |
+| Delete product | Trash button on row (blocked if it's the last product) |
+
+Product names populate the product dropdown in all order and cut list forms. Renaming or deleting a product automatically cascades to all existing orders, sales, inventory, and cut list records.
+
+**Product options** — each product can have one or more named option sets (e.g. a "Stain" option with choices "Natural Cedar, Dark Walnut"). Configure them by expanding the **Options** panel on any product row.
+
+| Action | How |
+|---|---|
+| Open options panel | **Options ▾** button on the product row |
+| Add an option | **+ Add Option** → enter Label and Choices (comma-separated) → **Add** |
+| Edit an option | **Edit** button next to the option → update fields → **Save** |
+| Delete an option | **Delete** button next to the option → confirm |
+
+Once an option is saved, the matching dropdown(s) appear automatically in the **New/Edit Order modal** and in the **Cut List Calculator** whenever that product is selected.
+
+**Add-ons tab** — manage optional add-ons (Sealant, Fabric Liner, Casters, etc.). Each add-on has a name, base price, and a **Scales** flag that auto-adjusts price with planter size. Changes take effect immediately in the order modal dropdown. When creating an order, select add-ons from a dropdown with an editable per-order price.
+
+| Action | How |
+|---|---|
+| Add add-on | **+ Add Add-on** → a new row appears for inline editing |
+| Edit name/price | Click the field inline and type |
+| Toggle Scales | Click the Scales checkbox on the row |
+| Delete add-on | Trash button on the row |
 
 ---
 
@@ -141,7 +169,9 @@ Plan material cuts before building. Enter parts, calculate board usage, and save
 
 **Waste %** accounts for both length and width waste area.
 
-**Saved Cut Lists** (bottom of page) — table showing Name, Last Modified, Notes. Load or delete any saved list. Re-saving a loaded list updates it in-place (no duplicates).
+**Product association** — select a product from the **Product** dropdown at the top of the cut list form. If that product has options configured (e.g. Stain), the option dropdown(s) appear immediately below. The selected product and options are saved with the cut list and restored when you load it.
+
+**Saved Cut Lists** (bottom of page) — grouped by product, showing Name, Last Modified, Notes. Load or delete any saved list. Re-saving a loaded list updates it in-place (no duplicates).
 
 **Create Quote from Cut List:**
 After running a cut list, tap **+ Quote** to open the quote modal. The price is pre-calculated from board counts and the notes field is pre-filled with the cut list name. Fill in a quote name, adjust price/notes as needed, and save. Saved quotes appear in the **Quotes tab** on the Orders page.
@@ -226,6 +256,8 @@ The `?token=` parameter links their booking to a specific order via a UUID booki
 | View sales revenue | Orders → Sales History tab (filter by year or period) |
 | Log a sale manually | Orders → Sales History tab → + Log Sale |
 | View revenue trends | Analytics tile on home → range toggle for time window |
+| Add a product type | Materials → Products tab → + Add Product |
+| Add options to a product | Materials → Products tab → Options ▾ on product row → + Add Option |
 | Plan a build's cuts | Materials → Cut List tab → add parts → Calculate → Save |
 | Load a saved cut list | Materials → Cut List tab → Saved Cut Lists (bottom) → Load |
 | Save a quote from a cut list | Materials → Cut List tab → Calculate → + Quote → fill name → Save |
@@ -268,14 +300,15 @@ The `?token=` parameter links their booking to a specific order via a UUID booki
 |---|---|
 | `orders` | All orders — includes `pickup_date`, `pickup_time`, `customer_booked`, `items` (JSONB with rows, add-ons, prices) |
 | `inventory` | Ready-to-sell inventory — includes `add_ons` (JSONB array of IDs) |
-| `sales` | Completed sales history — includes `add_ons` (JSONB array of `{id, label, price}` objects, denormalized at write time) |
+| `sales` | Completed sales history — includes `add_ons` (JSONB array of `{id, label, price}` objects, denormalized at write time), `product_options` (JSONB, nullable — mirrors the first order item's options, e.g. `{stain: "Dark Walnut"}`) |
 | `purchases` | Lowes purchase log |
 | `stock` | Material stock levels |
 | `schedule_slots` | Open availability slots |
 | `schedule_bookings` | Confirmed bookings, linked to orders via `order_id` |
 | `availability_windows` | Recurring availability settings |
-| `cut_lists` | Saved cut lists — name, kerf, cuts (JSONB), stock types (JSONB), notes, style (text nullable), updated_at |
+| `cut_lists` | Saved cut lists — name, kerf, cuts (JSONB), stock types (JSONB), notes, style (text nullable), `product_options` (JSONB nullable), updated_at |
 | `quotes` | Quotes saved from the Cut List Calculator — name, price, picket count, linked cut list |
+| `settings` | App configuration — rows for `addons` (JSON array), `products` (JSON array), `product_options` (JSON object keyed by product name) |
 
 ---
 
@@ -286,7 +319,7 @@ The project has a two-tier Playwright test suite. See [`tests/README.md`](tests/
 | Suite | Command | Tests | What it covers |
 |---|---|---|---|
 | Smoke | `npx playwright test --project=smoke` | 28 | UI presence, navigation, no data writes |
-| E2E | `npx playwright test --project=e2e` | 59 | Full workflows with real Supabase reads/writes |
+| E2E | `npx playwright test --project=e2e` | 67 | Full workflows with real Supabase reads/writes |
 
 Both suites run automatically on every push to `main` via GitHub Actions (`.github/workflows/e2e.yml`).
 
