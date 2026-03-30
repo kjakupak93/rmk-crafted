@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { login } from '../helpers/auth';
-import { cleanupTestData, snapshotUnpaidOrders, restoreOrderPayments } from './helpers/cleanup';
+import { cleanupTestData, snapshotUnpaidOrders, restoreOrderPayments, snapshotSettings, resetSettings, restoreSettings, SettingsSnapshot } from './helpers/cleanup';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -23,12 +23,17 @@ async function createOrder(page: Page, name: string, payment = 'unpaid'): Promis
   await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
 }
 
+let settingsSnapshot: SettingsSnapshot = { addons: '', products: '', product_options: '{}' };
+
 test.beforeAll(async () => {
   await cleanupTestData(['orders', 'sales', 'activity_log']);
+  settingsSnapshot = await snapshotSettings();
+  await resetSettings();
 });
 
 test.afterAll(async () => {
   await cleanupTestData(['orders', 'sales', 'activity_log']);
+  await restoreSettings(settingsSnapshot);
 });
 
 test('create order appears in Active tab', async ({ page }) => {
@@ -267,6 +272,98 @@ test('add-on selected in order modal is saved and reflected in order total', asy
 
   await page.click('button[onclick="saveOrder()"]');
   await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
+});
+
+test('product option selected in order modal shows on order card subtitle', async ({ page }) => {
+  await goToOrders(page);
+  await page.waitForFunction(() => (window as any)._settingsDidLoad === true, { timeout: 10000 });
+  // Inject a Dog Bowl stain option for this page session without touching Supabase
+  await page.evaluate(() => {
+    (window as any)._setProductOptions({ 'Dog Bowl': [
+      { id: 'stain', label: 'Stain', choices: ['Natural Cedar', 'Dark Walnut'] },
+    ] });
+  });
+
+  const name = `${TAG} Options Card`;
+  await page.click('#page-orders button:has-text("+ New Order")');
+  await page.waitForSelector('#orderModal.open');
+  await page.fill('#oName', name);
+  await page.locator('#orderModal .item-size').fill('36×16×16');
+  await page.locator('#orderModal .item-price').fill('60');
+  // Switch to Dog Bowl — triggers the option dropdown
+  await page.locator('#orderModal .item-product').selectOption('Dog Bowl');
+  await expect(page.locator('#orderModal .item-options select[data-option-id="stain"]')).toBeVisible({ timeout: 5000 });
+  await page.locator('#orderModal .item-options select[data-option-id="stain"]').selectOption('Dark Walnut');
+  await page.click('button[onclick="saveOrder()"]');
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
+
+  // Card subtitle should include the selected stain value
+  const card = page.locator('.order-card').filter({ hasText: name });
+  await expect(card.locator('.card-subtitle')).toContainText('Dark Walnut');
+});
+
+test('product option is pre-selected when editing an order', async ({ page }) => {
+  await goToOrders(page);
+  await page.waitForFunction(() => (window as any)._settingsDidLoad === true, { timeout: 10000 });
+  await page.evaluate(() => {
+    (window as any)._setProductOptions({ 'Dog Bowl': [
+      { id: 'stain', label: 'Stain', choices: ['Natural Cedar', 'Dark Walnut'] },
+    ] });
+  });
+
+  const name = `${TAG} Options Edit`;
+  await page.click('#page-orders button:has-text("+ New Order")');
+  await page.waitForSelector('#orderModal.open');
+  await page.fill('#oName', name);
+  await page.locator('#orderModal .item-size').fill('36×16×16');
+  await page.locator('#orderModal .item-price').fill('60');
+  await page.locator('#orderModal .item-product').selectOption('Dog Bowl');
+  await page.locator('#orderModal .item-options select[data-option-id="stain"]').selectOption('Dark Walnut');
+  await page.click('button[onclick="saveOrder()"]');
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
+
+  // Re-open for edit — stain should be pre-selected
+  const card = page.locator('.order-card').filter({ hasText: name });
+  await card.locator('button:has-text("✏️")').click();
+  await page.waitForSelector('#orderModal.open');
+  await expect(page.locator('#orderModal .item-options select[data-option-id="stain"]')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('#orderModal .item-options select[data-option-id="stain"]')).toHaveValue('Dark Walnut');
+  await page.click('button.modal-btn-cancel');
+});
+
+test('product option flows to sales history after order completion', async ({ page }) => {
+  await goToOrders(page);
+  await page.waitForFunction(() => (window as any)._settingsDidLoad === true, { timeout: 10000 });
+  await page.evaluate(() => {
+    (window as any)._setProductOptions({ 'Dog Bowl': [
+      { id: 'stain', label: 'Stain', choices: ['Natural Cedar', 'Dark Walnut'] },
+    ] });
+  });
+
+  const name = `${TAG} Options History`;
+  await page.click('#page-orders button:has-text("+ New Order")');
+  await page.waitForSelector('#orderModal.open');
+  await page.fill('#oName', name);
+  await page.locator('#orderModal .item-size').fill('36×16×16');
+  await page.locator('#orderModal .item-price').fill('60');
+  await page.locator('#orderModal .item-product').selectOption('Dog Bowl');
+  await page.locator('#orderModal .item-options select[data-option-id="stain"]').selectOption('Dark Walnut');
+  await page.click('button[onclick="saveOrder()"]');
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
+
+  // Complete the order (cash — bypasses payment modal)
+  await page.locator('.order-card').filter({ hasText: name }).locator('button:has-text("✅")').click();
+  await page.waitForSelector('#completePaymentModal.open');
+  await page.click('#completePaymentModal button:has-text("Cash")');
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0, { timeout: 10000 });
+
+  // Sales History — style cell should show Dog Bowl and stain value
+  await page.click('#orders-tabs button:has-text("Sales History")');
+  const row = page.locator('#salesBody tr').filter({ hasText: name });
+  await expect(row).toBeVisible({ timeout: 10000 });
+  const styleCell = row.locator('td').nth(3);
+  await expect(styleCell).toContainText('Dog Bowl');
+  await expect(styleCell).toContainText('Dark Walnut');
 });
 
 test('multi-item order — total reflects both items', async ({ page }) => {

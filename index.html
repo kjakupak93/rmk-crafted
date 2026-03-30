@@ -2691,6 +2691,7 @@ function renderSaleAddons(savedIds) {
 const DEFAULT_STYLES = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
 let PRODUCT_TYPES = [...DEFAULT_STYLES];
 let PRODUCT_OPTIONS = {}; // { [productName]: [{id, label, choices:[]}] }
+window._setProductOptions = v => { PRODUCT_OPTIONS = v; };
 async function loadProductSettings() {
   const { data: row } = await sb.from('settings').select('value').eq('key', 'products').single();
   if (row) {
@@ -4060,7 +4061,9 @@ async function saveOrder() {
     const saleSizeStr=saleItemRows.length>1?saleItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(payload.size||'');
     const _saleAo=(payload.items?.add_ons||[]).map(id=>{const a=ADDONS.find(x=>x.id===id);const p=payload.items?.add_on_prices?.[id]??0;return a?{id:a.id,label:a.label,price:p}:null;}).filter(Boolean);
     const _saleProdOpts=saleItemRows[0]?.options||null;
-    await sb.from('sales').insert({name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||'',venmo_fee:payload.venmo_fee||0,add_ons:_saleAo.length?_saleAo:null,product_options:_saleProdOpts});
+    const _saleRow={name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||'',venmo_fee:payload.venmo_fee||0,add_ons:_saleAo.length?_saleAo:null};
+    if (_saleProdOpts) _saleRow.product_options=_saleProdOpts;
+    await sb.from('sales').insert(_saleRow);
   }
   // Sync pickup date+time → schedule_bookings and block off slot
   const pickupDate = payload.pickup_date;
@@ -4220,7 +4223,10 @@ async function _doCompleteOrder(data, payment) {
     const compSizeStr=compItemRows.length>1?compItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(data.size||'');
     const _compAo=(data.items?.add_ons||[]).map(id=>{const a=ADDONS.find(x=>x.id===id);const p=data.items?.add_on_prices?.[id]??0;return a?{id:a.id,label:a.label,price:p}:null;}).filter(Boolean);
     const _compProdOpts=compItemRows[0]?.options||null;
-    await sb.from('sales').insert({name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes,venmo_fee:data.venmo_fee||0,add_ons:_compAo.length?_compAo:null,product_options:_compProdOpts});
+    const _compRow={name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes,venmo_fee:data.venmo_fee||0,add_ons:_compAo.length?_compAo:null};
+    if (_compProdOpts) _compRow.product_options=_compProdOpts;
+    const {error:_compSaleErr}=await sb.from('sales').insert(_compRow);
+    if (_compSaleErr) console.error('sales insert error:', JSON.stringify(_compSaleErr));
     const _cost = estimateOrderCost(data);
     const _profit = data.price - _cost;
     const _margin = data.price > 0 ? Math.round((_profit / data.price) * 100) : 0;

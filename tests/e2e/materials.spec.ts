@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { login } from '../helpers/auth';
-import { cleanupTestData, snapshotStock, restoreStock, resetSettings, snapshotSettings, restoreSettings } from './helpers/cleanup';
+import { cleanupTestData, snapshotStock, restoreStock, resetSettings, snapshotSettings, restoreSettings, SettingsSnapshot } from './helpers/cleanup';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -56,7 +56,7 @@ async function confirmDelete(page: Page): Promise<void> {
 }
 
 let stockSnapshot: { type: string; qty: number }[] = [];
-let settingsSnapshot: { addons: string; products: string } = { addons: '', products: '' };
+let settingsSnapshot: SettingsSnapshot = { addons: '', products: '', product_options: '{}' };
 
 test.beforeAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
@@ -275,4 +275,67 @@ test('new add-on appears in order modal add-on dropdown', async ({ page }) => {
   await expect(page.locator('#oAddonSelect option')).toHaveCount(beforeCount + 2, { timeout: 5000 });
   await page.click('button.modal-btn-cancel');
   // Add-on cleanup handled by afterAll resetSettings()
+});
+
+test('toggle product options panel reveals Add Option button', async ({ page }) => {
+  await goToProducts(page);
+  // Click the Options toggle on the first product row
+  const firstRow = page.locator('#products-list > div').first();
+  await firstRow.locator('button:has-text("Options")').click();
+  await expect(page.locator('#products-list button:has-text("+ Add Option")')).toBeVisible({ timeout: 5000 });
+});
+
+test('add option to product appears in the options panel with label and choices', async ({ page }) => {
+  const productName = `${TAG} OptProduct`;
+  await goToProducts(page);
+
+  // Add a test product to use as the option target
+  await page.click('#mtab-products button:has-text("+ Add Product")');
+  await page.fill('#prod-add-inp', productName);
+  await page.press('#prod-add-inp', 'Enter');
+  await expect(page.locator('#products-list').getByText(productName)).toBeVisible({ timeout: 5000 });
+
+  // Open its options panel
+  const row = page.locator('#products-list > div').filter({ hasText: productName });
+  await row.locator('button:has-text("Options")').click();
+
+  // Click + Add Option and fill in the inline form
+  await page.click('#products-list button:has-text("+ Add Option")');
+  await page.fill('#opt-label-new', 'Stain');
+  await page.fill('#opt-choices-new', 'Natural Cedar, Dark Walnut');
+  // Click the "Add" button (exact match, not "+ Add Option")
+  await page.locator('#products-list button').filter({ hasText: /^Add$/ }).click();
+
+  // Option should now appear in the panel
+  await expect(page.locator('#products-list')).toContainText('Stain', { timeout: 5000 });
+  await expect(page.locator('#products-list')).toContainText('Natural Cedar', { timeout: 5000 });
+  await expect(page.locator('#products-list')).toContainText('Dark Walnut', { timeout: 5000 });
+  // product_options cleanup handled by afterAll restoreSettings()
+});
+
+test('option dropdown appears in order modal when product with options is selected', async ({ page }) => {
+  // Navigate to Orders, wait for settings, then inject — all in one page context
+  await login(page);
+  await page.click('.app-tile--orders');
+  await page.waitForSelector('#page-orders.active');
+  await page.waitForFunction(() => (window as any)._settingsDidLoad === true, { timeout: 10000 });
+  await page.evaluate(() => {
+    (window as any)._setProductOptions({ 'Dog Bowl': [
+      { id: 'stain', label: 'Stain', choices: ['Natural Cedar', 'Dark Walnut'] },
+    ] });
+  });
+
+  await page.click('#page-orders button:has-text("+ New Order")');
+  await page.waitForSelector('#orderModal.open');
+
+  // Select Dog Bowl — triggers onOrderItemProductChange
+  await page.locator('#orderModal .item-product').selectOption('Dog Bowl');
+
+  // Stain dropdown should appear inside .item-options
+  await expect(
+    page.locator('#orderModal .item-options select[data-option-id="stain"]'),
+  ).toBeVisible({ timeout: 5000 });
+
+  await page.click('button.modal-btn-cancel');
+  // Add-on cleanup handled by afterAll restoreSettings()
 });

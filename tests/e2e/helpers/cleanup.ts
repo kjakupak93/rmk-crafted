@@ -165,26 +165,34 @@ const DEFAULT_ADDONS = [
 ];
 const DEFAULT_PRODUCTS = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
 
+export type SettingsSnapshot = { addons: string; products: string; product_options: string };
+
 /**
- * Snapshot current 'addons' and 'products' settings rows.
+ * Snapshot current 'addons', 'products', and 'product_options' settings rows.
  * Call in beforeAll before resetSettings() so real data can be restored after tests.
  */
-export async function snapshotSettings(): Promise<{ addons: string; products: string }> {
+export async function snapshotSettings(): Promise<SettingsSnapshot> {
   const token = await getAuthToken();
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/settings?key=in.(addons,products)&select=key,value`,
+    `${SUPABASE_URL}/rest/v1/settings?key=in.(addons,products,product_options)&select=key,value`,
     { headers: makeHeaders(token) },
   );
   const rows: { key: string; value: string }[] = res.ok ? await res.json() : [];
-  const get = (k: string) => rows.find(r => r.key === k)?.value ?? JSON.stringify(k === 'addons' ? DEFAULT_ADDONS : DEFAULT_PRODUCTS);
-  return { addons: get('addons'), products: get('products') };
+  const get = (k: string) => {
+    const found = rows.find(r => r.key === k);
+    if (found) return found.value;
+    if (k === 'addons') return JSON.stringify(DEFAULT_ADDONS);
+    if (k === 'products') return JSON.stringify(DEFAULT_PRODUCTS);
+    return '{}';
+  };
+  return { addons: get('addons'), products: get('products'), product_options: get('product_options') };
 }
 
 /**
- * Restore 'addons' and 'products' settings rows from a snapshot.
+ * Restore 'addons', 'products', and 'product_options' settings rows from a snapshot.
  * Call in afterAll to undo any changes made during tests.
  */
-export async function restoreSettings(snapshot: { addons: string; products: string }): Promise<void> {
+export async function restoreSettings(snapshot: SettingsSnapshot): Promise<void> {
   const token = await getAuthToken();
   const headers = makeHeaders(token);
   for (const [key, value] of Object.entries(snapshot)) {
@@ -200,15 +208,16 @@ export async function restoreSettings(snapshot: { addons: string; products: stri
 }
 
 /**
- * Reset the settings table rows for 'addons' and 'products' back to defaults.
+ * Reset the settings table rows for 'addons', 'products', and 'product_options' back to defaults.
  * Call in beforeAll (after snapshotSettings) to ensure a predictable test baseline.
  */
 export async function resetSettings(): Promise<void> {
   const token = await getAuthToken();
   const headers = makeHeaders(token);
   for (const { key, value } of [
-    { key: 'addons',    value: JSON.stringify(DEFAULT_ADDONS)   },
-    { key: 'products',  value: JSON.stringify(DEFAULT_PRODUCTS) },
+    { key: 'addons',          value: JSON.stringify(DEFAULT_ADDONS)   },
+    { key: 'products',        value: JSON.stringify(DEFAULT_PRODUCTS) },
+    { key: 'product_options', value: '{}'                             },
   ]) {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/settings?key=eq.${key}`,
