@@ -85,4 +85,4 @@ No secrets are needed — the Supabase anon key and PIN are already in `index.ht
 | File | Purpose |
 |---|---|
 | `tests/helpers/auth.ts` | `login(page)` — enters PIN and waits for gate to dismiss |
-| `tests/e2e/helpers/cleanup.ts` | `cleanupTestData(tables)` — deletes `[TEST]%` rows via Supabase REST API; `cleanupById(table, id)` — deletes a specific row by ID |
+| `tests/e2e/helpers/cleanup.ts` | `cleanupTestData(tables)` — deletes `[TEST]%` rows via Supabase REST API; `cleanupById(table, id)` — deletes a specific row by ID; `snapshotSettings / resetSettings / restoreSettings` — snapshot/reset/restore `addons`, `products`, `product_options` settings rows; `snapshotStock / restoreStock` — snapshot/restore stock qtys; `snapshotUnpaidOrders / restoreOrderPayments` — snapshot/restore unpaid order payment state |

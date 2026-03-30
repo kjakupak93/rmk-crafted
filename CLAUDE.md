@@ -36,6 +36,7 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 | `availability_windows` | Recurring availability windows for the share message |
 | `cut_lists` | Saved cut lists — columns: `id`, `name`, `kerf`, `cuts` (JSONB), `stock_types` (JSONB), `notes`, `style` (text, nullable), `product_options` (JSONB, nullable), `created_at`, `updated_at` |
 | `quotes` | Quotes generated from cut lists — columns: `id`, `name`, `price`, `cut_list_id`, `cut_list_name`, `picket_count`, `notes`, `created_at` |
+| `settings` | App configuration key/value rows — keys: `addons` (JSON array), `products` (JSON array), `product_options` (JSON object) |
 
 RLS is enabled on all tables. All business tables require `authenticated` role. Anon has **no direct SELECT or UPDATE on `orders`** — the `schedule.html` booking flow uses two SECURITY DEFINER RPC functions instead: `get_order_by_token(uuid)` (SELECT, returns one order row by token) and `book_order_pickup(uuid, date, text)` (UPDATE, writes pickup date/time). Anon EXECUTE is granted on both functions; anon has no direct table access. Anon INSERT on `schedule_bookings` requires a valid `order_id` linked to an unbooked order. The `settings` table has no anon access. The `orders` table has a `booking_token` UUID column (indexed) — `schedule.html` resolves orders by `?token=<uuid>` only (legacy `?order=<id>` parameter removed).
 
@@ -62,7 +63,7 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - `openOrderModal(order, prefill)` — optional second param lets `convertQuoteToOrder()` pre-populate the order modal from a quote without an existing order object. `prefill` accepts `{ name, notes, price, size }` — `size` pre-fills the first item row's size field and is extracted via regex from `quote.cut_list_name`.
 - Product management lives in Materials → Products tab. `addProduct()`, `renameProduct(idx)`, `deleteProduct(idx)` are the management functions. `populateProductSelects()` refreshes all product dropdowns (`iProduct`, `sProduct`, `cl-product`) app-wide.
 - Saved cut lists are grouped by product in `loadSavedCutLists()`. `cl.style = null` (DB column) renders in Uncategorized group.
-- Add-on management lives in Materials → Add-ons tab. `ADDONS` array (`[{id, label, base, scales}, ...]`) stored in `localStorage` as `rmk_addons`. `addNewAddon()`, `deleteAddon(idx)`, `saveAddonField(idx, key, value)` manage the list. `renderAddonsTab()` re-renders the inline-editable grid.
+- Add-on management lives in Materials → Add-ons tab. `ADDONS` array (`[{id, label, base, scales}, ...]`) stored in Supabase `settings` table (key `addons`), loaded via `loadAddonSettings()`. One-time migration from `localStorage` key `rmk_addons` on first load. `addNewAddon()`, `deleteAddon(idx)`, `saveAddonField(idx, key, value)` manage the list. `renderAddonsTab()` re-renders the inline-editable grid.
 - Order modal add-ons: rendered as checkboxes + editable price inputs via `renderOrderAddons(savedIds, savedPrices)`. Per-order prices stored on `items.add_on_prices` (id→price object). `getAddonTotalFromOrder()` reads checked boxes. Pickup Date + Pickup Time are on the same row.
 - Purchase modal: materials use a dynamic dropdown-based row system (`#pMaterialRows`). `addPurchaseMaterialRow(matType, qty, price)` adds a row; material dropdown auto-fills price from `PURCH_MAT_PRICES`. Total override field (`#pTotal`) always pre-fills from saved `item.total` when editing.
 
@@ -87,7 +88,8 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
   - Pickets: $3.38 → **$3.66**
   - 2×2s: $2.98 → **$3.23**
   - 2×4s: $3.85 → **$4.17**
-- **Planter products**: Dynamic — stored in `PRODUCT_TYPES` (localStorage key `rmk_products`). Defaults: Standard, Vertical, Tiered, Dog Bowl. Managed via the Products tab on the Materials page. All three material inputs (pickets, 2×2s, 2×4s) are always visible for any product; breakdown only renders rows for materials with qty > 0.
+- **Planter products**: Dynamic — `PRODUCT_TYPES` string array stored in Supabase `settings` table (key `products`), loaded via `loadProductSettings()`. One-time migration from `localStorage` key `rmk_products` on first load. Defaults: Standard, Vertical, Tiered, Dog Bowl. Managed via the Products tab on the Materials page. All three material inputs (pickets, 2×2s, 2×4s) are always visible for any product; breakdown only renders rows for materials with qty > 0.
+- **Product options**: `PRODUCT_OPTIONS` object (`{ [productName]: [{id, label, choices:[]}] }`) stored in Supabase `settings` table (key `product_options`), loaded via `loadProductOptions()`. Configured per-product in the Products tab options panel (`toggleProductOptions`, `saveOption`, `deleteOption`). Options cascade on product rename/delete. `renderProductOptionSelects(productName, savedOptions, containerEl)` renders inline selects in the order modal (`.item-options`) and cut list (`#cl-product-options`). `readProductOptionSelects(containerEl)` collects selections. `window._setProductOptions(v)` is an in-memory setter exposed for Playwright test injection (avoids needing to write to Supabase during tests).
 
 ## Standard Planter Sizes & Prices
 Stored in `STANDARD_SIZES`. 8 sizes have hardcoded `pickets`; 16×16×16 and 36×12×16 use formula fallback.
