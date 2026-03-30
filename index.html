@@ -135,6 +135,195 @@ body {
 .conn-dot.error { background: var(--red); }
 .conn-text { color: var(--text-muted); }
 
+/* ===== APP LAYOUT ===== */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 210px;
+  background: var(--bg-deep);
+  border-right: 1px solid var(--border-dim);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 200;
+}
+.sb-brand {
+  padding: 16px 14px 14px;
+  border-bottom: 1px solid var(--border-dim);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.sb-logo {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--sand) 0%, #9a7830 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.sb-brand-name { font-size: 13px; font-weight: 700; color: var(--sand-light); line-height: 1.2; }
+.sb-brand-sub  { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
+.sb-nav {
+  flex: 1;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+}
+.sb-item:hover { background: var(--bg-card); color: var(--ocean-light); }
+.sb-item.active { background: var(--bg-elevated); color: var(--sand-light); }
+.sb-item.active .sb-ico { color: var(--sand); }
+.sb-ico { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.sb-lbl { font-weight: 500; }
+.sb-new-order {
+  margin: 8px 10px 4px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #1a5280, #133d60);
+  border: 1px solid #2060a0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ocean-light);
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: filter 0.15s;
+  font-family: 'DM Sans', sans-serif;
+  flex-shrink: 0;
+}
+.sb-new-order:hover { filter: brightness(1.2); }
+.sb-footer {
+  padding: 8px;
+  border-top: 1px solid var(--border-dim);
+  flex-shrink: 0;
+}
+
+/* ===== MAIN AREA ===== */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ===== MAIN HEADER ===== */
+.main-header {
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border-dim);
+  padding: 0 20px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+.main-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--sand-light);
+  white-space: nowrap;
+}
+.conn-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-dim);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: 'DM Mono', monospace;
+  flex-shrink: 0;
+}
+.conn-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #ccc;
+  flex-shrink: 0;
+}
+.conn-dot.connected { background: var(--green); box-shadow: 0 0 0 2px rgba(58,140,92,0.25); }
+.conn-dot.error { background: var(--red); }
+.header-new-order-btn {
+  display: none;
+  background: var(--ocean);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  width: 32px; height: 32px;
+  font-size: 18px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ===== BOTTOM NAV (mobile only) ===== */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg-deep);
+  border-top: 1px solid var(--border-dim);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 300;
+}
+.bn-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-dim);
+  transition: color 0.15s;
+  min-height: 50px;
+}
+.bn-item:hover { color: var(--ocean-light); }
+.bn-item.active { color: var(--sand); }
+.bn-ico { font-size: 18px; line-height: 1; }
+.bn-lbl { font-size: 9px; font-weight: 500; letter-spacing: 0.3px; }
+
 /* ===== PAGES ===== */
 .page { display: none; }
 .page.active { display: block; }
@@ -1357,6 +1546,46 @@ body {
 </script>
 
 
+
+<!-- APP LAYOUT -->
+<div class="app-layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">&#x1FAB5;</div>
+    <div>
+      <div class="sb-brand-name">RMK Crafted</div>
+      <div class="sb-brand-sub">Workshop</div>
+    </div>
+  </div>
+  <div class="sb-nav">
+    <button class="sb-item active" id="sb-home"      onclick="goTo('home')"      ><span class="sb-ico">&#x229E;</span><span class="sb-lbl">Dashboard</span></button>
+    <button class="sb-item"        id="sb-orders"    onclick="goTo('orders')"    ><span class="sb-ico">&#x1F4CB;</span><span class="sb-lbl">Orders</span></button>
+    <button class="sb-item"        id="sb-materials" onclick="goTo('materials')" ><span class="sb-ico">&#x1FA9A;</span><span class="sb-lbl">Materials</span></button>
+    <button class="sb-item"        id="sb-scheduler" onclick="goTo('scheduler')" ><span class="sb-ico">&#x1F4C5;</span><span class="sb-lbl">Scheduler</span></button>
+    <button class="sb-item"        id="sb-analytics" onclick="goTo('analytics')" ><span class="sb-ico">&#x1F4CA;</span><span class="sb-lbl">Analytics</span></button>
+  </div>
+  <button class="sb-new-order" onclick="goTo('orders');openOrderModal()">&#xFF0B; New Order</button>
+  <div class="sb-footer">
+    <button class="sb-item" onclick="sb.auth.signOut().then(()=>location.reload())"><span class="sb-ico">&#x1F513;</span><span class="sb-lbl">Sign Out</span></button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="app-main">
+
+<!-- MAIN HEADER -->
+<header class="main-header">
+  <div class="main-title" id="main-page-title">Workshop Dashboard</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button class="header-new-order-btn" onclick="goTo('orders');openOrderModal()" title="New Order">&#xFF0B;</button>
+    <div class="conn-pill">
+      <div class="conn-dot" id="connDot"></div>
+      <span id="connText">Connecting...</span>
+    </div>
+  </div>
+</header>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -5648,5 +5877,16 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+</div><!-- /app-main -->
+</div><!-- /app-layout -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bn-item active" id="bn-home"      onclick="goTo('home')"      ><span class="bn-ico">&#x229E;</span><span class="bn-lbl">Home</span></button>
+  <button class="bn-item"        id="bn-orders"    onclick="goTo('orders')"    ><span class="bn-ico">&#x1F4CB;</span><span class="bn-lbl">Orders</span></button>
+  <button class="bn-item"        id="bn-materials" onclick="goTo('materials')" ><span class="bn-ico">&#x1FA9A;</span><span class="bn-lbl">Materials</span></button>
+  <button class="bn-item"        id="bn-scheduler" onclick="goTo('scheduler')" ><span class="bn-ico">&#x1F4C5;</span><span class="bn-lbl">Scheduler</span></button>
+  <button class="bn-item"        id="bn-analytics" onclick="goTo('analytics')" ><span class="bn-ico">&#x1F4CA;</span><span class="bn-lbl">Analytics</span></button>
+</nav>
 </body>
 </html>
