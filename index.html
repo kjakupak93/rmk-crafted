@@ -772,11 +772,11 @@ body {
 .brow.total-row .blbl { font-weight: 600; color: var(--text); }
 .brow.total-row .bval { color: var(--ocean-light); font-size: 15px; }
 
-.quote-out { background: #f0f6fa; border: 2px dashed var(--ocean-light); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+.quote-out { background: var(--bg-elevated); border: 1px dashed var(--ocean-light); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
 .quote-out h3 { font-family: 'Playfair Display', serif; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; }
 .quote-text { font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.7; color: var(--text); white-space: pre-wrap; }
 .copy-btn { margin-top: 10px; padding: 7px 14px; background: var(--ocean); color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: 'DM Mono', monospace; transition: background 0.2s; }
-.copy-btn:hover { background: var(--ocean); }
+.copy-btn:hover { background: var(--ocean-light); }
 .copy-btn.copied { background: var(--green); }
 
 .std-sizes-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text-muted); font-size: 13px; margin-bottom: 14px; user-select: none; }
@@ -870,8 +870,8 @@ body {
 .day-detail { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
 .day-detail h3 { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--ocean-light); margin-bottom: 14px; }
 .slot-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.slot-card.available { border-color: var(--green); background: #f0faf4; }
-.slot-card.booked { border-color: var(--sand); background: #fdf8ef; }
+.slot-card.available { border-color: var(--green); background: rgba(58, 140, 92, 0.12); }
+.slot-card.booked { border-color: var(--sand); background: rgba(201, 165, 90, 0.12); }
 .slot-time { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; min-width: 90px; color: var(--ocean-light); }
 .slot-info { flex: 1; font-size: 13px; }
 .slot-buyer { font-weight: 600; color: var(--ocean-light); }
