@@ -1295,6 +1295,11 @@ body {
 /* ===== ADD-ONS ===== */
 .addon-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--warm-gray); }
 .addon-row:last-child { border-bottom:none; }
+.addon-pills { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+.addon-pill { display:inline-flex; align-items:center; padding:6px 14px; border-radius:20px; border:1px solid var(--warm-gray); background:var(--bg-elevated); color:var(--text-muted); font-size:13px; font-weight:500; cursor:pointer; user-select:none; transition:background 0.15s,color 0.15s,border-color 0.15s; }
+.addon-pill:hover { border-color:var(--ocean); color:var(--text); }
+.addon-pill.addon-selected { background:var(--navy); color:#fff; border-color:var(--navy); }
+.addon-pill input[type="checkbox"] { display:none; }
 
 </style>
 </head>
