@@ -906,7 +906,7 @@ body {
 /* ===== MODAL ===== */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9998; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.open { display: flex; }
-.modal { background: var(--bg-card); border-radius: 16px; padding: 26px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.modal { background: var(--bg-card); border-radius: 16px; padding: 26px; width: 100%; max-width: 780px; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .modal h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--ocean-light); margin-bottom: 18px; }
 .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
 .form-group label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
@@ -928,7 +928,7 @@ body {
 .order-item-row { display:flex; flex-direction:column; align-items:stretch; gap:4px; }
 .order-item-row .item-controls { display:flex; gap:6px; align-items:center; }
 .order-item-row .item-controls .item-size { flex:2; min-width:0; }
-.order-item-row .item-controls .item-product { flex:1; min-width:0; }
+.order-item-row .item-controls .item-product { flex:2; min-width:100px; }
 .order-item-row .item-controls .item-qty { flex:0 0 54px; }
 .order-item-row .item-controls .item-price { flex:0 0 72px; }
 .order-item-row .item-options { display:flex; gap:8px; flex-wrap:wrap; }
@@ -1053,7 +1053,7 @@ body {
   /* ── Order item rows in modal ── */
   .order-item-row .item-controls { flex-wrap: wrap; }
   .order-item-row .item-controls .item-size { flex: 1 1 120px; }
-  .order-item-row .item-controls .item-product { flex: 1 1 110px; }
+  .order-item-row .item-controls .item-product { flex: 2 1 130px; }
   .order-item-row .item-controls .item-qty { flex: 0 0 54px; }
   .order-item-row .item-controls .item-price { flex: 0 0 72px; }
 
@@ -1396,22 +1396,22 @@ body {
         <div class="kpi-ico kpi-ico-gold">&#x1F4B0;</div>
         <div class="kpi-body">
           <div class="kpi-lbl">This Month</div>
-          <span class="trend-badge" id="kpi-month-trend"></span>
           <div class="kpi-val">
             <span class="kpi-val-gold" id="kpi-month-rev">&#x2014;</span>
           </div>
           <div class="kpi-sub">vs last month</div>
+          <span class="trend-badge" id="kpi-month-trend"></span>
         </div>
       </div>
       <div class="kpi-card">
         <div class="kpi-ico kpi-ico-blue">&#x1F4C8;</div>
         <div class="kpi-body">
           <div class="kpi-lbl">YTD Sales</div>
-          <span class="trend-badge" id="kpi-ytd-trend"></span>
           <div class="kpi-val">
             <span class="kpi-val-dimtext" id="kpi-ytd-rev">&#x2014;</span>
           </div>
           <div class="kpi-sub">Since Jan 1</div>
+          <span class="trend-badge" id="kpi-ytd-trend"></span>
         </div>
       </div>
       <div class="kpi-card">
@@ -2928,6 +2928,11 @@ function dateKey(d) {
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 function todayKey() { return dateKey(today); }
+function fmtDate(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.slice(0,10).split('-');
+  return `${parseInt(m)}/${parseInt(d)}/${y}`;
+}
 
 // ===== CONNECTION =====
 async function checkConnection() {
@@ -3671,7 +3676,7 @@ function orderCardHTML(o) {
   const bl={pending:'Pending',building:'Building',ready:'Ready for Pickup',completed:'Completed'}[o.status]||o.status;
   const pc={cash:'badge-cash',venmo:'badge-venmo',unpaid:'badge-unpaid'}[o.payment]||'badge-unpaid';
   const pl={cash:'Cash',venmo:'Venmo',unpaid:'Unpaid'}[o.payment]||'';
-  const pickup=o.pickup_date?`📅 ${o.pickup_date}${o.pickup_time?' @ '+formatTime(o.pickup_time):''}`:'';
+  const pickup=o.pickup_date?`📅 ${fmtDate(o.pickup_date)}${o.pickup_time?' @ '+formatTime(o.pickup_time):''}`:'';
   const isOverdue = o.status!=='completed' && o.pickup_date && o.pickup_date < todayKey();
   const overdueClass = isOverdue ? ' s-overdue' : '';
   const overdueBadge = isOverdue ? `<span class="badge badge-overdue">Overdue</span>` : '';
@@ -4442,7 +4447,7 @@ function renderQuotesTable() {
 
     // Date
     const tdDate = document.createElement('td');
-    tdDate.textContent = q.created_at ? q.created_at.slice(0, 10) : '—';
+    tdDate.textContent = q.created_at ? fmtDate(q.created_at) : '—';
     tr.appendChild(tdDate);
 
     // Customer
@@ -5187,7 +5192,7 @@ function renderPurchaseList() {
   document.getElementById('pur-stat-avg').textContent='$'+avg.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   if (!filtered.length) {tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted)">No purchases in this period.</td></tr>';return;}
   tbody.innerHTML=filtered.map(p=>`<tr>
-    <td>${p.purchase_date||''}</td>
+    <td>${fmtDate(p.purchase_date)}</td>
     <td>${esc(p.store)||'Lowes'}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${p.pickets||'—'}</td>
     <td style="font-family:'DM Mono',monospace;text-align:center">${p.twobytwo||'—'}</td>
