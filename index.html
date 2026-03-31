@@ -3994,6 +3994,7 @@ async function finishCompleteOrder(method) {
 
 async function _doCompleteOrder(data, payment) {
   await sb.from('orders').update({status:'completed'}).eq('id',data.id);
+  await sb.from('orders').update({pickup_date:null, pickup_time:null}).eq('id',data.id);
   if (payment!=='unpaid') {
     const compItemRows=data.items?.rows||[];
     const compQty=compItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
