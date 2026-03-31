@@ -3497,6 +3497,7 @@ async function loadHomePickups() {
       .select('id, customer_name, pickup_date, pickup_time')
       .gte('pickup_date', todayStr)
       .not('pickup_date', 'is', null)
+      .neq('status', 'completed')
       .order('pickup_date', { ascending: true })
       .order('pickup_time', { ascending: true })
       .limit(4);
@@ -3514,7 +3515,10 @@ async function loadHomePickups() {
     const rows = data.map(o => {
       const pDate = new Date(o.pickup_date + 'T00:00:00');
       const isToday    = o.pickup_date === todayStr;
-      const isTomorrow = (pDate - todayDate) === 86400000;
+      const tomorrowDate = new Date(todayDate);
+      tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+      const tomorrowStr = dateKey(tomorrowDate);
+      const isTomorrow = o.pickup_date === tomorrowStr;
       const timeLabel  = o.pickup_time
         ? o.pickup_time.slice(0, 5)
         : (isToday ? 'Today' : isTomorrow ? 'Tmrw' : o.pickup_date.slice(5));
