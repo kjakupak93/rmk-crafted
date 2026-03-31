@@ -264,147 +264,127 @@ body {
 
 /* ===== HOME SCREEN ===== */
 #page-home {
-  padding: 32px 24px 80px;
+  padding: 20px 20px 60px;
   max-width: 1280px;
   margin: 0 auto;
 }
-.home-kpi-row {
+.home-top {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
-.tile-span-full { grid-column: span 3; }
-
-.home-greeting {
-  margin-bottom: 32px;
-  text-align: center;
-}
-.home-greeting h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--ocean-light);
-  margin-bottom: 6px;
-}
-.home-greeting p {
-  font-size: 14px;
-  color: var(--text-muted);
-}
-
-.home-stats {
+.home-bottom {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 36px;
 }
-.home-stat {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 12px;
-  text-align: center;
-}
-.home-stat .val {
-  font-family: 'DM Mono', monospace;
-  font-size: 24px;
-  font-weight: 500;
-  color: var(--ocean-light);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-.home-stat .lbl { font-size: 11px; color: var(--text-muted); }
-
-.app-grid {
+.kpi-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
-.app-tile {
+.kpi-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 24px 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
-  position: relative;
-  overflow: hidden;
-  height: 100%;
-}
-.app-tile::before {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--sand);
-  transform: scaleX(0);
-  transition: transform 0.2s;
-  transform-origin: left;
-}
-.app-tile:hover {
-  border-color: var(--ocean);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(30,77,107,0.12);
-}
-.app-tile:hover::before { transform: scaleX(1); }
-.tile-icon { font-size: 32px; margin-bottom: 12px; display: block; }
-.tile-name {
-  font-family: 'Playfair Display', serif;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--ocean-light);
-  margin-bottom: 4px;
-}
-.tile-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
-.tile-badge {
-  position: absolute;
-  top: 12px; right: 12px;
-  background: var(--sand);
-  color: white;
-  font-size: 10px;
-  font-family: 'DM Mono', monospace;
-  padding: 2px 7px;
-  border-radius: 10px;
-  font-weight: 500;
-}
-
-/* ===== HOME STAT STRIPS ===== */
-.stat-strip {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: 8px;
+  padding: 10px 12px;
   display: flex;
-  margin-top: 6px;
+  align-items: center;
+  gap: 10px;
+}
+.kpi-ico {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.kpi-ico-gold   { background: rgba(201,165,90,0.12); }
+.kpi-ico-blue   { background: rgba(74,134,168,0.12); }
+.kpi-ico-green  { background: rgba(58,140,92,0.12); }
+.kpi-ico-orange { background: rgba(212,120,42,0.12); }
+.kpi-body { min-width: 0; }
+.kpi-lbl  { font-size: 9px; text-transform: uppercase; letter-spacing: 1.1px; color: var(--text-dim); }
+.kpi-val  {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px; font-weight: 700;
+  line-height: 1.2;
+  display: flex; align-items: baseline; gap: 5px;
   flex-wrap: wrap;
 }
-.strip-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  min-width: 60px;
-  padding: 4px 8px;
-  border-right: 1px solid var(--warm-gray);
+.kpi-sub  { font-size: 10px; color: var(--text-dim); }
+.kpi-val-gold    { color: var(--sand); }
+.kpi-val-blue    { color: var(--ocean-light); }
+.kpi-val-green   { color: var(--green); }
+.kpi-val-dimtext { color: var(--text); }
+.trend-badge { font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+.trend-up   { background: rgba(58,140,92,0.2);   color: var(--green); }
+.trend-down { background: rgba(192,57,43,0.2);   color: var(--red); }
+.trend-flat { background: rgba(74,134,168,0.15); color: var(--text-dim); }
+.home-activity-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
 }
-.strip-item:last-child { border-right: none; }
-.strip-val {
-  font-family: 'DM Mono', monospace;
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--ocean-light);
-  line-height: 1.1;
+.home-card-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
 }
-.strip-val.low { color: var(--red); }
-.strip-val.money { color: var(--green); }
-.strip-val.warn { color: var(--orange); }
-.strip-lbl {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 2px;
-  text-align: center;
-  white-space: nowrap;
+.home-card-title { font-size: 12px; font-weight: 700; color: var(--ocean-light); }
+.home-card-link  { font-size: 10px; color: var(--ocean); text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; }
+.activity-item {
+  display: flex; gap: 8px; align-items: center;
+  padding: 5px 0; border-bottom: 1px solid var(--border-dim);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-icon {
+  width: 22px; height: 22px; border-radius: 5px;
+  background: var(--bg-elevated); display: flex; align-items: center;
+  justify-content: center; font-size: 11px; flex-shrink: 0;
+}
+.activity-text  { flex: 1; min-width: 0; }
+.activity-text > div:first-child { font-size: 11.5px; font-weight: 600; color: #c8dce8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.activity-sub   { font-size: 10px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.activity-time  { font-size: 10px; color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
+.home-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.order-pills { display: flex; gap: 6px; margin-bottom: 4px; }
+.order-pill {
+  flex: 1; background: var(--bg-elevated);
+  border-radius: 6px; padding: 8px 6px; text-align: center;
+}
+.order-pill-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 700; line-height: 1.1;
+}
+.order-pill-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim); margin-top: 2px; }
+.pill-orange { color: var(--orange); }
+.pill-blue   { color: var(--ocean); }
+.pill-green  { color: var(--green); }
+.panel-foot  { font-size: 10px; color: var(--text-dim); }
+.pickup-row {
+  display: flex; gap: 8px; align-items: center;
+  padding: 4px 0; border-bottom: 1px solid var(--border-dim);
+  font-size: 11.5px;
+}
+.pickup-row:last-child { border-bottom: none; }
+.pickup-time { color: var(--ocean); font-family: 'DM Mono', monospace; font-size: 11px; min-width: 38px; flex-shrink: 0; }
+.pickup-name { color: var(--ocean-light); flex: 1; }
+.pickup-name.tomorrow { color: var(--text-dim); font-style: italic; }
+@media (max-width: 640px) {
+  .home-top    { grid-template-columns: 1fr; }
+  .home-bottom { grid-template-columns: 1fr; }
+  .kpi-grid    { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 641px) and (max-width: 820px) {
+  .home-top    { grid-template-columns: 1fr; }
+  .home-bottom { grid-template-columns: 1fr 1fr; }
 }
 
 /* ===== SHARED APP STYLES ===== */
@@ -1516,115 +1496,91 @@ body {
 
 <!-- ===== HOME PAGE ===== -->
 <div class="page active" id="page-home">
-  <div id="page-home-inner">
-
-    <div class="home-main-col">
-    <!-- Hero banner -->
-    <div class="home-hero">
-      <div class="home-hero-left">
-        <div class="home-hero-greeting" id="home-greeting">Good morning, RMK</div>
-        <div class="home-hero-date" id="home-date"></div>
-        <div class="home-hero-pills">
-          <span class="hero-pill hp-orange"><span id="hp-active">—</span> active orders</span>
-          <span class="hero-pill hp-green"><span id="hp-owed">—</span> owed</span>
-          <span class="hero-pill hp-ocean"><span id="hp-pickups">—</span> today</span>
+  <div class="home-top">
+    <!-- 2x2 KPI Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-ico kpi-ico-gold">&#x1F4B0;</div>
+        <div class="kpi-body">
+          <div class="kpi-lbl">This Month</div>
+          <div class="kpi-val">
+            <span class="kpi-val-gold" id="kpi-month-rev">&#x2014;</span>
+            <span class="trend-badge" id="kpi-month-trend"></span>
+          </div>
+          <div class="kpi-sub">vs last month</div>
         </div>
       </div>
-      <div class="home-hero-cta">
-        <button class="btn-new-order" onclick="goTo('orders');openOrderModal()">+ New Order</button>
-      </div>
-    </div>
-
-    <!-- KPI stat row -->
-    <div class="home-kpi-row">
-      <div class="summary-card c-green">
-        <div class="val" id="kpi-month-rev">—</div>
-        <div class="lbl">This Month</div>
-        <div class="trend-badge" id="kpi-month-trend"></div>
-      </div>
-      <div class="summary-card c-sand">
-        <div class="val" id="kpi-ytd-rev">—</div>
-        <div class="lbl">YTD Revenue</div>
-        <div class="trend-badge" id="kpi-ytd-trend"></div>
-      </div>
-      <div class="summary-card c-blue">
-        <div class="val" id="kpi-inv-count">—</div>
-        <div class="lbl">Ready to Sell</div>
-      </div>
-      <div class="summary-card c-orange">
-        <div class="val" id="kpi-owed">—</div>
-        <div class="lbl">Amount Owed</div>
-      </div>
-    </div>
-
-    <!-- Activity feed -->
-    <div id="home-activity"></div>
-    </div><!-- /.home-main-col -->
-
-    <div class="home-side-col">
-    <div class="app-grid">
-
-      <!-- Orders -->
-      <div>
-        <div class="app-tile app-tile--orders" onclick="goTo('orders')">
-          <div class="tile-head">
-            <span class="tile-tag">Tracking</span>
-            <span class="tile-icon" style="font-size:20px">📋</span>
+      <div class="kpi-card">
+        <div class="kpi-ico kpi-ico-blue">&#x1F4C8;</div>
+        <div class="kpi-body">
+          <div class="kpi-lbl">YTD Sales</div>
+          <div class="kpi-val">
+            <span class="kpi-val-dimtext" id="kpi-ytd-rev">&#x2014;</span>
+            <span class="trend-badge" id="kpi-ytd-trend"></span>
           </div>
-          <div class="tile-name">Orders <span class="tile-badge" id="tile-orders-badge" style="display:none"></span></div>
-          <div class="tile-desc">Active & completed orders</div>
-          <div class="tile-mini-stats">
-            <span class="tms-chip"><span class="tms-val" id="ss-pending">—</span> pending</span>
-            <span class="tms-chip"><span class="tms-val" id="ss-building">—</span> building</span>
-            <span class="tms-chip"><span class="tms-val" id="ss-ready-ord">—</span> ready</span>
-            <span class="tms-chip"><span class="tms-val money" id="ss-owed">—</span> owed</span>
-            <span class="tms-chip"><span class="tms-val" id="ss-overdue">—</span> overdue</span>
-          </div>
+          <div class="kpi-sub">Since Jan 1</div>
         </div>
       </div>
-
-      <!-- Materials -->
-      <div>
-        <div class="app-tile app-tile--mats" onclick="goTo('materials')">
-          <div class="tile-head">
-            <span class="tile-tag">Supply</span>
-            <span class="tile-icon" style="font-size:20px">🛒</span>
-          </div>
-          <div class="tile-name">Materials</div>
-          <div class="tile-desc">Purchases, cut lists & products</div>
+      <div class="kpi-card">
+        <div class="kpi-ico kpi-ico-green">&#x1F4E6;</div>
+        <div class="kpi-body">
+          <div class="kpi-lbl">Ready to Sell</div>
+          <div class="kpi-val kpi-val-green" id="kpi-inv-count">&#x2014;</div>
+          <div class="kpi-sub">In inventory</div>
         </div>
       </div>
-
-      <!-- Analytics -->
-      <div>
-        <div class="app-tile" onclick="goTo('analytics')">
-          <div class="tile-head">
-            <span class="tile-tag">Insights</span>
-            <span class="tile-icon" style="font-size:20px">📊</span>
-          </div>
-          <div class="tile-name">Analytics</div>
-          <div class="tile-desc">Revenue, profit & best sellers</div>
-        </div>
-      </div>
-
-      <!-- Scheduler -->
-      <div>
-        <div class="app-tile app-tile--sched" onclick="goTo('scheduler')">
-          <div class="tile-head">
-            <span class="tile-tag">Calendar</span>
-            <span class="tile-icon" style="font-size:20px">📅</span>
-          </div>
-          <div class="tile-name">Pickup Scheduler <span class="tile-badge" id="tile-pickups-badge" style="display:none"></span></div>
-          <div class="tile-desc">Bookings & availability windows</div>
-          <div class="tile-mini-stats">
-            <span class="tms-chip"><span class="tms-val" id="ss-today">—</span> today</span>
-            <span class="tms-chip"><span class="tms-val" id="ss-week">—</span> this week</span>
-            <span class="tms-chip" style="flex:1"><span class="tms-val" id="ss-next" style="font-size:13px">—</span> next pickup</span>
-          </div>
+      <div class="kpi-card">
+        <div class="kpi-ico kpi-ico-orange">&#x23F3;</div>
+        <div class="kpi-body">
+          <div class="kpi-lbl">Amount Owed</div>
+          <div class="kpi-val kpi-val-blue" id="kpi-owed">&#x2014;</div>
+          <div class="kpi-sub">Unpaid orders</div>
         </div>
       </div>
     </div>
-    </div><!-- /.home-side-col -->
+
+    <!-- Activity Feed -->
+    <div class="home-activity-card">
+      <div class="home-card-head">
+        <div class="home-card-title">&#x23F1; Recent Activity</div>
+        <div class="home-card-link" onclick="goTo('orders')">FULL LOG &#x2192;</div>
+      </div>
+      <div id="home-activity"></div>
+    </div>
+  </div>
+
+  <div class="home-bottom">
+    <!-- Active Orders -->
+    <div class="home-panel">
+      <div class="home-card-head">
+        <div class="home-card-title">&#x1F4CB; Active Orders</div>
+        <div class="home-card-link" onclick="goTo('orders')">VIEW ALL &#x2192;</div>
+      </div>
+      <div class="order-pills">
+        <div class="order-pill">
+          <div class="order-pill-val pill-orange" id="ss-pending">&#x2014;</div>
+          <div class="order-pill-lbl">Pending</div>
+        </div>
+        <div class="order-pill">
+          <div class="order-pill-val pill-blue" id="ss-building">&#x2014;</div>
+          <div class="order-pill-lbl">Building</div>
+        </div>
+        <div class="order-pill">
+          <div class="order-pill-val pill-green" id="ss-ready-ord">&#x2014;</div>
+          <div class="order-pill-lbl">Ready</div>
+        </div>
+      </div>
+      <div class="panel-foot" id="home-orders-foot"></div>
+    </div>
+
+    <!-- Next Pickups -->
+    <div class="home-panel">
+      <div class="home-card-head">
+        <div class="home-card-title">&#x1F4C5; Next Pickups</div>
+        <div class="home-card-link" onclick="goTo('scheduler')">SCHEDULE &#x2192;</div>
+      </div>
+      <div id="home-pickups-list"><div style="font-size:11px;color:var(--text-dim);">Loading...</div></div>
+    </div>
   </div>
 </div>
 
