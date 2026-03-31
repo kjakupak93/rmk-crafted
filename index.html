@@ -2465,7 +2465,7 @@ function renderOrderAddons(savedIds, savedPrices) {
 }
 function _renderAddonCheckboxes(container, savedIds) {
   savedIds = (savedIds || []).map(a => typeof a === 'string' ? a : a.id);
-  if (!ADDONS.length) { container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No add-ons configured.</p>'; return; }
+  if (!ADDONS.length) { container.className = ''; container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No add-ons configured.</p>'; return; }
   container.className = 'addon-pills';
   container.innerHTML = ADDONS.map(a => {
     const sel = savedIds.includes(a.id);
