@@ -2121,7 +2121,7 @@ body {
       <div class="form-group"><label>Discount ($)</label><input class="form-control" type="number" id="pDiscount" placeholder="0.00" min="0" step="0.01" oninput="updatePurchEst()"></div>
       <div class="form-group"><label>Notes</label><textarea class="form-control" id="pNotes" placeholder="Optional" rows="3" style="resize:vertical;font-family:inherit;font-size:14px"></textarea></div>
     </div>
-    <div style="background:#EAF2F8;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--navy);font-family:'DM Mono',monospace;margin-top:4px">
+    <div style="background:var(--bg-elevated);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--navy);font-family:'DM Mono',monospace;margin-top:4px">
       Subtotal: <strong id="purchSubtotal">$0.00</strong><span id="purchDiscountLine" style="display:none"> &minus; <span style="color:var(--green)" id="purchDiscountAmt"></span> discount</span> &rarr; <strong id="purchEst">$0.00</strong>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
@@ -3639,7 +3639,7 @@ function buildStdTable() {
       <td style="font-family:'DM Mono',monospace;color:var(--green)">$${s.price}</td>
       <td style="font-family:'DM Mono',monospace">~${est}</td>
       <td style="font-family:'DM Mono',monospace">$${mat}</td>
-      <td><button style="padding:3px 8px;font-size:11px;background:var(--navy);color:white;border:none;border-radius:4px;cursor:pointer">Use</button></td>
+      <td><button style="padding:3px 8px;font-size:11px;background:var(--ocean);color:white;border:none;border-radius:4px;cursor:pointer">Use</button></td>
     </tr>`;
   }).join('');
 }
