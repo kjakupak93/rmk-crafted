@@ -3029,6 +3029,7 @@ async function checkConnection() {
     document.getElementById('connText').textContent = 'Connected to Supabase';
     loadHomeStats();
     loadRecentActivity();
+    loadHomePickups();
   } catch(e) {
     document.getElementById('connDot').className = 'conn-dot error';
     document.getElementById('connText').textContent = 'Connection error — check Supabase';
@@ -3037,22 +3038,11 @@ async function checkConnection() {
 
 // ===== NAVIGATION =====
 function setHomeGreeting() {
-  const h = new Date().getHours();
-  const greet = h < 12 ? 'Good morning, RMK 🌿' : h < 17 ? 'Good afternoon, RMK 🌲' : 'Good evening, RMK 🌙';
-  const dateStr = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }).toUpperCase();
-  document.getElementById('home-greeting').textContent = greet;
-  document.getElementById('home-date').textContent = dateStr;
+  // greeting display removed in dark redesign
 }
 
 function goHome() {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-home').classList.add('active');
-  document.getElementById('backBtn').classList.remove('visible');
-  document.getElementById('header-subtitle').textContent = 'Business Dashboard';
-  currentPage = 'home';
-  setHomeGreeting();
-  loadHomeStats();
-  loadRecentActivity();
+  goTo('home');
 }
 
 // ===== ANALYTICS =====
@@ -3465,16 +3455,79 @@ function renderTrendBadge(elId, current, prior) {
 
 function goTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  document.getElementById('backBtn').classList.add('visible');
-  const names = {orders:'Orders', inventory:'Inventory & Sales', materials:'Materials', scheduler:'Pickup Scheduler', analytics:'Analytics'};
-  document.getElementById('header-subtitle').textContent = names[page] || page;
+  const el = document.getElementById('page-'+page);
+  if (el) el.classList.add('active');
   currentPage = page;
   window.scrollTo(0,0);
-  if (page==='orders') loadOrders();
+
+  // Update header title
+  const titles = {
+    home: 'Workshop Dashboard',
+    orders: 'Orders',
+    materials: 'Materials',
+    scheduler: 'Scheduler',
+    analytics: 'Analytics'
+  };
+  const titleEl = document.getElementById('main-page-title');
+  if (titleEl) titleEl.textContent = titles[page] || page;
+
+  // Update sidebar + bottom nav active state
+  ['home','orders','materials','scheduler','analytics'].forEach(p => {
+    const sbEl = document.getElementById('sb-'+p);
+    const bnEl = document.getElementById('bn-'+p);
+    if (sbEl) sbEl.classList.toggle('active', p === page);
+    if (bnEl) bnEl.classList.toggle('active', p === page);
+  });
+
+  if (page==='home')      { setHomeGreeting(); loadHomeStats(); loadRecentActivity(); loadHomePickups(); }
+  if (page==='orders')    { loadOrders(); }
   if (page==='materials') { loadPurchases(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
-  if (page==='analytics') loadAnalytics();
+  if (page==='analytics') { loadAnalytics(); }
+}
+
+// ===== HOME PICKUPS PANEL =====
+async function loadHomePickups() {
+  const listEl = document.getElementById('home-pickups-list');
+  if (!listEl) return;
+  try {
+    const todayStr = todayKey();
+    const { data } = await sb
+      .from('orders')
+      .select('id, customer_name, pickup_date, pickup_time')
+      .gte('pickup_date', todayStr)
+      .not('pickup_date', 'is', null)
+      .order('pickup_date', { ascending: true })
+      .order('pickup_time', { ascending: true })
+      .limit(4);
+
+    if (!data || !data.length) {
+      listEl.textContent = '';
+      const msg = document.createElement('div');
+      msg.style.cssText = 'font-size:11px;color:var(--text-dim)';
+      msg.textContent = 'No upcoming pickups';
+      listEl.appendChild(msg);
+      return;
+    }
+
+    const todayDate = new Date(todayStr + 'T00:00:00');
+    const rows = data.map(o => {
+      const pDate = new Date(o.pickup_date + 'T00:00:00');
+      const isToday    = o.pickup_date === todayStr;
+      const isTomorrow = (pDate - todayDate) === 86400000;
+      const timeLabel  = o.pickup_time
+        ? o.pickup_time.slice(0, 5)
+        : (isToday ? 'Today' : isTomorrow ? 'Tmrw' : o.pickup_date.slice(5));
+      const nameClass = isToday ? 'pickup-name' : 'pickup-name tomorrow';
+      const name = esc(o.customer_name || 'Order #' + o.id);
+      return '<div class="pickup-row"><span class="pickup-time">' + esc(timeLabel) + '</span><span class="' + nameClass + '">' + name + '</span></div>';
+    }).join('');
+    // eslint-disable-next-line no-unsanitized/property
+    listEl.innerHTML = rows; // all user strings escaped via esc()
+  } catch(e) {
+    console.error(e);
+    listEl.textContent = '\u2014';
+  }
 }
 
 // ===== HOME STATS =====
@@ -3494,15 +3547,8 @@ async function loadHomeStats() {
       sb.from('inventory').select('qty,price')
     ]);
 
-    // ── Top 3 stats (unchanged) ──
+    // ── Active orders ──
     const activeOrders = (ordRes.data||[]).filter(o => !(o.status === 'completed' && o.payment !== 'unpaid'));
-    const active = activeOrders.length;
-    const pickups = (bookTodayRes.data||[]).length;
-    document.getElementById('hp-active').textContent = active;
-    document.getElementById('hp-owed').textContent = '$'+(activeOrders.filter(o=>o.payment==='unpaid').reduce((s,o)=>s+(parseFloat(o.price)||0),0)).toFixed(0);
-    document.getElementById('hp-pickups').textContent = pickups;
-    if (active > 0) { document.getElementById('tile-orders-badge').textContent = active; document.getElementById('tile-orders-badge').style.display=''; }
-    if (pickups > 0) { document.getElementById('tile-pickups-badge').textContent = pickups+' today'; document.getElementById('tile-pickups-badge').style.display=''; }
 
     // ── Orders strip ──
     const pending = activeOrders.filter(o => o.status === 'pending').length;
@@ -3513,22 +3559,12 @@ async function loadHomeStats() {
     document.getElementById('ss-pending').textContent = pending;
     document.getElementById('ss-building').textContent = building;
     document.getElementById('ss-ready-ord').textContent = readyOrd;
-    document.getElementById('ss-owed').textContent = '$'+owed.toFixed(0);
-    const elOD = document.getElementById('ss-overdue');
-    elOD.textContent = overdue;
-    elOD.className = 'tms-val' + (overdue > 0 ? ' low' : '');
 
-    // ── Scheduler strip ──
-    const weekPickups = (bookWeekRes.data||[]).length;
-    const nextBooking = (bookFutureRes.data||[])[0];
-    let nextLabel = 'None';
-    if (nextBooking) {
-      const d = new Date(nextBooking.booking_date + 'T00:00:00');
-      nextLabel = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const footEl = document.getElementById('home-orders-foot');
+    if (footEl) {
+      const orderTotal = (pending || 0) + (building || 0) + (readyOrd || 0);
+      footEl.textContent = orderTotal + ' total' + (overdue ? ' \u00b7 ' + overdue + ' overdue' : '');
     }
-    document.getElementById('ss-today').textContent = pickups;
-    document.getElementById('ss-week').textContent = weekPickups;
-    document.getElementById('ss-next').textContent = nextLabel;
 
     // ── Earnings summary ──
     const nowY = today.getFullYear();
@@ -5665,16 +5701,6 @@ function exportSalesCSV() {
   showToast('Sales exported!','success');
 }
 
-// ===== DARK MODE =====
-function applyDarkMode(on) {
-  document.documentElement.dataset.theme = on ? 'dark' : '';
-  document.getElementById('dark-toggle').textContent = on ? '☀️' : '🌙';
-}
-function toggleDarkMode() {
-  const isDark = document.documentElement.dataset.theme === 'dark';
-  applyDarkMode(!isDark);
-  localStorage.setItem('rmk_theme', !isDark ? 'dark' : '');
-}
 
 // ===== GO TO ORDER (from upcoming) =====
 function goToOrder(id) {
@@ -5708,8 +5734,6 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 // ===== INIT =====
 buildStdTable();
 setHomeGreeting();
-// Apply saved dark mode preference
-if (localStorage.getItem('rmk_theme') === 'dark') applyDarkMode(true);
 checkConnection();
 
 function formatTime(hhmm) {
