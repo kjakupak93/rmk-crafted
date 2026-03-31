@@ -2466,13 +2466,14 @@ function renderOrderAddons(savedIds, savedPrices) {
 function _renderAddonCheckboxes(container, savedIds) {
   savedIds = (savedIds || []).map(a => typeof a === 'string' ? a : a.id);
   if (!ADDONS.length) { container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No add-ons configured.</p>'; return; }
-  container.innerHTML = ADDONS.map(a =>
-    '<div class="addon-row">' +
-      '<input type="checkbox" data-id="' + esc(a.id) + '"' + (savedIds.includes(a.id) ? ' checked' : '') +
-        ' style="width:16px;height:16px;flex-shrink:0;cursor:pointer">' +
-      '<span style="font-size:13px;font-weight:500">' + esc(a.label) + '</span>' +
-    '</div>'
-  ).join('');
+  container.className = 'addon-pills';
+  container.innerHTML = ADDONS.map(a => {
+    const sel = savedIds.includes(a.id);
+    return '<label class="addon-pill' + (sel ? ' addon-selected' : '') + '" onclick="this.classList.toggle(\'addon-selected\');this.querySelector(\'input\').checked=this.classList.contains(\'addon-selected\')">' +
+      '<input type="checkbox" data-id="' + esc(a.id) + '"' + (sel ? ' checked' : '') + '>' +
+      esc(a.label) +
+    '</label>';
+  }).join('');
 }
 function renderInvAddons(savedIds) {
   const container = document.getElementById('invAddonList');
