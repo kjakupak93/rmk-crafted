@@ -153,8 +153,8 @@ test('log a sale with an add-on shows add-on label and price in sales history', 
   await page.fill('#sDate', new Date().toISOString().split('T')[0]);
   await page.fill('#sSize', '36×16×16');
   await page.fill('#sPrice', '80');
-  // Check the first available add-on (Sealant by default)
-  await page.check('#saleAddonList input[type="checkbox"]:first-of-type');
+  // Click the first available add-on pill (hidden checkbox inside)
+  await page.click('#saleAddonList .addon-pill:first-of-type');
   await page.click('button[onclick="saveSale()"]');
   const row = page.locator('#salesBody tr').filter({ hasText: name });
   await expect(row).toBeVisible({ timeout: 10000 });
@@ -172,7 +172,7 @@ test('add-on row preserved in edit modal when ADDONS not in localStorage', async
   await page.fill('#sDate', new Date().toISOString().split('T')[0]);
   await page.fill('#sSize', '36×16×16');
   await page.fill('#sPrice', '80');
-  await page.check('#saleAddonList input[type="checkbox"]:first-of-type');
+  await page.click('#saleAddonList .addon-pill:first-of-type');
   await page.click('button[onclick="saveSale()"]');
   await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
 
