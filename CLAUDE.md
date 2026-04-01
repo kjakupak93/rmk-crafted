@@ -65,7 +65,9 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - Saved cut lists are grouped by product in `loadSavedCutLists()`. `cl.style = null` (DB column) renders in Uncategorized group.
 - Add-on management lives in Materials → Add-ons tab. `ADDONS` array (`[{id, label, base, scales}, ...]`) stored in Supabase `settings` table (key `addons`), loaded via `loadAddonSettings()`. One-time migration from `localStorage` key `rmk_addons` on first load. `addNewAddon()`, `deleteAddon(idx)`, `saveAddonField(idx, key, value)` manage the list. `renderAddonsTab()` re-renders the inline-editable grid.
 - Order modal add-ons: rendered as checkboxes + editable price inputs via `renderOrderAddons(savedIds, savedPrices)`. Per-order prices stored on `items.add_on_prices` (id→price object). `getAddonTotalFromOrder()` reads checked boxes. Pickup Date + Pickup Time are on the same row.
-- Purchase modal: materials use a dynamic dropdown-based row system (`#pMaterialRows`). `addPurchaseMaterialRow(matType, qty, price)` adds a row; material dropdown auto-fills price from `PURCH_MAT_PRICES`. Total override field (`#pTotal`) always pre-fills from saved `item.total` when editing.
+- Log Sale / Ready-to-Sell add-ons: rendered as pill toggles via `_renderAddonCheckboxes(container, savedIds)` — each add-on is a `<label class="addon-pill">` backed by a hidden `<input type="checkbox">`. No per-sale price editing (uses base price). Existing JS that queries `input[type="checkbox"]:checked` works unchanged.
+- `_doCompleteOrder`: sets `status:'completed'`, `pickup_date:null`, `pickup_time:null` in a single atomic Supabase update — prevents completed orders from appearing on the scheduler calendar.
+- Purchase modal: materials use a dynamic dropdown-based row system (`#pMaterialRows`). `addPurchaseMaterialRow(matType, qty, price)` adds a row; material dropdown auto-fills price from `PURCH_MAT_PRICES` (four options: Cedar Pickets, 2×2s, 2×4s, Other — `other:0` clears the price field for manual entry). `savePurchase` accumulates `otherTotal` for "Other" rows; they contribute to `total` but are not synced to any stock column. Total override field (`#pTotal`) always pre-fills from saved `item.total` when editing.
 
 ### Cut List Calculator (Materials → Cut List tab)
 Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
@@ -74,7 +76,9 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
 
 **Board diagram**: each bar = one board. Cuts are wrapped in column-flex containers — width scrap (unused board width) appears as a tan block above the piece; batched rip cuts show individual sub-pieces with white separator lines. `align-items:stretch` on `.picket-bar`.
 
-**Save/load**: `saveCutList()` checks `cl-name.dataset.savedId` — if set (loaded from DB), does an UPDATE; otherwise INSERT. `loadCutList(idOrObj)` accepts an ID string (looks up from `allCutLists` module-level array) or a legacy object. `clearCutList()` deletes `savedId`. Saved lists shown as a table (Name / Last Modified / Notes) at the bottom of the page.
+**Save/load**: `saveCutList()` checks `cl-name.dataset.savedId` — if set (loaded from DB), does an UPDATE; otherwise INSERT. `loadCutList(idOrObj)` accepts an ID string (looks up from `allCutLists` module-level array) or a legacy object. `clearCutList()` deletes `savedId`. Saved lists shown as a table (Name / Last Modified / Notes) in the left column.
+
+**2-column layout**: The cut list tab uses a CSS grid (`#cl-columns`) on desktop (≥1025px). `#cl-col-left` contains Stock Materials + Saved Cut Lists; `#cl-col-right` contains New Cut List (`#cut-list-calc`) including `#cl-results`. Collapses to single column at `≤1024px` via media query.
 
 **XSS safety**: `loadSavedCutLists()` uses ID-only `onclick="loadCutList('${cl.id}')"` (not full JSON). `renderPurchaseList()` uses `onclick="editPurchase('${p.id}')"`. Both functions resolve the full object from the corresponding module-level array (`allCutLists`, `allPurchases`). The board diagram uses `textContent` (not innerHTML) for cut-piece labels.
 

@@ -70,7 +70,7 @@ All data is stored in Supabase (cloud) so it works across any device. The dashbo
 
 Each row shows the sale date, size (with any add-ons listed below as `✨ Sealant (+$20) · Casters (+$40)`), qty, product type, buyer name, price with margin %, payment method, and notes. Tap ✏️ to edit or 🗑️ to delete any record.
 
-**Log a Sale manually** — the sale modal includes: Date · Size · Qty · Product · Price · Payment (cash or Venmo + fee) · Notes · Add-ons (same checkbox list as orders). Completing an order automatically captures any add-ons from the order into the sales record.
+**Log a Sale manually** — the sale modal includes: Date · Size · Qty · Product · Price · Payment (cash or Venmo + fee) · Notes · Add-ons (pill toggle buttons — tap to select). Completing an order automatically captures any add-ons from the order into the sales record.
 
 **Quotes tab** — saved quotes generated from the Cut List Calculator. Each row shows the quote name, price, picket count, and estimated margin. Tap **Convert** to open the New Order modal pre-filled with the quote's details (name, price, notes, and size if the cut list name contains a dimension like `36×16×16`) — saving the order automatically deletes the quote. After creating a quote, the app navigates directly to the Quotes tab. Tap **Delete** to remove a quote without converting.
 
@@ -87,7 +87,7 @@ Stock color coding: 🔴 Low · 🟠 Medium · 🟢 Good
 
 Use +/− buttons to adjust as you build or receive materials.
 
-**Lowes Purchase Log tab** — log every materials run. Select materials from a dropdown (auto-fills price per unit), enter quantities, add notes and a total override. Records date, store, and cost. Tracks total materials spend over time. Filter by **Last Week · This Month · Last Month · 2026 · 2025 · All Time**.
+**Lowes Purchase Log tab** — log every materials run. Select a material from the dropdown (Cedar Pickets, 2×2s, 2×4s, or **Other** for miscellaneous items — auto-fills unit price for known materials, clears price for Other so you enter it manually), enter quantities, add notes and a total override. Records date, store, and cost. Tracks total materials spend over time. Filter by **Last Week · This Month · Last Month · 2026 · 2025 · All Time**.
 
 > Note: Logging a purchase does **not** auto-update stock levels. Update the Stock Levels tab manually.
 
@@ -171,7 +171,9 @@ Plan material cuts before building. Enter parts, calculate board usage, and save
 
 **Product association** — select a product from the **Product** dropdown at the top of the cut list form. If that product has options configured (e.g. Stain), the option dropdown(s) appear immediately below. The selected product and options are saved with the cut list and restored when you load it.
 
-**Saved Cut Lists** (bottom of page) — grouped by product, showing Name, Last Modified, Notes. Load or delete any saved list. Re-saving a loaded list updates it in-place (no duplicates).
+**Saved Cut Lists** (left column on desktop) — grouped by product, showing Name, Last Modified, Notes. Load or delete any saved list. Re-saving a loaded list updates it in-place (no duplicates).
+
+**Layout** — on desktop (≥1025px) the tab is two columns: left has Stock Materials and Saved Cut Lists; right has the New Cut List form and results. On tablet/mobile the sections stack vertically.
 
 **Create Quote from Cut List:**
 After running a cut list, tap **+ Quote** to open the quote modal. The price is pre-calculated from board counts and the notes field is pre-filled with the cut list name. Fill in a quote name, adjust price/notes as needed, and save. Saved quotes appear in the **Quotes tab** on the Orders page.
