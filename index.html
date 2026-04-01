@@ -791,6 +791,9 @@ body {
 .build-calc { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 24px; }
 .build-calc h3 { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--ocean-light); margin-bottom: 4px; }
 .build-calc p { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+#cl-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+#cl-col-left > div:last-child { margin-top: 0; }
+@media (max-width: 1024px) { #cl-columns { grid-template-columns: 1fr; } }
 .calc-grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 12px; }
 .calc-result { background: var(--bg-elevated); border-radius: 8px; padding: 12px 16px; display: flex; gap: 20px; flex-wrap: wrap; }
 .cr-item { text-align: center; }
