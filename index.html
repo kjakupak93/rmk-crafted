@@ -5319,7 +5319,7 @@ async function savePurchase() {
   const calcTotal=Math.max(0,pickets*pp+t22*t22p+t24*t24p+otherTotal-discount);
   const overrideTotal=parseFloat(document.getElementById('pTotal').value);
   const total=!isNaN(overrideTotal)&&overrideTotal>0?overrideTotal:calcTotal;
-  if (!pickets&&!t22&&!t24&&!otherTotal&&!total) {showToast('Enter materials or a total amount','error');return;}
+  if (!pickets&&!t22&&!t24&&!total) {showToast('Enter materials or a total amount','error');return;}
   const payload={purchase_date:document.getElementById('pDate').value,store:document.getElementById('pStore').value,pickets,picket_price:pp,twobytwo:t22,twobytwo_price:t22p,twobyfour:t24,twobyfour_price:t24p,discount,total,notes:document.getElementById('pNotes').value};
   if (editingPurchaseId) {
     const {error}=await sb.from('purchases').update(payload).eq('id',editingPurchaseId);
