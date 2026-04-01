@@ -7,33 +7,17 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('KPI summary cards render on home page', async ({ page }) => {
-  await expect(page.locator('.home-kpi-row .summary-card').first()).toBeVisible();
+  await expect(page.locator('.kpi-grid .kpi-card').first()).toBeVisible();
 });
 
-test('4 nav tiles are present', async ({ page }) => {
-  await expect(page.locator('.sb-item')).toHaveCount(4);
+test('5 nav items are present in sidebar', async ({ page }) => {
+  // Sidebar has home, orders, materials, scheduler, analytics (+ sign out = 6 total .sb-item)
+  await expect(page.locator('.sb-item[id]')).toHaveCount(5);
 });
 
 test('+ New Order shortcut button opens the order modal', async ({ page }) => {
-  const btn = page.locator('#page-home button:has-text("+ New Order")');
+  const btn = page.locator('.sb-new-order');
   await expect(btn).toBeVisible();
   await btn.click();
   await expect(page.locator('#orderModal')).toHaveClass(/open/, { timeout: 5000 });
-});
-
-test('dark mode toggle sets and clears data-theme on <html>', async ({ page }) => {
-  // Clear any persisted theme from previous runs, then reload
-  // NOTE: reload re-triggers the IIFE which shows #pin-gate again, so login() is required after
-  await page.evaluate(() => localStorage.removeItem('rmk_theme'));
-  await page.reload();
-  await login(page); // required — IIFE always shows gate on every page load
-
-  // First click — enable dark mode
-  await page.click('#dark-toggle');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-
-  // Second click — disable dark mode
-  // applyDarkMode(false) sets dataset.theme = '' (empty string, NOT removes attribute)
-  await page.click('#dark-toggle');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', '');
 });

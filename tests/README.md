@@ -23,12 +23,12 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ## Smoke Suite (`tests/*.spec.ts`)
 
-27 tests. Fast, read-only — no data writes to Supabase. Runs in parallel.
+26 tests. Fast, read-only — no data writes to Supabase. Runs in parallel.
 
 | File | What it checks |
 |---|---|
 | `auth.spec.ts` | Auth gate: wrong credentials show error, correct email/password dismisses gate |
-| `home.spec.ts` | KPI cards present, nav tiles visible, dark mode toggle, + New Order shortcut opens order modal |
+| `home.spec.ts` | KPI cards present, sidebar nav items count, + New Order shortcut opens order modal |
 | `orders.spec.ts` | Orders page tabs, New Order modal, Quotes tab visibility, Sales History margin badges |
 | `materials.spec.ts` | Tab switching (all 4 tabs), Cut List quote button starts disabled, Products tab renders, Add-ons tab renders |
 | `scheduler.spec.ts` | Calendar renders, tab switching |

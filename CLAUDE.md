@@ -130,7 +130,7 @@ This app supports dark mode. When adding new UI elements or pages, ensure they w
 
 Two-tier Playwright suite — see `tests/README.md` for full details.
 
-- **Smoke** (`tests/*.spec.ts`) — 27 tests, read-only, runs in parallel. Covers page load, navigation, and UI presence for all pages.
+- **Smoke** (`tests/*.spec.ts`) — 26 tests, read-only, runs in parallel. Covers page load, navigation, and UI presence for all pages.
 - **E2E** (`tests/e2e/*.spec.ts`) — 66 tests, writes real data to Supabase, serial per file. Run with `npx playwright test --project=e2e`.
 
 E2E coverage by file:
