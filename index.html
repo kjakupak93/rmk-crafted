@@ -1605,85 +1605,90 @@ body {
       <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 4px;">Cut List Calculator</h2>
       <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Enter your cuts, calculate board usage, then save for later reuse.</p>
 
-      <!-- Stock materials -->
-      <div class="build-calc" style="margin-bottom:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
-          <h3 style="margin:0">Stock Materials</h3>
-          <div class="input-group" style="margin-bottom:0;width:148px">
-            <label style="font-size:11px">Blade kerf (in)</label>
-            <input class="std-input" type="number" id="cl-kerf" value="0.11" min="0" step="0.01" placeholder="0.11">
+      <div id="cl-columns">
+        <div id="cl-col-left">
+          <!-- Stock Materials -->
+          <div class="build-calc" style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+              <h3 style="margin:0">Stock Materials</h3>
+              <div class="input-group" style="margin-bottom:0;width:148px">
+                <label style="font-size:11px">Blade kerf (in)</label>
+                <input class="std-input" type="number" id="cl-kerf" value="0.11" min="0" step="0.01" placeholder="0.11">
+              </div>
+            </div>
+            <div class="cl-stock-list-wrap" id="cl-stock-list-wrap"><div id="cl-stock-list"></div></div>
+            <div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">
+              <div class="input-group" style="margin-bottom:0;flex:1;min-width:120px">
+                <label>Name</label>
+                <input class="std-input" type="text" id="cl-new-stock-name" placeholder="e.g. Cedar Picket 8ft">
+              </div>
+              <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
+                <label>Length (in)</label>
+                <input class="std-input" type="number" id="cl-new-stock-len" value="96" min="1" step="0.25">
+              </div>
+              <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
+                <label>Width (in)</label>
+                <input class="std-input" type="number" id="cl-new-stock-wid" value="" min="0.25" step="0.25" placeholder="opt.">
+              </div>
+              <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
+                <label>Height (in)</label>
+                <input class="std-input" type="number" id="cl-new-stock-hgt" value="" min="0.25" step="0.25" placeholder="opt.">
+              </div>
+              <button class="btn-secondary" onclick="addStockType()" style="flex-shrink:0">+ Add</button>
+            </div>
           </div>
-        </div>
-        <div class="cl-stock-list-wrap" id="cl-stock-list-wrap"><div id="cl-stock-list"></div></div>
-        <div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">
-          <div class="input-group" style="margin-bottom:0;flex:1;min-width:120px">
-            <label>Name</label>
-            <input class="std-input" type="text" id="cl-new-stock-name" placeholder="e.g. Cedar Picket 8ft">
-          </div>
-          <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
-            <label>Length (in)</label>
-            <input class="std-input" type="number" id="cl-new-stock-len" value="96" min="1" step="0.25">
-          </div>
-          <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
-            <label>Width (in)</label>
-            <input class="std-input" type="number" id="cl-new-stock-wid" value="" min="0.25" step="0.25" placeholder="opt.">
-          </div>
-          <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
-            <label>Height (in)</label>
-            <input class="std-input" type="number" id="cl-new-stock-hgt" value="" min="0.25" step="0.25" placeholder="opt.">
-          </div>
-          <button class="btn-secondary" onclick="addStockType()" style="flex-shrink:0">+ Add</button>
-        </div>
-      </div>
 
-      <div class="build-calc" id="cut-list-calc">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-          <h3 style="margin:0">New Cut List</h3>
-          <button class="btn-secondary" onclick="clearCutList()" style="font-size:12px;padding:5px 10px">Clear</button>
-        </div>
-        <div class="input-group" style="margin-bottom:14px">
-          <label>Cut list name</label>
-          <input class="std-input" type="text" id="cl-name" placeholder="e.g. 36×16×16 Standard">
-        </div>
-        <div class="input-group" style="margin-bottom:14px">
-          <label>Product</label>
-          <select class="std-input" id="cl-product" onfocus="this.dataset.prev=this.value" onchange="onClProductChange(this)">
-            <option value="">— No product —</option>
-          </select>
-          <div id="cl-product-options" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+          <!-- Saved Cut Lists -->
+          <div style="margin-top:24px">
+            <div class="section-header" style="margin-bottom:12px">
+              <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:17px;color:var(--navy)">Saved Cut Lists</h3>
+            </div>
+            <div id="cl-saved-list">
+              <p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>
+            </div>
+          </div>
         </div>
 
-        <!-- Cut rows -->
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Parts</div>
-        <div class="table-wrap" style="margin-bottom:10px">
-          <table class="data-table">
-            <thead><tr><th style="width:32px">#</th><th>Description</th><th style="width:90px">Qty</th><th style="width:130px">Length"</th><th style="width:120px">Width"</th><th>Material</th><th style="width:32px"></th></tr></thead>
-            <tbody id="cl-rows"></tbody>
-          </table>
-        </div>
-        <div class="input-group" style="margin-bottom:12px">
-          <label>Notes</label>
-          <textarea class="std-input" id="cl-notes" rows="2" placeholder="Optional notes about this cut list…" style="resize:vertical;min-height:48px;font-size:14px"></textarea>
-        </div>
-        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-          <button class="btn-secondary" onclick="addCutRow()">+ Add Part</button>
-          <button class="btn-primary" onclick="runCutList()">Calculate</button>
-          <button class="btn-primary" onclick="saveCutList()" style="background:var(--green)">💾 Save</button>
-          <button id="cl-quote-btn" class="btn btn-secondary" onclick="openCreateQuoteModal()" disabled title="Run Calculate first">+ Quote</button>
-        </div>
-        <div id="cl-results" style="display:none">
-          <div id="cl-diagram"></div>
-          <div id="cl-parts-table" style="margin-top:20px"></div>
-        </div>
-      </div>
-
-      <!-- Saved cut lists -->
-      <div style="margin-top:24px">
-        <div class="section-header" style="margin-bottom:12px">
-          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:17px;color:var(--navy)">Saved Cut Lists</h3>
-        </div>
-        <div id="cl-saved-list">
-          <p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>
+        <div id="cl-col-right">
+          <!-- New Cut List -->
+          <div class="build-calc" id="cut-list-calc">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+              <h3 style="margin:0">New Cut List</h3>
+              <button class="btn-secondary" onclick="clearCutList()" style="font-size:12px;padding:5px 10px">Clear</button>
+            </div>
+            <div class="input-group" style="margin-bottom:14px">
+              <label>Cut list name</label>
+              <input class="std-input" type="text" id="cl-name" placeholder="e.g. 36×16×16 Standard">
+            </div>
+            <div class="input-group" style="margin-bottom:14px">
+              <label>Product</label>
+              <select class="std-input" id="cl-product" onfocus="this.dataset.prev=this.value" onchange="onClProductChange(this)">
+                <option value="">— No product —</option>
+              </select>
+              <div id="cl-product-options" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Parts</div>
+            <div class="table-wrap" style="margin-bottom:10px">
+              <table class="data-table">
+                <thead><tr><th style="width:32px">#</th><th>Description</th><th style="width:90px">Qty</th><th style="width:130px">Length"</th><th style="width:120px">Width"</th><th>Material</th><th style="width:32px"></th></tr></thead>
+                <tbody id="cl-rows"></tbody>
+              </table>
+            </div>
+            <div class="input-group" style="margin-bottom:12px">
+              <label>Notes</label>
+              <textarea class="std-input" id="cl-notes" rows="2" placeholder="Optional notes about this cut list…" style="resize:vertical;min-height:48px;font-size:14px"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+              <button class="btn-secondary" onclick="addCutRow()">+ Add Part</button>
+              <button class="btn-primary" onclick="runCutList()">Calculate</button>
+              <button class="btn-primary" onclick="saveCutList()" style="background:var(--green)">💾 Save</button>
+              <button id="cl-quote-btn" class="btn btn-secondary" onclick="openCreateQuoteModal()" disabled title="Run Calculate first">+ Quote</button>
+            </div>
+            <div id="cl-results" style="display:none">
+              <div id="cl-diagram"></div>
+              <div id="cl-parts-table" style="margin-top:20px"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
