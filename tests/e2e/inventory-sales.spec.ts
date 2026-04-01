@@ -8,7 +8,7 @@ const TAG = `[TEST] ${Date.now()}`;
 
 async function goToInventoryTab(page: Page) {
   await login(page);
-  await page.click('.app-tile--orders');
+  await page.click('#sb-orders');
   await page.waitForSelector('#page-orders.active');
   await page.click('#orders-tabs button:has-text("Ready to Sell")');
   await page.waitForSelector('#otab-inventory', { state: 'visible' });
@@ -16,7 +16,7 @@ async function goToInventoryTab(page: Page) {
 
 async function goToSalesTab(page: Page) {
   await login(page);
-  await page.click('.app-tile--orders');
+  await page.click('#sb-orders');
   await page.waitForSelector('#page-orders.active');
   await page.click('#orders-tabs button:has-text("Sales History")');
   await page.waitForSelector('#otab-sales', { state: 'visible' });

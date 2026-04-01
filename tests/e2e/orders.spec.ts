@@ -8,7 +8,7 @@ const TAG = `[TEST] ${Date.now()}`;
 
 async function goToOrders(page: Page) {
   await login(page);
-  await page.click('.app-tile--orders');
+  await page.click('#sb-orders');
   await page.waitForSelector('#page-orders.active');
 }
 

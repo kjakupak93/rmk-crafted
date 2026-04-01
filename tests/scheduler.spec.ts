@@ -3,7 +3,7 @@ import { login } from './helpers/auth';
 
 test.beforeEach(async ({ page }) => {
   await login(page);
-  await page.click('.app-tile--sched');
+  await page.click('#sb-scheduler');
   // Wait for calendar label to populate (rendered by renderCalendar())
   await expect(page.locator('#calLabel')).not.toBeEmpty({ timeout: 10000 });
 });

@@ -11,7 +11,7 @@ test('KPI summary cards render on home page', async ({ page }) => {
 });
 
 test('4 nav tiles are present', async ({ page }) => {
-  await expect(page.locator('.app-tile')).toHaveCount(4);
+  await expect(page.locator('.sb-item')).toHaveCount(4);
 });
 
 test('+ New Order shortcut button opens the order modal', async ({ page }) => {

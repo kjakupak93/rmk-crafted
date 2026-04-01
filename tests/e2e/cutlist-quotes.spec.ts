@@ -8,7 +8,7 @@ const TAG = `[TEST] ${Date.now()}`;
 
 async function goToCutList(page: Page) {
   await login(page);
-  await page.click('.app-tile--mats');
+  await page.click('#sb-materials');
   await page.waitForSelector('#page-materials.active');
   await page.click('button:has-text("Cut List")');
   await page.waitForSelector('#mtab-cutlist.active');
@@ -75,7 +75,7 @@ test('Quote modal pre-fills price and notes from cut list', async ({ page }) => 
 
 async function goToOrdersFromMaterials(page: Page) {
   await login(page);
-  await page.click('.app-tile--orders');
+  await page.click('#sb-orders');
   await page.waitForSelector('#page-orders.active');
 }
 

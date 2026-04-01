@@ -13,7 +13,7 @@ const createdAvailabilityIds: string[] = [];
 
 async function goToScheduler(page: Page) {
   await login(page);
-  await page.click('.app-tile--sched');
+  await page.click('#sb-scheduler');
   await page.waitForSelector('#page-scheduler.active');
   await page.waitForSelector('#calLabel:not(:empty)', { timeout: 10000 });
 }

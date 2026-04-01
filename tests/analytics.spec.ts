@@ -3,7 +3,7 @@ import { login } from './helpers/auth';
 
 test.beforeEach(async ({ page }) => {
   await login(page);
-  await page.locator('.app-tile[onclick*="analytics"]').click();
+  await page.click('#sb-analytics');
   await page.waitForLoadState('networkidle');
 });
 

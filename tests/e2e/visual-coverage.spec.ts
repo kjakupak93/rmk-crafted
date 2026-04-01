@@ -26,13 +26,13 @@ const TAG = `[TEST] ${Date.now()}`;
 
 async function goToOrders(page: Page) {
   await login(page);
-  await page.click('.app-tile--orders');
+  await page.click('#sb-orders');
   await page.waitForSelector('#page-orders.active');
 }
 
 async function goToCutList(page: Page) {
   await login(page);
-  await page.click('.app-tile--mats');
+  await page.click('#sb-materials');
   await page.waitForSelector('#page-materials.active');
   await page.click('button:has-text("Cut List")');
   await page.waitForSelector('#mtab-cutlist.active');
@@ -40,7 +40,7 @@ async function goToCutList(page: Page) {
 
 async function goToScheduler(page: Page) {
   await login(page);
-  await page.click('.app-tile--sched');
+  await page.click('#sb-scheduler');
   await page.waitForSelector('#page-scheduler.active');
   await page.waitForSelector('#calLabel:not(:empty)', { timeout: 10000 });
 }
@@ -268,7 +268,7 @@ test('quote margin badge renders correct colour in Quotes tab', async ({ page })
 
   // Navigate to Orders → Quotes tab
   await login(page);
-  await page.click('.app-tile--orders');
+  await page.click('#sb-orders');
   await page.waitForSelector('#page-orders.active');
   await page.click('#orders-tabs button:has-text("Quotes")');
   await page.waitForSelector('#otab-quotes', { state: 'visible' });

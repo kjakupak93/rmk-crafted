@@ -3,7 +3,7 @@ import { login } from './helpers/auth';
 
 test.beforeEach(async ({ page }) => {
   await login(page);
-  await page.click('.app-tile--mats');
+  await page.click('#sb-materials');
   await page.waitForSelector('#page-materials.active');
 });
 

@@ -3,7 +3,7 @@ import { login } from './helpers/auth';
 
 test.beforeEach(async ({ page }) => {
   await login(page);
-  await page.click('.app-tile--orders');
+  await page.click('#sb-orders');
   await page.waitForLoadState('networkidle');
 });
 

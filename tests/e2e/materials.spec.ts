@@ -8,7 +8,7 @@ const TAG = `[TEST] ${Date.now()}`;
 
 async function goToMaterials(page: Page) {
   await login(page);
-  await page.click('.app-tile--mats');
+  await page.click('#sb-materials');
   await page.waitForSelector('#page-materials.active');
 }
 
@@ -252,7 +252,7 @@ test('new add-on appears in order modal add-on dropdown', async ({ page }) => {
   // Navigate home (reloads app — localStorage persists so new add-on is loaded)
   // then go to Orders and open the new order modal
   await login(page);
-  await page.click('.app-tile--orders');
+  await page.click('#sb-orders');
   await page.waitForSelector('#page-orders.active');
   await page.click('#page-orders button:has-text("+ New Order")');
   await page.waitForSelector('#orderModal.open');
@@ -301,7 +301,7 @@ test('add option to product appears in the options panel with label and choices'
 test('option dropdown appears in order modal when product with options is selected', async ({ page }) => {
   // Navigate to Orders, wait for settings, then inject — all in one page context
   await login(page);
-  await page.click('.app-tile--orders');
+  await page.click('#sb-orders');
   await page.waitForSelector('#page-orders.active');
   await page.waitForFunction(() => (window as any)._settingsDidLoad === true, { timeout: 10000 });
   await page.evaluate(() => {
