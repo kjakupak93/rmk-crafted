@@ -140,6 +140,11 @@ test('calendar shows green dot for open slot and gold dot for booking', async ({
     { tag: TAG, date: bookingDate },
   );
 
+  // Navigate away and back to force calendar to re-fetch data after the insert
+  await page.click('#sb-home');
+  await page.click('#sb-scheduler');
+  await page.waitForSelector('#calGrid .cal-day', { timeout: 10000 });
+
   // Navigate calendar to the target month
   const MONTHS_ARR = [
     'January','February','March','April','May','June',
