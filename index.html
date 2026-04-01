@@ -5304,7 +5304,7 @@ function updatePurchEst() {
 }
 
 async function savePurchase() {
-  let pickets=0,pp=3.66,t22=0,t22p=3.23,t24=0,t24p=4.17;
+  let pickets=0,pp=3.66,t22=0,t22p=3.23,t24=0,t24p=4.17,otherTotal=0;
   document.querySelectorAll('.purch-mat-row').forEach(function(row){
     const sel=row.querySelector('select');
     const inputs=row.querySelectorAll('input');
@@ -5313,12 +5313,13 @@ async function savePurchase() {
     if (sel.value==='pickets'){pickets=qty;pp=price;}
     else if (sel.value==='twobytwo'){t22=qty;t22p=price;}
     else if (sel.value==='twobyfour'){t24=qty;t24p=price;}
+    else if (sel.value==='other'){otherTotal+=qty*price;}
   });
   const discount=parseFloat(document.getElementById('pDiscount').value)||0;
-  const calcTotal=Math.max(0,pickets*pp+t22*t22p+t24*t24p-discount);
+  const calcTotal=Math.max(0,pickets*pp+t22*t22p+t24*t24p+otherTotal-discount);
   const overrideTotal=parseFloat(document.getElementById('pTotal').value);
   const total=!isNaN(overrideTotal)&&overrideTotal>0?overrideTotal:calcTotal;
-  if (!pickets&&!t22&&!t24&&!total) {showToast('Enter materials or a total amount','error');return;}
+  if (!pickets&&!t22&&!t24&&!otherTotal&&!total) {showToast('Enter materials or a total amount','error');return;}
   const payload={purchase_date:document.getElementById('pDate').value,store:document.getElementById('pStore').value,pickets,picket_price:pp,twobytwo:t22,twobytwo_price:t22p,twobyfour:t24,twobyfour_price:t24p,discount,total,notes:document.getElementById('pNotes').value};
   if (editingPurchaseId) {
     const {error}=await sb.from('purchases').update(payload).eq('id',editingPurchaseId);
