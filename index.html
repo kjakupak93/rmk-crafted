@@ -5246,7 +5246,7 @@ function editPurchase(idOrItem) {
   openPurchaseModal(item);
 }
 
-const PURCH_MAT_PRICES={pickets:3.66,twobytwo:3.23,twobyfour:4.17};
+const PURCH_MAT_PRICES={pickets:3.66,twobytwo:3.23,twobyfour:4.17,other:0};
 
 function addPurchaseMaterialRow(matType,qty,price) {
   matType=matType||'pickets'; qty=qty||''; price=price!=null?price:'';
@@ -5256,7 +5256,7 @@ function addPurchaseMaterialRow(matType,qty,price) {
   row.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:6px';
   const sel=document.createElement('select');
   sel.className='form-control'; sel.style.cssText='flex:2;font-size:13px';
-  [['pickets','Cedar Pickets'],['twobytwo','2×2s'],['twobyfour','2×4s']].forEach(function(pair){
+  [['pickets','Cedar Pickets'],['twobytwo','2×2s'],['twobyfour','2×4s'],['other','Other']].forEach(function(pair){
     const opt=document.createElement('option');
     opt.value=pair[0]; opt.textContent=pair[1];
     if (pair[0]===matType) opt.selected=true;
