@@ -2477,7 +2477,7 @@ function _renderAddonCheckboxes(container, savedIds) {
   container.className = 'addon-pills';
   container.innerHTML = ADDONS.map(a => {
     const sel = savedIds.includes(a.id);
-    return '<label class="addon-pill' + (sel ? ' addon-selected' : '') + '" onclick="this.classList.toggle(\'addon-selected\');this.querySelector(\'input\').checked=this.classList.contains(\'addon-selected\')">' +
+    return '<label class="addon-pill' + (sel ? ' addon-selected' : '') + '" onclick="event.preventDefault();this.classList.toggle(\'addon-selected\');this.querySelector(\'input\').checked=this.classList.contains(\'addon-selected\')">' +
       '<input type="checkbox" data-id="' + esc(a.id) + '"' + (sel ? ' checked' : '') + '>' +
       esc(a.label) +
     '</label>';
