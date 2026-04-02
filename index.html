@@ -242,19 +242,31 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 6px 4px 4px;
+  padding: 6px 4px 6px;
   background: none;
   border: none;
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
   color: var(--text-dim);
   transition: color 0.15s;
-  min-height: 50px;
+  min-height: 60px;
 }
 .bn-item:hover { color: var(--ocean-light); }
 .bn-item.active { color: var(--sand); }
-.bn-ico { font-size: 18px; line-height: 1; }
-.bn-lbl { font-size: 9px; font-weight: 500; letter-spacing: 0.3px; }
+.bn-icon-wrap {
+  width: 40px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.bn-item.active .bn-icon-wrap {
+  background: rgba(201, 165, 90, 0.18);
+}
+.bn-ico { font-size: 20px; line-height: 1; }
+.bn-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
 
 /* ===== PAGES ===== */
 .page { display: none; }
