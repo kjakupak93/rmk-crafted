@@ -2348,7 +2348,6 @@ async function loadAddonSettings() {
   populateAddonSelect();
   renderOrderAddons();
   renderInvAddons();
-  renderSaleAddons();
 }
 async function saveAddons() {
   const { error } = await sb.from('settings').upsert({ key: 'addons', value: JSON.stringify(ADDONS) }, { onConflict: 'key' });
@@ -2406,6 +2405,7 @@ function renderAddonsTab() {
     '</div>'
   ).join('');
   populateAddonSelect();
+  populateAddonSelect('sAddonSelect');
 }
 function populateAddonSelect(selectId='oAddonSelect') {
   const sel = document.getElementById(selectId);
@@ -2509,11 +2509,6 @@ function renderInvAddons(savedIds) {
   if (!container) return;
   _renderAddonCheckboxes(container, savedIds || []);
 }
-function renderSaleAddons(savedIds) {
-  const container = document.getElementById('saleAddonList');
-  if (!container) return;
-  _renderAddonCheckboxes(container, savedIds || []);
-}
 const DEFAULT_STYLES = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
 let PRODUCT_TYPES = [...DEFAULT_STYLES];
 let PRODUCT_OPTIONS = {}; // { [productName]: [{id, label, choices:[]}] }
@@ -2593,8 +2588,8 @@ function readProductOptionSelects(containerEl) {
 }
 function populateProductSelects(selectedVal) {
   const styleOpts = PRODUCT_TYPES.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
-  // iProduct and sProduct (inventory/sales modals) — required field, no blank option
-  ['iProduct', 'sProduct'].forEach(id => {
+  // iProduct (inventory modal) — required field, no blank option
+  ['iProduct'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.innerHTML = styleOpts;
@@ -4408,52 +4403,79 @@ let editingPurchaseId = null;
 function openSaleModal() {
   editingSaleId = null;
   document.getElementById('saleModalTitle').textContent = 'Log a Sale';
-  document.getElementById('sDate').value=new Date().toISOString().split('T')[0];
-  ['sName','sSize','sNotes'].forEach(f=>document.getElementById(f).value='');
-  document.getElementById('sPrice').value='';
-  document.getElementById('sQty').value='1';
-  document.getElementById('sPayment').value='cash';
-  document.getElementById('sVenmoFee').value='';
-  document.getElementById('sVenmoFeeWrap').style.display='none';
-  populateProductSelects();
-  renderSaleAddons();
+  document.getElementById('sDate').value = new Date().toISOString().split('T')[0];
+  ['sName','sNotes','sPrice'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('sPayment').value = 'cash';
+  document.getElementById('sVenmoFee').value = '';
+  document.getElementById('sVenmoFeeWrap').style.display = 'none';
+  document.getElementById('sItemsContainer').innerHTML = '';
+  document.getElementById('sItemsTotal').textContent = '$0';
+  addOrderItem('', 'Standard', 1, '', null, 'sItemsContainer');
+  renderOrderAddons([], {}, 'sAddonList', 'sItemsContainer');
   openModal('saleModal');
 }
 
 function editSale(id) {
-  const s = allSales.find(x=>x.id===id);
+  const s = allSales.find(x => x.id === id);
   if (!s) return;
   editingSaleId = id;
   document.getElementById('saleModalTitle').textContent = 'Edit Sale';
-  document.getElementById('sName').value = s.name||'';
-  document.getElementById('sDate').value = s.sale_date||'';
-  document.getElementById('sSize').value = s.size||'';
-  document.getElementById('sQty').value = s.qty||1;
-  populateProductSelects(s.style||'Standard');
-  document.getElementById('sProduct').value = s.style||'Standard';
-  document.getElementById('sPrice').value = s.price||'';
-  document.getElementById('sPayment').value = s.payment||'cash';
-  const _svf = s.venmo_fee||0;
-  document.getElementById('sVenmoFeeWrap').style.display = s.payment==='venmo' ? 'block' : 'none';
+  document.getElementById('sName').value = s.name || '';
+  document.getElementById('sDate').value = s.sale_date || '';
+  document.getElementById('sPrice').value = s.price || '';
+  document.getElementById('sPayment').value = s.payment || 'cash';
+  const _svf = s.venmo_fee || 0;
+  document.getElementById('sVenmoFeeWrap').style.display = s.payment === 'venmo' ? 'block' : 'none';
   document.getElementById('sVenmoFee').value = _svf > 0 ? _svf : '';
-  document.getElementById('sNotes').value = s.notes||'';
-  renderSaleAddons(s.add_ons||[]);
+  document.getElementById('sNotes').value = s.notes || '';
+  document.getElementById('sItemsContainer').innerHTML = '';
+  document.getElementById('sItemsTotal').textContent = '$0';
+  if (s.items && s.items.rows && s.items.rows.length) {
+    s.items.rows.forEach(row => addOrderItem(row.size, row.style, row.qty, row.price, row.options || null, 'sItemsContainer'));
+  } else {
+    addOrderItem(s.size || '', s.style || 'Standard', s.qty || 1, s.price || '', null, 'sItemsContainer');
+  }
+  const savedIds = (s.add_ons || []).map(a => a.id);
+  const savedPrices = {};
+  (s.add_ons || []).forEach(a => { if (a.price !== undefined) savedPrices[a.id] = a.price; });
+  renderOrderAddons(savedIds, savedPrices, 'sAddonList', 'sItemsContainer');
   openModal('saleModal');
 }
 
 async function saveSale() {
-  const _spmt=document.getElementById('sPayment').value;
-  const _saleAddons=Array.from(document.querySelectorAll('#saleAddonList input[type="checkbox"]:checked')).map(cb=>{const a=ADDONS.find(x=>x.id===cb.dataset.id);return a?{id:a.id,label:a.label}:null;}).filter(Boolean);
-  const payload={name:document.getElementById('sName').value,size:document.getElementById('sSize').value,style:document.getElementById('sProduct').value,price:parseFloat(document.getElementById('sPrice').value)||0,qty:parseInt(document.getElementById('sQty').value)||1,payment:_spmt,venmo_fee:_spmt==='venmo'?(parseFloat(document.getElementById('sVenmoFee').value)||0):0,sale_date:document.getElementById('sDate').value,notes:document.getElementById('sNotes').value,add_ons:_saleAddons.length?_saleAddons:null};
-  if (!payload.size||!payload.price) {showToast('Size and price required','error');return;}
+  const _spmt = document.getElementById('sPayment').value;
+  const itemRows = getOrderItems('sItemsContainer');
+  if (!itemRows.length || !itemRows[0].size) { showToast('At least one item with a size is required', 'error'); return; }
+  const saleAddons = [];
+  document.querySelectorAll('#sAddonList .addon-row').forEach(row => {
+    const id = row.dataset.id;
+    const addon = ADDONS.find(a => a.id === id);
+    const priceIn = row.querySelector('input[type="number"]');
+    if (addon) saleAddons.push({ id: addon.id, label: addon.label, price: parseFloat(priceIn?.value) || 0 });
+  });
+  const payload = {
+    name: document.getElementById('sName').value,
+    size: itemRows[0].size,
+    style: itemRows[0].style,
+    qty: itemRows[0].qty,
+    items: { rows: itemRows },
+    price: parseFloat(document.getElementById('sPrice').value) || 0,
+    payment: _spmt,
+    venmo_fee: _spmt === 'venmo' ? (parseFloat(document.getElementById('sVenmoFee').value) || 0) : 0,
+    sale_date: document.getElementById('sDate').value,
+    notes: document.getElementById('sNotes').value,
+    add_ons: saleAddons.length ? saleAddons : null,
+    product_options: itemRows[0].options || null
+  };
+  if (!payload.price) { showToast('Price required', 'error'); return; }
   if (editingSaleId) {
-    const {error}=await sb.from('sales').update(payload).eq('id',editingSaleId);
-    if (error) {showToast('Error saving','error');return;}
-    showToast('Sale updated!','success');
+    const { error } = await sb.from('sales').update(payload).eq('id', editingSaleId);
+    if (error) { showToast('Error saving', 'error'); return; }
+    showToast('Sale updated!', 'success');
   } else {
-    const {error}=await sb.from('sales').insert(payload);
-    if (error) {showToast('Error saving','error');return;}
-    showToast('Sale logged!','success');
+    const { error } = await sb.from('sales').insert(payload);
+    if (error) { showToast('Error saving', 'error'); return; }
+    showToast('Sale logged!', 'success');
   }
   closeModal('saleModal'); loadSales();
 }
