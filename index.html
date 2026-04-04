@@ -4098,8 +4098,10 @@ function copyListing() {
   }).catch(() => showToast('Could not copy — please copy manually', 'error'));
 }
 
-function addOrderItem(size='', style='Standard', qty=1, price='', savedOptions=null) {
-  const container = document.getElementById('oItemsContainer');
+function addOrderItem(size='', style='Standard', qty=1, price='', savedOptions=null, containerId='oItemsContainer') {
+  const isSale = containerId === 'sItemsContainer';
+  const totalFn = isSale ? 'updateSaleTotal()' : 'updateOrderTotal()';
+  const container = document.getElementById(containerId);
   const row = document.createElement('div');
   row.className = 'order-item-row';
   const controls = document.createElement('div');
@@ -4109,7 +4111,7 @@ function addOrderItem(size='', style='Standard', qty=1, price='', savedOptions=n
   sizeInp.type = 'text';
   sizeInp.placeholder = '36×16×16';
   sizeInp.value = size;
-  sizeInp.setAttribute('oninput', 'updateOrderTotal()');
+  sizeInp.setAttribute('oninput', totalFn);
   const prodSel = document.createElement('select');
   prodSel.className = 'form-control item-product';
   PRODUCT_TYPES.forEach(s => {
@@ -4119,21 +4121,21 @@ function addOrderItem(size='', style='Standard', qty=1, price='', savedOptions=n
     if (s === style) o.selected = true;
     prodSel.appendChild(o);
   });
-  prodSel.setAttribute('onchange', 'onOrderItemProductChange(this)');
+  prodSel.setAttribute('onchange', isSale ? 'onSaleItemProductChange(this)' : 'onOrderItemProductChange(this)');
   const qtyInp = document.createElement('input');
   qtyInp.className = 'form-control item-qty';
   qtyInp.type = 'number';
   qtyInp.min = '1';
   qtyInp.value = qty;
   qtyInp.placeholder = '1';
-  qtyInp.setAttribute('oninput', 'updateOrderTotal()');
+  qtyInp.setAttribute('oninput', totalFn);
   const priceInp = document.createElement('input');
   priceInp.className = 'form-control item-price';
   priceInp.type = 'number';
   priceInp.min = '0';
   priceInp.value = price;
   priceInp.placeholder = '$';
-  priceInp.setAttribute('oninput', 'updateOrderTotal()');
+  priceInp.setAttribute('oninput', totalFn);
   const delBtn = document.createElement('button');
   delBtn.type = 'button';
   delBtn.className = 'icon-btn';
@@ -4151,8 +4153,8 @@ function addOrderItem(size='', style='Standard', qty=1, price='', savedOptions=n
   row.appendChild(optsDiv);
   container.appendChild(row);
   renderProductOptionSelects(style, savedOptions || {}, optsDiv);
-  updateRemoveButtons();
-  updateOrderTotal();
+  updateRemoveButtons(containerId);
+  if (isSale) updateSaleTotal(); else updateOrderTotal();
 }
 
 function onOrderItemProductChange(selectEl) {
@@ -4161,16 +4163,22 @@ function onOrderItemProductChange(selectEl) {
   renderProductOptionSelects(selectEl.value, {}, optsDiv);
   updateOrderTotal();
 }
+function onSaleItemProductChange(selectEl) {
+  const row = selectEl.closest('.order-item-row');
+  const optsDiv = row ? row.querySelector('.item-options') : null;
+  renderProductOptionSelects(selectEl.value, {}, optsDiv);
+  updateSaleTotal();
+}
 function removeOrderItem(btn) {
-  const container = document.getElementById('oItemsContainer');
-  if (container.children.length <= 1) return;
+  const container = btn.closest('.order-items');
+  if (!container || container.children.length <= 1) return;
   btn.closest('.order-item-row').remove();
-  updateRemoveButtons();
-  updateOrderTotal();
+  updateRemoveButtons(container.id);
+  if (container.id === 'sItemsContainer') updateSaleTotal(); else updateOrderTotal();
 }
 
-function updateRemoveButtons() {
-  const rows = document.querySelectorAll('#oItemsContainer .order-item-row');
+function updateRemoveButtons(containerId='oItemsContainer') {
+  const rows = document.querySelectorAll('#' + containerId + ' .order-item-row');
   rows.forEach(row => {
     row.querySelector('.icon-btn').style.visibility = rows.length > 1 ? '' : 'hidden';
   });
@@ -4188,8 +4196,23 @@ function updateOrderTotal() {
   document.getElementById('oItemsTotal').textContent = '$' + total.toFixed(0);
 }
 
-function getOrderItems() {
-  const rows = document.querySelectorAll('#oItemsContainer .order-item-row');
+function updateSaleTotal() {
+  const rows = document.querySelectorAll('#sItemsContainer .order-item-row');
+  let total = 0;
+  rows.forEach(row => {
+    const qty = parseInt(row.querySelector('.item-qty').value) || 1;
+    const price = parseFloat(row.querySelector('.item-price').value) || 0;
+    total += qty * price;
+  });
+  total += getAddonTotalFromOrder('sAddonList');
+  const totalEl = document.getElementById('sItemsTotal');
+  if (totalEl) totalEl.textContent = '$' + total.toFixed(0);
+  const priceEl = document.getElementById('sPrice');
+  if (priceEl) priceEl.value = total > 0 ? total.toFixed(0) : '';
+}
+
+function getOrderItems(containerId='oItemsContainer') {
+  const rows = document.querySelectorAll('#' + containerId + ' .order-item-row');
   return Array.from(rows).map(row => {
     const item = {
       size: row.querySelector('.item-size').value.trim(),
