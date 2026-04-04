@@ -4471,7 +4471,7 @@ async function saveSale() {
     product_options: itemRows[0].options || null
   };
   const rawPrice = document.getElementById('sPrice').value;
-  if (rawPrice === '' || rawPrice === null || rawPrice === undefined) { showToast('Price required', 'error'); return; }
+  if (rawPrice.trim() === '') { showToast('Price required', 'error'); return; }
   if (editingSaleId) {
     const { error } = await sb.from('sales').update(payload).eq('id', editingSaleId);
     if (error) { showToast('Error saving', 'error'); return; }
