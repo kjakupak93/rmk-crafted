@@ -164,7 +164,12 @@ test('complete order via Venmo payment moves to Sales History', async ({ page })
   await page.waitForSelector('#completePaymentModal.open');
   await page.click('#completePaymentModal button:has-text("Venmo")');
 
-  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0);
+  // Venmo shows fee input — fill and confirm
+  await page.waitForSelector('#completeVenmoFeeRow', { state: 'visible' });
+  await page.fill('#completeVenmoFee', '3');
+  await page.click('#completeVenmoFeeRow button:has-text("Confirm")');
+
+  await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toHaveCount(0, { timeout: 10000 });
   await page.click('#orders-tabs button:has-text("Sales History")');
   await expect(page.locator('#salesBody tr').filter({ hasText: name })).toBeVisible({ timeout: 10000 });
 });
@@ -266,7 +271,7 @@ test('add-on selected in order modal is saved and reflected in order total', asy
 
   // Override price to known value and add it
   await page.fill('#oAddonPrice', '10');
-  await page.click('button[onclick="addOrderAddon()"]');
+  await page.click('button[onclick*="addOrderAddon"][onclick*="orderAddonList"]');
   // Total should now be 60 + 10 = 70
   await expect(page.locator('#oItemsTotal')).toContainText('70');
 

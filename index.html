@@ -2145,7 +2145,14 @@ body {
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">How was this order paid?</p>
     <div style="display:flex;gap:10px">
       <button class="modal-btn-primary" style="flex:1" onclick="finishCompleteOrder('cash')">💵 Cash</button>
-      <button class="modal-btn-primary" style="flex:1;background:var(--ocean)" onclick="finishCompleteOrder('venmo')">📱 Venmo</button>
+      <button class="modal-btn-primary" style="flex:1;background:var(--ocean)" onclick="showCompleteVenmoFee()">📱 Venmo</button>
+    </div>
+    <div id="completeVenmoFeeRow" style="display:none;margin-top:14px;text-align:left">
+      <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:6px">Venmo fee ($)</label>
+      <div style="display:flex;gap:8px">
+        <input type="number" id="completeVenmoFee" min="0" step="0.01" style="flex:1;padding:8px;border:1px solid var(--warm-gray);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace">
+        <button class="modal-btn-primary" style="background:var(--ocean)" onclick="finishCompleteOrder('venmo')">Confirm</button>
+      </div>
     </div>
     <div style="margin-top:10px">
       <button class="modal-btn-cancel" style="width:100%" onclick="finishCompleteOrder('unpaid')">Skip — stays in Active until paid</button>
@@ -4010,13 +4017,27 @@ async function completeOrder(id) {
   }
 }
 
+function showCompleteVenmoFee() {
+  document.getElementById('completeVenmoFee').value = _getVenmoFeeDefault();
+  document.getElementById('completeVenmoFeeRow').style.display = 'block';
+  document.getElementById('completeVenmoFee').focus();
+}
+
 async function finishCompleteOrder(method) {
   closeModal('completePaymentModal');
+  document.getElementById('completeVenmoFeeRow').style.display = 'none';
   if (!_pendingCompleteOrderData) return;
   const data = _pendingCompleteOrderData;
   _pendingCompleteOrderData = null;
   if (method !== 'unpaid') {
-    await sb.from('orders').update({payment: method}).eq('id', data.id);
+    const updates = {payment: method};
+    if (method === 'venmo') {
+      const fee = parseFloat(document.getElementById('completeVenmoFee').value) || 0;
+      updates.venmo_fee = fee;
+      data.venmo_fee = fee;
+      localStorage.setItem('rmk_venmo_fee', fee);
+    }
+    await sb.from('orders').update(updates).eq('id', data.id);
     data.payment = method;
   }
   await _doCompleteOrder(data, method);
@@ -4376,8 +4397,8 @@ function renderSalesTable() {
   if (!data.length) {tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text-muted)">No sales in this period.</td></tr>';return;}
   tbody.innerHTML=data.map(s=>`<tr>
     <td>${(d=>{if(!d)return '';const[y,m,dy]=d.split('-');return `${parseInt(m)}/${parseInt(dy)}/${y}`;})(s.sale_date)}</td>
-    <td style="font-family:'DM Mono',monospace">${esc(s.size)||''}${s.add_ons&&s.add_ons.length?`<div style="font-size:11px;color:var(--ocean);margin-top:2px">✨ ${s.add_ons.map(a=>{const _lbl=esc(typeof a==='string'?a:a.label||a.id);const _p=typeof a==='object'&&a.price?` (+$${a.price})`:'';return _lbl+_p;}).join(' · ')}</div>`:''}</td>
-    <td style="font-family:'DM Mono',monospace;text-align:center">${s.qty||1}</td>
+    <td style="font-family:'DM Mono',monospace">${(()=>{const _rows=s.items?.rows;if(_rows&&_rows.length>1)return _rows.map(r=>`${(r.qty||1)>1?esc(String(r.qty))+'× ':''} ${esc(r.size)||''}`).join('<br>');return esc(s.size)||'';})()}${s.add_ons&&s.add_ons.length?`<div style="font-size:11px;color:var(--ocean);margin-top:2px">✨ ${s.add_ons.map(a=>{const _lbl=esc(typeof a==='string'?a:a.label||a.id);const _p=typeof a==='object'&&a.price?` (+$${a.price})`:'';return _lbl+_p;}).join(' · ')}</div>`:''}</td>
+    <td style="font-family:'DM Mono',monospace;text-align:center">${(()=>{const _rows=s.items?.rows;if(_rows&&_rows.length)return _rows.reduce((acc,r)=>acc+(r.qty||1),0);return s.qty||1;})()}</td>
     <td>${esc(s.style)||''}${(()=>{if(!s.product_options)return '';const opts=PRODUCT_OPTIONS[s.style]||[];const parts=opts.filter(o=>s.product_options[o.id]).map(o=>esc(s.product_options[o.id]));return parts.length?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${parts.join(' · ')}</div>`:'';})()} </td>
     <td>${esc(s.name)||'—'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500;white-space:nowrap">${(()=>{const _vf=s.venmo_fee||0;const _total=s.price+_vf;const _c=estimateOrderCost({size:s.size,price:s.price});const _p=s.price>0?Math.round(((s.price-_c)/s.price)*100):0;const _f=!s.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);return '$'+Number(_total)+(_vf>0?` <span style="color:var(--text-muted);font-size:0.8em">(+$${_vf})</span>`:'')+' <span style="color:'+marginColor(_p)+';font-size:0.8em;margin-left:4px">'+(_f?'~':'')+_p+'%</span>';})()}</td>
@@ -4422,19 +4443,21 @@ function editSale(id) {
   document.getElementById('saleModalTitle').textContent = 'Edit Sale';
   document.getElementById('sName').value = s.name || '';
   document.getElementById('sDate').value = s.sale_date || '';
-  document.getElementById('sPrice').value = s.price || '';
   document.getElementById('sPayment').value = s.payment || 'cash';
   const _svf = s.venmo_fee || 0;
   document.getElementById('sVenmoFeeWrap').style.display = s.payment === 'venmo' ? 'block' : 'none';
   document.getElementById('sVenmoFee').value = _svf > 0 ? _svf : '';
   document.getElementById('sNotes').value = s.notes || '';
-  document.getElementById('sItemsContainer').innerHTML = '';
+  const _sItemsCont = document.getElementById('sItemsContainer');
+  while (_sItemsCont.firstChild) _sItemsCont.removeChild(_sItemsCont.firstChild);
   document.getElementById('sItemsTotal').textContent = '$0';
   if (s.items && s.items.rows && s.items.rows.length) {
     s.items.rows.forEach(row => addOrderItem(row.size, row.style, row.qty, row.price, row.options || null, 'sItemsContainer'));
   } else {
     addOrderItem(s.size || '', s.style || 'Standard', s.qty || 1, s.price || '', null, 'sItemsContainer');
   }
+  // Set after addOrderItem calls — addOrderItem triggers updateSaleTotal which clears #sPrice when item prices are 0
+  document.getElementById('sPrice').value = s.price || '';
   const savedIds = (s.add_ons || []).map(a => typeof a === 'string' ? a : a.id).filter(Boolean);
   const savedPrices = {};
   (s.add_ons || []).forEach(a => {

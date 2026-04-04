@@ -68,7 +68,7 @@ All data is stored in Supabase (cloud) so it works across any device. The dashbo
 
 **Sales History tab** — auto-populated when an order is completed, or logged manually via **+ Log Sale**. Shows running totals for total revenue, units, and average order value. Filter by **This Week · This Month · 2026 · 2025 · All Time**.
 
-Each row shows the sale date, size (with any add-ons listed below as `✨ Sealant (+$20) · Casters (+$40)`), qty, product type, buyer name, price with margin %, payment method, and notes. Tap ✏️ to edit or 🗑️ to delete any record.
+Each row shows the sale date, size (with any add-ons listed below as `✨ Sealant (+$20) · Casters (+$40)`), qty, product type, buyer name, price with margin %, payment method, and notes. Multi-item sales show each item stacked in the size cell (e.g. `3× 48×24×16` / `2× 16×16×16`) with a combined total qty. Tap ✏️ to edit or 🗑️ to delete any record.
 
 **Log a Sale manually** — the sale modal includes: Buyer Name · Date · Items (multi-row: size, product, product options, qty, price — same system as Create Order) · Add-ons (dropdown + editable price, same as Create Order) · Sale Price (auto-sums from item rows, stays editable) · Payment (cash or Venmo + fee) · Notes. Completing an order automatically captures any add-ons from the order into the sales record. Editing a legacy single-item sale still works — the modal reconstructs a single item row from the stored flat fields.
 
@@ -145,6 +145,8 @@ View profitability at a glance, revenue trends, and best-selling planter sizes �
 **KPI trend badges** — the "This Month" and "YTD Revenue" cards on the home dashboard show ▲/▼ % badges comparing to the prior month and prior year-to-date respectively.
 
 **Profit popup on order completion** — tapping ✅ on any order now shows a toast with estimated profit and margin: "Order complete 🎉 · Est. profit $XX (YY% margin)"
+
+**Venmo fee on completion** — when completing an unpaid order and selecting Venmo, the payment modal reveals a fee input pre-filled with the last-used fee (default $3). Enter the fee and tap **Confirm** — the fee is saved to the order and the sales record, and remembered for next time.
 
 ---
 
