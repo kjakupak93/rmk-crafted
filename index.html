@@ -1898,9 +1898,9 @@ body {
     <div class="form-group">
       <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
       <div style="display:flex;gap:6px;align-items:center">
-        <select class="form-control" id="oAddonSelect" style="flex:1" onchange="onAddonSelectChange()"><option value="">— Select add-on —</option></select>
+        <select class="form-control" id="oAddonSelect" style="flex:1" onchange="onAddonSelectChange('oAddonSelect','oAddonPrice','oItemsContainer')"><option value="">— Select add-on —</option></select>
         <input type="number" class="form-control" id="oAddonPrice" min="0" step="0.01" placeholder="$" style="width:72px;font-family:'DM Mono',monospace;font-size:13px;text-align:right;flex-shrink:0">
-        <button type="button" class="btn-secondary" style="padding:6px 12px;white-space:nowrap;flex-shrink:0" onclick="addOrderAddon()">+ Add</button>
+        <button type="button" class="btn-secondary" style="padding:6px 12px;white-space:nowrap;flex-shrink:0" onclick="addOrderAddon('orderAddonList','oAddonSelect','oAddonPrice','oItemsContainer')">+ Add</button>
       </div>
       <div id="orderAddonList" style="margin-top:6px"></div>
     </div>
@@ -2401,16 +2401,16 @@ function renderAddonsTab() {
   ).join('');
   populateAddonSelect();
 }
-function populateAddonSelect() {
-  const sel = document.getElementById('oAddonSelect');
+function populateAddonSelect(selectId='oAddonSelect') {
+  const sel = document.getElementById(selectId);
   if (!sel) return;
   const prev = sel.value;
   sel.innerHTML = '<option value="">— Select add-on —</option>' +
     ADDONS.map(a => '<option value="' + esc(a.id) + '">' + esc(a.label) + '</option>').join('');
   if (prev && ADDONS.some(a => a.id === prev)) sel.value = prev;
 }
-function appendOrderAddonRow(id, label, price) {
-  const container = document.getElementById('orderAddonList');
+function appendOrderAddonRow(id, label, price, listId='orderAddonList', totalFn=updateOrderTotal) {
+  const container = document.getElementById(listId);
   if (!container) return;
   const row = document.createElement('div');
   row.className = 'addon-row';
@@ -2424,63 +2424,66 @@ function appendOrderAddonRow(id, label, price) {
   priceInput.value = price;
   priceInput.className = 'form-control';
   priceInput.style.cssText = "width:80px;font-family:'DM Mono',monospace;font-size:13px;text-align:right";
-  priceInput.addEventListener('input', updateOrderTotal);
+  priceInput.addEventListener('input', totalFn);
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'icon-btn';
   removeBtn.style.color = 'var(--red)';
   removeBtn.title = 'Remove';
   removeBtn.textContent = '×';
-  removeBtn.addEventListener('click', () => { row.remove(); updateOrderTotal(); });
+  removeBtn.addEventListener('click', () => { row.remove(); totalFn(); });
   row.appendChild(nameSpan);
   row.appendChild(priceInput);
   row.appendChild(removeBtn);
   container.appendChild(row);
 }
-function onAddonSelectChange() {
-  const sel = document.getElementById('oAddonSelect');
-  const priceIn = document.getElementById('oAddonPrice');
+function onAddonSelectChange(selectId='oAddonSelect', priceId='oAddonPrice', containerId='oItemsContainer') {
+  const sel = document.getElementById(selectId);
+  const priceIn = document.getElementById(priceId);
   if (!sel || !priceIn) return;
   const id = sel.value;
   if (!id) { priceIn.value = ''; return; }
   const addon = ADDONS.find(a => a.id === id);
   if (!addon) { priceIn.value = ''; return; }
-  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+  const firstSizeEl = document.querySelector('#' + containerId + ' .order-item-row .item-size');
   const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
   priceIn.value = addonPrice(addon.id, dims.l, dims.w, dims.h);
 }
-function addOrderAddon() {
-  const sel = document.getElementById('oAddonSelect');
-  const priceIn = document.getElementById('oAddonPrice');
+function addOrderAddon(listId='orderAddonList', selectId='oAddonSelect', priceId='oAddonPrice', containerId='oItemsContainer') {
+  const sel = document.getElementById(selectId);
+  const priceIn = document.getElementById(priceId);
   const id = sel ? sel.value : '';
   if (!id) return;
   const addon = ADDONS.find(a => a.id === id);
   if (!addon) return;
-  if (document.querySelector('#orderAddonList [data-id="' + id + '"]')) {
+  if (document.querySelector('#' + listId + ' [data-id="' + id + '"]')) {
     showToast('Already added', 'error'); return;
   }
-  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+  const firstSizeEl = document.querySelector('#' + containerId + ' .order-item-row .item-size');
   const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
   const price = priceIn && priceIn.value !== '' ? (parseFloat(priceIn.value) || 0) : addonPrice(addon.id, dims.l, dims.w, dims.h);
-  appendOrderAddonRow(id, addon.label, price);
+  const totalFn = listId === 'sAddonList' ? updateSaleTotal : updateOrderTotal;
+  appendOrderAddonRow(id, addon.label, price, listId, totalFn);
   sel.value = '';
   if (priceIn) priceIn.value = '';
-  updateOrderTotal();
+  if (listId === 'sAddonList') updateSaleTotal(); else updateOrderTotal();
 }
-function renderOrderAddons(savedIds, savedPrices) {
+function renderOrderAddons(savedIds, savedPrices, listId='orderAddonList', containerId='oItemsContainer') {
   savedIds = savedIds || [];
   savedPrices = savedPrices || {};
-  populateAddonSelect();
-  const container = document.getElementById('orderAddonList');
+  const selectId = listId === 'sAddonList' ? 'sAddonSelect' : 'oAddonSelect';
+  populateAddonSelect(selectId);
+  const container = document.getElementById(listId);
   if (!container) return;
   container.innerHTML = '';
-  const firstSizeEl = document.querySelector('#oItemsContainer .order-item-row .item-size');
+  const firstSizeEl = document.querySelector('#' + containerId + ' .order-item-row .item-size');
   const dims = firstSizeEl ? parseSizeDims(firstSizeEl.value) : {l:16,w:16,h:16};
+  const totalFn = listId === 'sAddonList' ? updateSaleTotal : updateOrderTotal;
   savedIds.forEach(id => {
     const addon = ADDONS.find(a => a.id === id);
     const label = addon ? addon.label : '(custom add-on)';
     const price = savedPrices[id] !== undefined ? savedPrices[id] : (addon ? addonPrice(id, dims.l, dims.w, dims.h) : 0);
-    appendOrderAddonRow(id, label, price);
+    appendOrderAddonRow(id, label, price, listId, totalFn);
   });
 }
 function _renderAddonCheckboxes(container, savedIds) {
@@ -3631,9 +3634,9 @@ function addonPrice(id, l, w, h) {
   if (!a.scales) return a.base;
   return Math.round(a.base * addonScaleFactor(l, w, h));
 }
-function getAddonTotalFromOrder() {
+function getAddonTotalFromOrder(listId='orderAddonList') {
   let total = 0;
-  document.querySelectorAll('#orderAddonList .addon-row').forEach(row => {
+  document.querySelectorAll('#' + listId + ' .addon-row').forEach(row => {
     const priceIn = row.querySelector('input[type="number"]');
     total += parseFloat(priceIn?.value) || 0;
   });
