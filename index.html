@@ -4435,9 +4435,12 @@ function editSale(id) {
   } else {
     addOrderItem(s.size || '', s.style || 'Standard', s.qty || 1, s.price || '', null, 'sItemsContainer');
   }
-  const savedIds = (s.add_ons || []).map(a => a.id);
+  const savedIds = (s.add_ons || []).map(a => typeof a === 'string' ? a : a.id).filter(Boolean);
   const savedPrices = {};
-  (s.add_ons || []).forEach(a => { if (a.price !== undefined) savedPrices[a.id] = a.price; });
+  (s.add_ons || []).forEach(a => {
+    const id = typeof a === 'string' ? a : a.id;
+    if (id && a.price !== undefined) savedPrices[id] = a.price;
+  });
   renderOrderAddons(savedIds, savedPrices, 'sAddonList', 'sItemsContainer');
   openModal('saleModal');
 }
@@ -4467,7 +4470,8 @@ async function saveSale() {
     add_ons: saleAddons.length ? saleAddons : null,
     product_options: itemRows[0].options || null
   };
-  if (!payload.price) { showToast('Price required', 'error'); return; }
+  const rawPrice = document.getElementById('sPrice').value;
+  if (rawPrice === '' || rawPrice === null || rawPrice === undefined) { showToast('Price required', 'error'); return; }
   if (editingSaleId) {
     const { error } = await sb.from('sales').update(payload).eq('id', editingSaleId);
     if (error) { showToast('Error saving', 'error'); return; }
