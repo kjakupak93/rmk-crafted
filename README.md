@@ -70,7 +70,7 @@ All data is stored in Supabase (cloud) so it works across any device. The dashbo
 
 Each row shows the sale date, size (with any add-ons listed below as `✨ Sealant (+$20) · Casters (+$40)`), qty, product type, buyer name, price with margin %, payment method, and notes. Tap ✏️ to edit or 🗑️ to delete any record.
 
-**Log a Sale manually** — the sale modal includes: Date · Size · Qty · Product · Price · Payment (cash or Venmo + fee) · Notes · Add-ons (pill toggle buttons — tap to select). Completing an order automatically captures any add-ons from the order into the sales record.
+**Log a Sale manually** — the sale modal includes: Buyer Name · Date · Items (multi-row: size, product, product options, qty, price — same system as Create Order) · Add-ons (dropdown + editable price, same as Create Order) · Sale Price (auto-sums from item rows, stays editable) · Payment (cash or Venmo + fee) · Notes. Completing an order automatically captures any add-ons from the order into the sales record. Editing a legacy single-item sale still works — the modal reconstructs a single item row from the stored flat fields.
 
 **Quotes tab** — saved quotes generated from the Cut List Calculator. Each row shows the quote name, price, picket count, and estimated margin. Tap **Convert** to open the New Order modal pre-filled with the quote's details (name, price, notes, and size if the cut list name contains a dimension like `36×16×16`) — saving the order automatically deletes the quote. After creating a quote, the app navigates directly to the Quotes tab. Tap **Delete** to remove a quote without converting.
 
@@ -302,7 +302,7 @@ The `?token=` parameter links their booking to a specific order via a UUID booki
 |---|---|
 | `orders` | All orders — includes `pickup_date`, `pickup_time`, `customer_booked`, `items` (JSONB with rows, add-ons, prices) |
 | `inventory` | Ready-to-sell inventory — includes `add_ons` (JSONB array of IDs) |
-| `sales` | Completed sales history — includes `add_ons` (JSONB array of `{id, label, price}` objects, denormalized at write time), `product_options` (JSONB, nullable — mirrors the first order item's options, e.g. `{stain: "Dark Walnut"}`) |
+| `sales` | Completed sales history — includes `add_ons` (JSONB array of `{id, label, price}` objects), `product_options` (JSONB, nullable — mirrors first item's options), `items` (JSONB, nullable — `{rows: [{size, style, options, qty, price}]}` for multi-item sales; legacy rows use flat `size`/`style`/`qty` columns) |
 | `purchases` | Lowes purchase log |
 | `stock` | Material stock levels |
 | `schedule_slots` | Open availability slots |
