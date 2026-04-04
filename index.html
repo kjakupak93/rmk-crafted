@@ -1954,10 +1954,20 @@ body {
       <div class="form-group"><label>Buyer Name</label><input class="form-control" type="text" id="sName" placeholder="Jane Smith"></div>
       <div class="form-group"><label>Date Sold</label><input class="form-control" type="date" id="sDate"></div>
     </div>
-    <div class="form-group"><label>Size(s)</label><input class="form-control" type="text" id="sSize" placeholder='48×16×16 or 36×16×16 + 48×24×16'></div>
-    <div class="form-row">
-      <div class="form-group"><label>Qty</label><input class="form-control" type="number" id="sQty" min="1" value="1"></div>
-      <div class="form-group"><label>Product</label><select class="form-control" id="sProduct"></select></div>
+    <div class="form-group">
+      <label>Items <span style="font-size:11px;color:var(--text-muted);font-weight:400">(Size · Style · Qty · Price)</span></label>
+      <div id="sItemsContainer" class="order-items"></div>
+      <button type="button" class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-top:2px" onclick="addOrderItem('','Standard',1,'',null,'sItemsContainer')">+ Add Item</button>
+      <div class="order-items-total">Total: <strong id="sItemsTotal">$0</strong></div>
+    </div>
+    <div class="form-group">
+      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select class="form-control" id="sAddonSelect" style="flex:1" onchange="onAddonSelectChange('sAddonSelect','sAddonPrice','sItemsContainer')"><option value="">— Select add-on —</option></select>
+        <input type="number" class="form-control" id="sAddonPrice" min="0" step="0.01" placeholder="$" style="width:72px;font-family:'DM Mono',monospace;font-size:13px;text-align:right;flex-shrink:0">
+        <button type="button" class="btn-secondary" style="padding:6px 12px;white-space:nowrap;flex-shrink:0" onclick="addOrderAddon('sAddonList','sAddonSelect','sAddonPrice','sItemsContainer')">+ Add</button>
+      </div>
+      <div id="sAddonList" style="margin-top:6px"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Sale Price ($)</label><input class="form-control" type="number" id="sPrice" placeholder="85"></div>
@@ -1965,10 +1975,6 @@ body {
     </div>
     <div class="form-group" id="sVenmoFeeWrap" style="display:none"><label>Venmo Fee ($)</label><input class="form-control" type="number" id="sVenmoFee" placeholder="0" min="0" step="0.01"></div>
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="sNotes" placeholder="Optional"></div>
-    <div class="form-group">
-      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
-      <div id="saleAddonList" style="margin-top:4px"></div>
-    </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('saleModal')">Cancel</button>
       <button class="modal-btn-primary" onclick="saveSale()">Log Sale</button>
