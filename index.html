@@ -625,6 +625,20 @@ body {
   flex-direction: column;
   gap: 8px;
 }
+.settings-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; cursor: pointer; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-knob { position: absolute; inset: 0; background: var(--warm-gray); border-radius: 99px; transition: background 0.2s; }
+.toggle-knob::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+.toggle-switch input:checked + .toggle-knob { background: var(--green); }
+.toggle-switch input:checked + .toggle-knob::before { transform: translateX(16px); }
 .inv-size { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--ocean-light); }
 .inv-product { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
 .inv-price { font-family: 'DM Mono', monospace; font-size: 20px; color: var(--green); font-weight: 500; }
@@ -1707,23 +1721,20 @@ body {
 
     <!-- Products tab -->
     <div class="tab-panel" id="mtab-products">
-      <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 20px;">Products</h2>
-      <div id="products-list" style="margin-bottom:20px"></div>
-      <button class="btn-primary" onclick="promptAddProduct()">+ Add Product</button>
+      <div class="section-header" style="margin-bottom:16px">
+        <h2 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--navy);font-weight:700;margin:0">Products</h2>
+        <button class="btn-primary" onclick="promptAddProduct()">+ Add Product</button>
+      </div>
+      <div id="products-list"></div>
     </div>
 
     <!-- Add-ons tab -->
     <div class="tab-panel" id="mtab-addons">
-      <h2 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--navy); font-weight:700; margin:0 0 8px;">Add-ons</h2>
-      <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px">Default names and prices. Check <strong>Scales</strong> to auto-adjust price with planter size.</p>
-      <div style="display:grid;grid-template-columns:1fr 90px 70px 32px;gap:8px;padding:0 4px 8px;border-bottom:2px solid var(--warm-gray);margin-bottom:4px">
-        <span style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">Name</span>
-        <span style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">Base $</span>
-        <span style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);text-align:center">Scales?</span>
-        <span></span>
+      <div class="section-header" style="margin-bottom:16px">
+        <h2 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--navy);font-weight:700;margin:0">Add-ons</h2>
+        <button class="btn-primary" onclick="addNewAddon()">+ Add Add-on</button>
       </div>
-      <div id="addons-list" style="margin-bottom:16px"></div>
-      <button class="btn-primary" onclick="addNewAddon()">+ Add Add-on</button>
+      <div id="addons-list"></div>
     </div>
   </div>
 </div>
@@ -2395,20 +2406,28 @@ async function deleteAddon(idx) {
 function renderAddonsTab() {
   const container = document.getElementById('addons-list');
   if (!container) return;
-  if (!ADDONS.length) { container.textContent = 'No add-ons yet.'; return; }
+  if (!ADDONS.length) { container.innerHTML = '<p style="color:var(--text-muted);font-size:13px">No add-ons yet.</p>'; return; }
   container.innerHTML = ADDONS.map((a, i) =>
-    '<div style="display:grid;grid-template-columns:1fr 90px 70px 32px;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--warm-gray)">' +
-      '<input class="form-control" type="text" value="' + esc(a.label) + '" style="font-size:13px" ' +
-        'onblur="saveAddonField(' + i + ',\'label\',this.value.trim()||ADDONS[' + i + '].label)">' +
-      '<input class="form-control" type="number" min="0" value="' + a.base + '" ' +
-        'style="font-family:\'DM Mono\',monospace;font-size:13px" ' +
-        'onblur="saveAddonField(' + i + ',\'base\',parseFloat(this.value)||0)">' +
-      '<div style="display:flex;align-items:center;justify-content:center;gap:5px">' +
-        '<input type="checkbox"' + (a.scales ? ' checked' : '') + ' style="width:16px;height:16px;cursor:pointer" ' +
-          'onchange="saveAddonField(' + i + ',\'scales\',this.checked)">' +
-        '<label style="font-size:12px;color:var(--text-muted);cursor:pointer">Yes</label>' +
+    '<div class="settings-card">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<input class="form-control" type="text" value="' + esc(a.label) + '" ' +
+          'style="flex:1;font-size:14px;font-weight:500;min-width:0" ' +
+          'onblur="saveAddonField(' + i + ',\'label\',this.value.trim()||ADDONS[' + i + '].label)">' +
+        '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">' +
+          '<span style="font-size:12px;color:var(--text-muted);font-family:\'DM Mono\',monospace">$</span>' +
+          '<input class="form-control" type="number" min="0" value="' + a.base + '" ' +
+            'style="width:72px;font-family:\'DM Mono\',monospace;font-size:13px;text-align:right" ' +
+            'onblur="saveAddonField(' + i + ',\'base\',parseFloat(this.value)||0)">' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">' +
+          '<span style="font-size:12px;color:var(--text-muted)">Scales</span>' +
+          '<label class="toggle-switch">' +
+            '<input type="checkbox"' + (a.scales ? ' checked' : '') + ' onchange="saveAddonField(' + i + ',\'scales\',this.checked)">' +
+            '<span class="toggle-knob"></span>' +
+          '</label>' +
+        '</div>' +
+        '<button class="icon-btn" style="color:var(--red);flex-shrink:0" onclick="deleteAddon(' + i + ')" title="Delete">🗑</button>' +
       '</div>' +
-      '<button class="icon-btn" style="color:var(--red)" onclick="deleteAddon(' + i + ')" title="Delete">🗑</button>' +
     '</div>'
   ).join('');
   populateAddonSelect();
@@ -2770,34 +2789,40 @@ function renderProductsTab() {
   if (!container) return;
   const rows = PRODUCT_TYPES.map((s, i) => {
     if (_editingProductIdx === i) {
-      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
-        '<input id="prod-rename-inp" class="form-control" type="text" value="' + esc(s) + '" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\')saveProductRename(' + i + ');else if(event.key===\'Escape\')cancelProductRename()">' +
-        '<button class="btn-primary" style="font-size:12px;padding:4px 10px" onclick="saveProductRename(' + i + ')">Save</button>' +
-        '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="cancelProductRename()">Cancel</button>' +
+      return '<div class="settings-card">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<input id="prod-rename-inp" class="form-control" type="text" value="' + esc(s) + '" style="flex:1;min-width:0;font-size:14px;font-weight:500" onkeydown="if(event.key===\'Enter\')saveProductRename(' + i + ');else if(event.key===\'Escape\')cancelProductRename()">' +
+          '<button class="btn-primary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="saveProductRename(' + i + ')">Save</button>' +
+          '<button class="btn-secondary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="cancelProductRename()">Cancel</button>' +
+        '</div>' +
         '</div>';
     }
     const isExpanded = _expandedProductOptions === i;
     const optCount = (PRODUCT_OPTIONS[s] || []).length;
-    const optLabel = optCount ? 'Options (' + optCount + ') ' + (isExpanded ? '▴' : '▾') : 'Options ' + (isExpanded ? '▴' : '▾');
-    let row = '<div style="border-bottom:1px solid var(--warm-gray)">' +
-      '<div style="display:flex;align-items:center;gap:10px;padding:10px 0">' +
-      '<span style="flex:1;font-size:15px;font-weight:600;color:var(--navy)">' + esc(s) + '</span>' +
-      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="startProductRename(' + i + ')">Rename</button>' +
-      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="toggleProductOptions(' + i + ')">' + optLabel + '</button>' +
-      '<button class="icon-btn" style="color:var(--red)" onclick="deleteProduct(' + i + ')" title="Delete">🗑</button>' +
+    const optBadge = optCount ? '<span style="font-size:11px;background:var(--sand-pale);color:var(--navy);padding:2px 8px;border-radius:4px;font-family:\'DM Mono\',monospace;flex-shrink:0">' + optCount + ' opt' + (optCount > 1 ? 's' : '') + '</span>' : '';
+    const optBtnLabel = (isExpanded ? '▴' : '▾') + ' Options';
+    let row = '<div class="settings-card">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<span style="flex:1;font-size:14px;font-weight:600;color:var(--navy);min-width:0">' + esc(s) + '</span>' +
+        optBadge +
+        '<button class="btn-secondary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="toggleProductOptions(' + i + ')">' + optBtnLabel + '</button>' +
+        '<button class="btn-secondary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="startProductRename(' + i + ')">Rename</button>' +
+        '<button class="icon-btn" style="color:var(--red);flex-shrink:0" onclick="deleteProduct(' + i + ')" title="Delete">🗑</button>' +
       '</div>';
     if (isExpanded) row += _renderOptionsPanel(i);
     row += '</div>';
     return row;
   });
   if (_editingProductIdx === 'new') {
-    rows.push('<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-gray)">' +
-      '<input id="prod-add-inp" class="form-control" type="text" placeholder="Product name" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\')saveNewProduct();else if(event.key===\'Escape\')cancelProductRename()">' +
-      '<button class="btn-primary" style="font-size:12px;padding:4px 10px" onclick="saveNewProduct()">Add</button>' +
-      '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="cancelProductRename()">Cancel</button>' +
+    rows.push('<div class="settings-card">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<input id="prod-add-inp" class="form-control" type="text" placeholder="Product name" style="flex:1;min-width:0;font-size:14px;font-weight:500" onkeydown="if(event.key===\'Enter\')saveNewProduct();else if(event.key===\'Escape\')cancelProductRename()">' +
+        '<button class="btn-primary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="saveNewProduct()">Add</button>' +
+        '<button class="btn-secondary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="cancelProductRename()">Cancel</button>' +
+      '</div>' +
       '</div>');
   }
-  if (!rows.length) { container.textContent = 'No products yet.'; return; }
+  if (!rows.length) { container.innerHTML = '<p style="color:var(--text-muted);font-size:13px">No products yet.</p>'; return; }
   container.innerHTML = rows.join(''); // all user content escaped via esc()
   const activeInp = document.getElementById(_editingProductIdx === 'new' ? 'prod-add-inp' : 'prod-rename-inp');
   if (activeInp) { activeInp.focus(); if (_editingProductIdx !== 'new') activeInp.select(); }
