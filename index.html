@@ -2962,7 +2962,7 @@ let chartRevenueSpend = null, chartSizes = null;
 let chartMarginTrend = null, chartMarginBySize = null;
 let chartCumulative = null, chartUnitsByProduct = null, chartRevenueByProduct = null;
 let analyticsSales = [], analyticsPurchases = [];
-let bestSellersProductFilter = 'all';
+let analyticsProductFilter = 'all';
 let matchedSize = null;
 let currentEditOrder = null;
 let orderFilter = 'all';
@@ -3055,21 +3055,19 @@ async function loadAnalytics() {
   analyticsSales = sRes.data || [];
   analyticsPurchases = pRes.data || [];
 
-  // Populate best sellers product filter from PRODUCT_TYPES
-  const filterSel = document.getElementById('best-sellers-filter');
-  if (filterSel) {
-    filterSel.textContent = '';
-    const allOpt = document.createElement('option');
-    allOpt.value = 'all';
-    allOpt.textContent = 'All Products';
-    filterSel.appendChild(allOpt);
-    PRODUCT_TYPES.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p;
-      opt.textContent = p;
-      if (bestSellersProductFilter === p) opt.selected = true;
-      filterSel.appendChild(opt);
-    });
+  // Populate global product filter pills from PRODUCT_TYPES
+  const toggle = document.getElementById('analytics-product-toggle');
+  if (toggle) {
+    while (toggle.firstChild) toggle.removeChild(toggle.firstChild);
+    const makeBtn = (val, label) => {
+      const b = document.createElement('button');
+      b.textContent = label;
+      if (analyticsProductFilter === val) b.classList.add('active');
+      b.onclick = () => setAnalyticsProductFilter(val, b);
+      toggle.appendChild(b);
+    };
+    makeBtn('all', 'All Products');
+    PRODUCT_TYPES.forEach(p => makeBtn(p, p));
   }
 
   renderAnalyticsCharts();
@@ -3089,8 +3087,10 @@ function setAnalyticsYear(year, btn) {
   renderAnalyticsCharts();
 }
 
-function setAnalyticsProductFilter(filter) {
-  bestSellersProductFilter = filter;
+function setAnalyticsProductFilter(val, btn) {
+  analyticsProductFilter = val;
+  document.querySelectorAll('.analytics-product-toggle button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
   renderAnalyticsCharts();
 }
 
