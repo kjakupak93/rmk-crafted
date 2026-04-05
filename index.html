@@ -3173,6 +3173,9 @@ function renderAnalyticsCharts() {
   const yrStr = analyticsYear ? String(analyticsYear) : null;
   const analyticsSalesFiltered = yrStr ? analyticsSales.filter(s => s.sale_date && s.sale_date.startsWith(yrStr)) : analyticsSales;
   const analyticsPurchasesFiltered = yrStr ? analyticsPurchases.filter(p => p.purchase_date && p.purchase_date.startsWith(yrStr)) : analyticsPurchases;
+  const filteredSales = analyticsProductFilter === 'all'
+    ? analyticsSalesFiltered
+    : analyticsSalesFiltered.filter(s => s.style === analyticsProductFilter);
 
   const buckets = getAnalyticsBuckets();
   const keys = buckets.map(b => b.key);
@@ -3182,8 +3185,10 @@ function renderAnalyticsCharts() {
   // ── P&L summary cards ──
   const bounds = getAnalyticsDateBounds();
   const inBounds = date => !date ? false : (!bounds.start || date >= bounds.start) && (!bounds.end || date <= bounds.end);
-  const pnlRev = analyticsSalesFiltered.filter(s => inBounds(s.sale_date)).reduce((sum,s) => sum+(s.price||0), 0);
-  const pnlCost = analyticsPurchasesFiltered.filter(p => inBounds(p.purchase_date)).reduce((sum,p) => sum+(p.total||0), 0);
+  const pnlRev = filteredSales.filter(s => inBounds(s.sale_date)).reduce((sum,s) => sum+(s.price||0), 0);
+  const pnlCost = analyticsProductFilter !== 'all'
+    ? filteredSales.filter(s => inBounds(s.sale_date)).reduce((sum,s) => sum + estimateOrderCost(s), 0)
+    : analyticsPurchasesFiltered.filter(p => inBounds(p.purchase_date)).reduce((sum,p) => sum+(p.total||0), 0);
   const pnlNet = pnlRev - pnlCost;
   document.getElementById('pnl-revenue').textContent = '$'+Math.round(pnlRev);
   document.getElementById('pnl-cost').textContent = '$'+Math.round(pnlCost);
@@ -3199,10 +3204,11 @@ function renderAnalyticsCharts() {
     '12m': ['12-Month Revenue','Material Spend','Est. Net Profit'],
     all: ['All-Time Revenue','Material Spend','Est. Net Profit'],
   }[analyticsRange] || ['Revenue','Material Spend','Est. Net Profit'];
-  document.getElementById('pnl-revenue-lbl').textContent = pnlLabels[0];
+  const productPrefix = analyticsProductFilter !== 'all' ? `${analyticsProductFilter} \u2014 ` : '';
+  document.getElementById('pnl-revenue-lbl').textContent = productPrefix + pnlLabels[0];
   document.getElementById('pnl-cost-lbl').textContent = pnlLabels[1];
   document.getElementById('pnl-profit-lbl').textContent = pnlLabels[2];
-  const salesInRange = analyticsSalesFiltered.filter(s => inBounds(s.sale_date));
+  const salesInRange = filteredSales.filter(s => inBounds(s.sale_date));
   const unitsInRange = salesInRange.reduce((sum, s) => sum + (s.qty || 1), 0);
   const avgOrderValue = salesInRange.length > 0 ? Math.round(pnlRev / salesInRange.length) : 0;
   document.getElementById('pnl-units').textContent = unitsInRange;
@@ -3220,16 +3226,24 @@ function renderAnalyticsCharts() {
   }
 
   const revByBucket = {}, costByBucket = {};
-  analyticsSalesFiltered.forEach(s => {
+  filteredSales.forEach(s => {
     if (!s.sale_date) return;
     const k = getBucketKey(s.sale_date);
     if (k) revByBucket[k] = (revByBucket[k]||0) + (s.price||0);
   });
-  analyticsPurchasesFiltered.forEach(p => {
-    if (!p.purchase_date) return;
-    const k = getBucketKey(p.purchase_date);
-    if (k) costByBucket[k] = (costByBucket[k]||0) + (p.total||0);
-  });
+  if (analyticsProductFilter !== 'all') {
+    filteredSales.forEach(s => {
+      if (!s.sale_date) return;
+      const k = getBucketKey(s.sale_date);
+      if (k) costByBucket[k] = (costByBucket[k]||0) + estimateOrderCost(s);
+    });
+  } else {
+    analyticsPurchasesFiltered.forEach(p => {
+      if (!p.purchase_date) return;
+      const k = getBucketKey(p.purchase_date);
+      if (k) costByBucket[k] = (costByBucket[k]||0) + (p.total||0);
+    });
+  }
 
   const revenueData = keys.map(k => revByBucket[k]||0);
   const costData = keys.map(k => costByBucket[k]||0);
@@ -3285,9 +3299,8 @@ function renderAnalyticsCharts() {
 
   // ── Best Sellers (filter by range) ──
   const sizeCnt = {};
-  analyticsSalesFiltered.forEach(s => {
+  filteredSales.forEach(s => {
     if (!s.size) return;
-    if (bestSellersProductFilter !== 'all' && (s.style || 'Standard') !== bestSellersProductFilter) return;
     if (s.sale_date) {
       const k = isWeekly ? getBucketKey(s.sale_date) : s.sale_date.slice(0,7);
       if (keys.length && !keys.includes(k)) return;
@@ -3313,7 +3326,7 @@ function renderAnalyticsCharts() {
 
   // ── Units by Product & Revenue by Product ──
   const productUnits = {}, productRevenue = {};
-  analyticsSalesFiltered.forEach(s => {
+  filteredSales.forEach(s => {
     if (!inBounds(s.sale_date)) return;
     const prod = s.style || 'Standard';
     productUnits[prod] = (productUnits[prod] || 0) + (s.qty || 1);
@@ -3358,7 +3371,7 @@ function renderAnalyticsCharts() {
 
   // ── Margin Trend ──
   const _mrgSum = {}, _mrgCnt = {};
-  analyticsSalesFiltered.forEach(s => {
+  filteredSales.forEach(s => {
     if (!s.sale_date || !s.price) return;
     const k = isWeekly ? getBucketKey(s.sale_date) : s.sale_date.slice(0,7);
     if (!k || !keys.includes(k)) return;
@@ -3384,7 +3397,7 @@ function renderAnalyticsCharts() {
 
   // ── Margin by Size (filtered by selected year) ──
   const _szMrgSum = {}, _szMrgCnt = {}, _szProfSum = {};
-  analyticsSalesFiltered.forEach(s => {
+  filteredSales.forEach(s => {
     if (!s.size || s.size.includes('+') || !s.price) return;
     const cost = estimateOrderCost({ size: s.size, price: s.price });
     const mp = (s.price - cost) / s.price * 100;
