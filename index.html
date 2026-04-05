@@ -820,9 +820,11 @@ body {
 .build-calc { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 24px; }
 .build-calc h3 { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--ocean-light); margin-bottom: 4px; }
 .build-calc p { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
-#cl-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-#cl-col-left > div:last-child { margin-top: 0; }
-@media (max-width: 1024px) { #cl-columns { grid-template-columns: 1fr; } }
+#cl-columns { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "stock saved" "newcl newcl"; gap: 20px; align-items: start; }
+#cl-stock { grid-area: stock; }
+#cl-saved { grid-area: saved; }
+#cut-list-calc { grid-area: newcl; margin-bottom: 0; }
+@media (max-width: 1024px) { #cl-columns { grid-template-columns: 1fr; grid-template-areas: "stock" "saved" "newcl"; } }
 .calc-grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 12px; }
 .calc-result { background: var(--bg-elevated); border-radius: 8px; padding: 12px 16px; display: flex; gap: 20px; flex-wrap: wrap; }
 .cr-item { text-align: center; }
@@ -1635,52 +1637,49 @@ body {
       <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Enter your cuts, calculate board usage, then save for later reuse.</p>
 
       <div id="cl-columns">
-        <div id="cl-col-left">
-          <!-- Stock Materials -->
-          <div class="build-calc" style="margin-bottom:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
-              <h3 style="margin:0">Stock Materials</h3>
-              <div class="input-group" style="margin-bottom:0;width:148px">
-                <label style="font-size:11px">Blade kerf (in)</label>
-                <input class="std-input" type="number" id="cl-kerf" value="0.11" min="0" step="0.01" placeholder="0.11">
-              </div>
-            </div>
-            <div class="cl-stock-list-wrap" id="cl-stock-list-wrap"><div id="cl-stock-list"></div></div>
-            <div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">
-              <div class="input-group" style="margin-bottom:0;flex:1;min-width:120px">
-                <label>Name</label>
-                <input class="std-input" type="text" id="cl-new-stock-name" placeholder="e.g. Cedar Picket 8ft">
-              </div>
-              <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
-                <label>Length (in)</label>
-                <input class="std-input" type="number" id="cl-new-stock-len" value="96" min="1" step="0.25">
-              </div>
-              <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
-                <label>Width (in)</label>
-                <input class="std-input" type="number" id="cl-new-stock-wid" value="" min="0.25" step="0.25" placeholder="opt.">
-              </div>
-              <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
-                <label>Height (in)</label>
-                <input class="std-input" type="number" id="cl-new-stock-hgt" value="" min="0.25" step="0.25" placeholder="opt.">
-              </div>
-              <button class="btn-secondary" onclick="addStockType()" style="flex-shrink:0">+ Add</button>
+        <!-- Stock Materials -->
+        <div id="cl-stock" class="build-calc">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+            <h3 style="margin:0">Stock Materials</h3>
+            <div class="input-group" style="margin-bottom:0;width:148px">
+              <label style="font-size:11px">Blade kerf (in)</label>
+              <input class="std-input" type="number" id="cl-kerf" value="0.11" min="0" step="0.01" placeholder="0.11">
             </div>
           </div>
-
-          <!-- Saved Cut Lists -->
-          <div>
-            <div class="section-header" style="margin-bottom:12px">
-              <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:17px;color:var(--navy)">Saved Cut Lists</h3>
+          <div class="cl-stock-list-wrap" id="cl-stock-list-wrap"><div id="cl-stock-list"></div></div>
+          <div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">
+            <div class="input-group" style="margin-bottom:0;flex:1;min-width:120px">
+              <label>Name</label>
+              <input class="std-input" type="text" id="cl-new-stock-name" placeholder="e.g. Cedar Picket 8ft">
             </div>
-            <div id="cl-saved-list">
-              <p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>
+            <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
+              <label>Length (in)</label>
+              <input class="std-input" type="number" id="cl-new-stock-len" value="96" min="1" step="0.25">
             </div>
+            <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
+              <label>Width (in)</label>
+              <input class="std-input" type="number" id="cl-new-stock-wid" value="" min="0.25" step="0.25" placeholder="opt.">
+            </div>
+            <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
+              <label>Height (in)</label>
+              <input class="std-input" type="number" id="cl-new-stock-hgt" value="" min="0.25" step="0.25" placeholder="opt.">
+            </div>
+            <button class="btn-secondary" onclick="addStockType()" style="flex-shrink:0">+ Add</button>
           </div>
         </div>
 
-        <div id="cl-col-right">
-          <!-- New Cut List -->
-          <div class="build-calc" id="cut-list-calc">
+        <!-- Saved Cut Lists -->
+        <div id="cl-saved" class="build-calc">
+          <div class="section-header" style="margin-bottom:12px">
+            <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:17px;color:var(--navy)">Saved Cut Lists</h3>
+          </div>
+          <div id="cl-saved-list">
+            <p style="font-size:13px;color:var(--text-muted)">No saved cut lists yet.</p>
+          </div>
+        </div>
+
+        <!-- New Cut List (full width) -->
+        <div class="build-calc" id="cut-list-calc">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap">
               <h3 style="margin:0">New Cut List</h3>
               <button class="btn-secondary" onclick="clearCutList()" style="font-size:12px;padding:5px 10px">Clear</button>
@@ -1717,7 +1716,6 @@ body {
               <div id="cl-diagram"></div>
               <div id="cl-parts-table" style="margin-top:20px"></div>
             </div>
-          </div>
         </div>
       </div>
     </div>
