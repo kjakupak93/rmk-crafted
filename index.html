@@ -5020,10 +5020,13 @@ function runCutList() {
           const ws = document.createElement('div');
           const scrapW = stock.width - usedWidth;
           ws.style.cssText = `height:${scrapHeightPct}%;background:#E5DDD0;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px dashed #c8bfb0;`;
-          ws.title = `${scrapW.toFixed(3)}" width scrap`;
-          ws.innerHTML = scrapHeightPct > 12
-            ? `<span style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);white-space:nowrap">${scrapW.toFixed(2)}" scrap</span>`
-            : '';
+          ws.title = `${scrapW.toFixed(3)}"w × ${c.len.toFixed(1)}"l width scrap`;
+          if (scrapHeightPct > 12) {
+            const sp = document.createElement('span');
+            sp.style.cssText = "font-size:9px;font-family:'DM Mono',monospace;color:var(--text-muted);white-space:nowrap";
+            sp.textContent = `${scrapW.toFixed(2)}"w \u00D7 ${c.len.toFixed(1)}"l`;
+            ws.appendChild(sp);
+          }
           wrapper.appendChild(ws);
         }
 
@@ -5057,7 +5060,11 @@ function runCutList() {
         const waste = document.createElement('div');
         waste.className = 'picket-waste';
         waste.style.cssText = 'flex:1;height:100%;align-items:center;justify-content:center;';
-        waste.innerHTML = `<span style="font-size:12px">${bin.remaining.toFixed(1)}" scrap</span>`;
+        const wasteSp = document.createElement('span');
+        wasteSp.style.cssText = 'font-size:12px';
+        const widthSuffix = stock.width ? ` \u00D7 ${stock.width}"w` : '';
+        wasteSp.textContent = `${bin.remaining.toFixed(1)}"l${widthSuffix}`;
+        waste.appendChild(wasteSp);
         bar.appendChild(waste);
       }
       wrap.appendChild(bar);
@@ -5250,9 +5257,8 @@ function loadCutList(idOrObj) {
   const clStyleEl = document.getElementById('cl-product');
   if (clStyleEl) {
     const storedStyle = cl.style || '';
-    const styleVal = (storedStyle && PRODUCT_TYPES.includes(storedStyle)) ? storedStyle : '';
-    clStyleEl.value = styleVal;
-    renderProductOptionSelects(styleVal, cl.product_options || {}, document.getElementById('cl-product-options'));
+    clStyleEl.value = storedStyle;
+    renderProductOptionSelects(storedStyle, cl.product_options || {}, document.getElementById('cl-product-options'));
   }
   document.getElementById('cl-rows').innerHTML = '';
   document.getElementById('cl-results').style.display = 'none';
