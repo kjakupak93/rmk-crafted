@@ -51,8 +51,8 @@ test('shows new chart canvases', async ({ page }) => {
   await expect(page.locator('#chart-revenue-by-product')).toBeAttached();
 });
 
-test('shows best sellers product filter', async ({ page }) => {
-  await expect(page.locator('#best-sellers-filter')).toBeVisible();
+test('shows global product filter toggle', async ({ page }) => {
+  await expect(page.locator('#analytics-product-toggle')).toBeVisible();
 });
 
 test('shows 3 section headers', async ({ page }) => {
