@@ -112,14 +112,15 @@ Product names populate the product dropdown in all order and cut list forms. Ren
 
 Once an option is saved, the matching dropdown(s) appear automatically in the **New/Edit Order modal** and in the **Cut List Calculator** whenever that product is selected.
 
-**Add-ons tab** — manage optional add-ons (Sealant, Fabric Liner, Casters, etc.). Each add-on has a name, base price, and a **Scales** flag that auto-adjusts price with planter size. Changes take effect immediately in the order modal dropdown. When creating an order, select add-ons from a dropdown with an editable per-order price.
+**Add-ons tab** — manage optional add-ons (Sealant, Fabric Liner, Casters, etc.). Each add-on has a name, base price, and a **Scales** toggle that auto-adjusts price with planter size. Changes take effect immediately in the order modal dropdown. When creating an order, select add-ons from a dropdown with an editable per-order price.
 
 | Action | How |
 |---|---|
-| Add add-on | **+ Add Add-on** → a new row appears for inline editing |
-| Edit name/price | Click the field inline and type |
-| Toggle Scales | Click the Scales checkbox on the row |
-| Delete add-on | Trash button on the row |
+| Add add-on | **+ Add Add-on** → a new card appears |
+| Rename | **Rename** button on the card → type new name → Enter or ✓ |
+| Edit base price | Click the price field inline and type |
+| Toggle Scales | Toggle switch on the card |
+| Delete add-on | Trash button on the card |
 
 ---
 
@@ -175,7 +176,7 @@ Plan material cuts before building. Enter parts, calculate board usage, and save
 
 **Saved Cut Lists** (left column on desktop) — grouped by product, showing Name, Last Modified, Notes. Load or delete any saved list. Re-saving a loaded list updates it in-place (no duplicates).
 
-**Layout** — on desktop (≥1025px) the tab is two columns: left has Stock Materials and Saved Cut Lists; right has the New Cut List form and results. On tablet/mobile the sections stack vertically.
+**Layout** — on desktop (≥1025px) the tab uses a 3-zone grid: Stock Materials and Saved Cut Lists sit side by side in the top row; the New Cut List form and results span the full width underneath. On tablet/mobile the sections stack vertically.
 
 **Create Quote from Cut List:**
 After running a cut list, tap **+ Quote** to open the quote modal. The price is pre-calculated from board counts and the notes field is pre-filled with the cut list name. Fill in a quote name, adjust price/notes as needed, and save. Saved quotes appear in the **Quotes tab** on the Orders page.
@@ -263,7 +264,7 @@ The `?token=` parameter links their booking to a specific order via a UUID booki
 | Add a product type | Materials → Products tab → + Add Product |
 | Add options to a product | Materials → Products tab → Options ▾ on product row → + Add Option |
 | Plan a build's cuts | Materials → Cut List tab → add parts → Calculate → Save |
-| Load a saved cut list | Materials → Cut List tab → Saved Cut Lists (bottom) → Load |
+| Load a saved cut list | Materials → Cut List tab → Saved Cut Lists (top right on desktop) → Load |
 | Save a quote from a cut list | Materials → Cut List tab → Calculate → + Quote → fill name → Save |
 | Convert a quote to an order | Orders → Quotes tab → Convert → fill order details → Save |
 | View saved quotes | Orders → Quotes tab |
