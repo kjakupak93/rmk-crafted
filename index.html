@@ -172,7 +172,8 @@ body {
   background: var(--bg-deep);
   border-bottom: 1px solid var(--border-dim);
   padding: 0 20px;
-  height: 52px;
+  padding-top: env(safe-area-inset-top, 0px);
+  height: calc(52px + env(safe-area-inset-top, 0px));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -234,6 +235,8 @@ body {
   background: var(--bg-deep);
   border-top: 1px solid var(--border-dim);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   z-index: 300;
 }
 .bn-item {
@@ -1145,7 +1148,7 @@ body {
   .page { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
   #page-home { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
   #page-analytics { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
-  .main-header { padding: 0 16px; }
+  .main-header { padding: 0 16px; padding-top: env(safe-area-inset-top, 0px); }
 }
 
 
