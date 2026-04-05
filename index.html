@@ -2403,16 +2403,33 @@ async function deleteAddon(idx) {
   await saveAddons();
   renderAddonsTab();
 }
+function startAddonRename(idx) { _editingAddonIdx = idx; renderAddonsTab(); }
+function cancelAddonRename() { _editingAddonIdx = null; renderAddonsTab(); }
+async function saveAddonRename(idx) {
+  const inp = document.getElementById('addon-rename-inp');
+  const trimmed = inp ? inp.value.trim() : '';
+  if (!trimmed) return;
+  await saveAddonField(idx, 'label', trimmed || ADDONS[idx].label);
+  _editingAddonIdx = null;
+  renderAddonsTab();
+}
 function renderAddonsTab() {
   const container = document.getElementById('addons-list');
   if (!container) return;
   if (!ADDONS.length) { container.innerHTML = '<p style="color:var(--text-muted);font-size:13px">No add-ons yet.</p>'; return; }
-  container.innerHTML = ADDONS.map((a, i) =>
-    '<div class="settings-card">' +
+  container.innerHTML = ADDONS.map((a, i) => {
+    if (_editingAddonIdx === i) {
+      return '<div class="settings-card">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<input id="addon-rename-inp" class="form-control" type="text" value="' + esc(a.label) + '" style="flex:1;min-width:0;font-size:14px;font-weight:500" onkeydown="if(event.key===\'Enter\')saveAddonRename(' + i + ');else if(event.key===\'Escape\')cancelAddonRename()">' +
+          '<button class="btn-primary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="saveAddonRename(' + i + ')">Save</button>' +
+          '<button class="btn-secondary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="cancelAddonRename()">Cancel</button>' +
+        '</div>' +
+        '</div>';
+    }
+    return '<div class="settings-card">' +
       '<div style="display:flex;align-items:center;gap:10px">' +
-        '<input class="form-control" type="text" value="' + esc(a.label) + '" ' +
-          'style="flex:1;font-size:14px;font-weight:500;min-width:0" ' +
-          'onblur="saveAddonField(' + i + ',\'label\',this.value.trim()||ADDONS[' + i + '].label)">' +
+        '<span style="flex:1;font-size:14px;font-weight:600;color:var(--navy);min-width:0">' + esc(a.label) + '</span>' +
         '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">' +
           '<span style="font-size:12px;color:var(--text-muted);font-family:\'DM Mono\',monospace">$</span>' +
           '<input class="form-control" type="number" min="0" value="' + a.base + '" ' +
@@ -2426,10 +2443,13 @@ function renderAddonsTab() {
             '<span class="toggle-knob"></span>' +
           '</label>' +
         '</div>' +
+        '<button class="btn-secondary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="startAddonRename(' + i + ')">Rename</button>' +
         '<button class="icon-btn" style="color:var(--red);flex-shrink:0" onclick="deleteAddon(' + i + ')" title="Delete">🗑</button>' +
       '</div>' +
-    '</div>'
-  ).join('');
+    '</div>';
+  }).join('');
+  const renameInp = document.getElementById('addon-rename-inp');
+  if (renameInp) { renameInp.focus(); renameInp.select(); }
   populateAddonSelect();
   populateAddonSelect('sAddonSelect');
 }
@@ -2650,6 +2670,7 @@ async function addProduct(name) {
   return true;
 }
 let _editingProductIdx = null; // index or 'new'
+let _editingAddonIdx = null;
 let _expandedProductOptions = null; // index of product whose options panel is open
 let _editingOptionState = null; // { productIdx, optionIdx | 'new' }
 function promptAddProduct() {
