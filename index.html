@@ -3049,7 +3049,7 @@ function goHome() {
 // ===== ANALYTICS =====
 async function loadAnalytics() {
   const [sRes, pRes] = await Promise.all([
-    sb.from('sales').select('price,sale_date,size,qty,style'),
+    sb.from('sales').select('price,sale_date,size,qty,style,add_ons'),
     sb.from('purchases').select('total,purchase_date')
   ]);
   analyticsSales = sRes.data || [];
