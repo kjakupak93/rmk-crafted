@@ -3744,6 +3744,7 @@ function showOrderTab(tab,btn) {
 
 let allOrders = [];
 async function loadOrders() {
+  await window._settingsReady;
   const { data, error } = await sb.from('orders').select('*').order('created_at',{ascending:false});
   if (error) { showToast('Error loading orders','error'); return; }
   allOrders = data||[];
@@ -5235,6 +5236,7 @@ async function loadSavedCutLists() {
         '<td style="color:var(--text-muted);font-size:12px">' + (esc(cl.notes) || '—') + '</td>' +
         '<td style="white-space:nowrap"><div style="display:flex;gap:6px;justify-content:flex-end">' +
           '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="loadCutList(\'' + cl.id + '\')">Load</button>' +
+          '<button class="btn-secondary" style="font-size:12px;padding:4px 10px" onclick="duplicateCutList(\'' + cl.id + '\')" title="Duplicate">Copy</button>' +
           '<button class="icon-btn" style="color:var(--red)" onclick="deleteCutList(\'' + cl.id + '\')" title="Delete">🗑</button>' +
         '</div></td>' +
       '</tr>';
@@ -5285,6 +5287,14 @@ function loadCutList(idOrObj) {
   renderStockTypes();
   (cl.cuts || []).forEach(c => addCutRow(c.qty, c.len, c.width, c.label, c.stockId));
   showToast('Cut list loaded');
+}
+
+function duplicateCutList(id) {
+  loadCutList(id);
+  const nameEl = document.getElementById('cl-name');
+  nameEl.value = nameEl.value + ' (copy)';
+  delete nameEl.dataset.savedId;
+  showToast('Loaded as copy — rename and save to create a new cut list');
 }
 
 async function deleteCutList(id) {
