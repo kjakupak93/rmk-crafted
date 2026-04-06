@@ -58,3 +58,26 @@ test.describe('Analytics product filter', () => {
     await expect(page.locator('#best-sellers-filter')).toHaveCount(0);
   });
 });
+
+test.describe('Analytics add-on charts', () => {
+  test.beforeEach(async ({ page }) => {
+    await login(page);
+    await page.locator('#sb-analytics, #bn-analytics').first().click();
+    await expect(page.locator('#page-analytics')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#analytics-product-toggle button')).not.toHaveCount(0, { timeout: 10000 });
+  });
+
+  test('add-ons section header is present', async ({ page }) => {
+    const headers = page.locator('.analytics-section-header');
+    const texts = await headers.allTextContents();
+    expect(texts).toContain('Add-ons');
+  });
+
+  test('add-on popularity canvas is present', async ({ page }) => {
+    await expect(page.locator('#chart-addon-popularity')).toBeVisible();
+  });
+
+  test('add-on revenue canvas is present', async ({ page }) => {
+    await expect(page.locator('#chart-addon-revenue')).toBeVisible();
+  });
+});
