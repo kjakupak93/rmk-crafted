@@ -51,7 +51,7 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - **Orders** (`page-orders`) — 4 tabs: Active → Ready to Sell → Sales History → Quotes
 - **Materials** (`page-materials`) — Lowes purchase log + Cut List Calculator tab + Products tab + Add-ons tab
 - **Scheduler** (`page-scheduler`) — Calendar, upcoming pickups, share message
-- **Analytics** (`page-analytics`) — P&L cards + revenue/profit/best-seller charts
+- **Analytics** (`page-analytics`) — P&L cards + revenue/profit/best-seller charts + add-on popularity/revenue charts
 
 ### Non-Obvious Details
 - `page-inventory` was removed — inventory lives in Orders page as the middle tab (`otab-inventory`)
@@ -81,6 +81,7 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
 **Board diagram**: each bar = one board. Cuts are wrapped in column-flex containers — width scrap (unused board width) appears as a tan block above the piece; batched rip cuts show individual sub-pieces with white separator lines. `align-items:stretch` on `.picket-bar`.
 
 **Save/load**: `saveCutList()` checks `cl-name.dataset.savedId` — if set (loaded from DB), does an UPDATE; otherwise INSERT. `loadCutList(idOrObj)` accepts an ID string (looks up from `allCutLists` module-level array) or a legacy object. `clearCutList()` deletes `savedId`. Saved lists shown as a table (Name / Last Modified / Notes) in the left column.
+- `duplicateCutList(id)` — calls `loadCutList(id)`, appends " (copy)" to the name field, then deletes `nameEl.dataset.savedId`. Result: all fields pre-populated, but Save will INSERT a new record instead of updating the original.
 
 **3-zone layout**: The cut list tab uses a CSS grid (`#cl-columns`) with named areas on desktop (≥1025px). Top row: `#cl-stock` (Stock Materials) and `#cl-saved` (Saved Cut Lists) side by side. Bottom row: `#cut-list-calc` (New Cut List + `#cl-results`) spanning full width. Grid template areas: `"stock saved" / "newcl newcl"`. Collapses to single column at `≤1024px` via media query. `#cl-col-left` and `#cl-col-right` no longer exist.
 
@@ -98,6 +99,7 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
   - 2×4s: $3.85 → **$4.17**
 - **Planter products**: Dynamic — `PRODUCT_TYPES` string array stored in Supabase `settings` table (key `products`), loaded via `loadProductSettings()`. One-time migration from `localStorage` key `rmk_products` on first load. Defaults: Standard, Vertical, Tiered, Dog Bowl. Managed via the Products tab on the Materials page. All three material inputs (pickets, 2×2s, 2×4s) are always visible for any product; breakdown only renders rows for materials with qty > 0.
 - **Product options**: `PRODUCT_OPTIONS` object (`{ [productName]: [{id, label, choices:[]}] }`) stored in Supabase `settings` table (key `product_options`), loaded via `loadProductOptions()`. Configured per-product in the Products tab options panel (`toggleProductOptions`, `saveOption`, `deleteOption`). Options cascade on product rename/delete. `renderProductOptionSelects(productName, savedOptions, containerEl)` renders inline selects in the order modal (`.item-options`) and cut list (`#cl-product-options`). `readProductOptionSelects(containerEl)` collects selections. `window._setProductOptions(v)` is an in-memory setter exposed for Playwright test injection (avoids needing to write to Supabase during tests).
+- `loadOrders()` awaits `window._settingsReady` before rendering — ensures `ADDONS` is loaded from Supabase before `orderCardHTML` tries to resolve addon labels. Same pattern used in `addNewAddon`, `deleteAddon`, `addProduct`.
 
 ## Standard Planter Sizes & Prices
 Stored in `STANDARD_SIZES`. 8 sizes have hardcoded `pickets`; 16×16×16 and 36×12×16 use formula fallback.
