@@ -55,6 +55,6 @@ test('shows global product filter toggle', async ({ page }) => {
   await expect(page.locator('#analytics-product-toggle')).toBeVisible();
 });
 
-test('shows 3 section headers', async ({ page }) => {
-  await expect(page.locator('.analytics-section-header')).toHaveCount(3);
+test('shows 4 section headers', async ({ page }) => {
+  await expect(page.locator('.analytics-section-header')).toHaveCount(4);
 });
