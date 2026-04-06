@@ -134,9 +134,13 @@ View profitability at a glance, revenue trends, and best-selling planter sizes �
 - **Est. Net Profit** — revenue minus material spend (green if positive, red if negative)
 
 **Charts:**
-- **Revenue by Month** — bar chart of total sales revenue per month
-- **Profit Overview** — grouped bars (revenue + material cost) with a profit trend line overlay
+- **Revenue vs. Spend** — grouped bars (revenue + material cost) with a profit trend line overlay
+- **Cumulative Revenue** — running revenue total over the selected period
+- **Units by Product / Revenue by Product** — breakdown of volume and revenue across product types
 - **Best Sellers** — horizontal bar chart of top 10 planter sizes ranked by **units sold**
+- **Margin Trend / Margin by Size** — estimated margin over time and per size
+- **Add-on Popularity** — horizontal bar chart showing how many times each add-on appeared in sales
+- **Add-on Revenue** — horizontal bar chart of total revenue generated per add-on
 
 **Range toggle** at the top lets you switch between:
 - **This Year** — January through the current month
@@ -174,7 +178,7 @@ Plan material cuts before building. Enter parts, calculate board usage, and save
 
 **Product association** — select a product from the **Product** dropdown at the top of the cut list form. If that product has options configured (e.g. Stain), the option dropdown(s) appear immediately below. The selected product and options are saved with the cut list and restored when you load it.
 
-**Saved Cut Lists** (left column on desktop) — grouped by product, showing Name, Last Modified, Notes. Load or delete any saved list. Re-saving a loaded list updates it in-place (no duplicates).
+**Saved Cut Lists** (left column on desktop) — grouped by product, showing Name, Last Modified, Notes. Load, duplicate, or delete any saved list. **Copy** loads all values into the editor as a new unsaved cut list with " (copy)" appended to the name — rename it and save to create a new record without overwriting the original. Re-saving a loaded list updates it in-place (no duplicates).
 
 **Layout** — on desktop (≥1025px) the tab uses a 3-zone grid: Stock Materials and Saved Cut Lists sit side by side in the top row; the New Cut List form and results span the full width underneath. On tablet/mobile the sections stack vertically.
 
@@ -265,6 +269,7 @@ The `?token=` parameter links their booking to a specific order via a UUID booki
 | Add options to a product | Materials → Products tab → Options ▾ on product row → + Add Option |
 | Plan a build's cuts | Materials → Cut List tab → add parts → Calculate → Save |
 | Load a saved cut list | Materials → Cut List tab → Saved Cut Lists (top right on desktop) → Load |
+| Duplicate a saved cut list | Materials → Cut List tab → Saved Cut Lists → Copy → rename → Save |
 | Save a quote from a cut list | Materials → Cut List tab → Calculate → + Quote → fill name → Save |
 | Convert a quote to an order | Orders → Quotes tab → Convert → fill order details → Save |
 | View saved quotes | Orders → Quotes tab |
