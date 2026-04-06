@@ -38,7 +38,7 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ## E2E Suite (`tests/e2e/*.spec.ts`)
 
-72 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
+75 tests. Writes real data to the production Supabase instance and cleans up after each suite. All specs run serially (`test.describe.configure({ mode: 'serial' })`).
 
 | File | Tests | Coverage |
 |---|---|---|
@@ -48,7 +48,7 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 | `scheduler.spec.ts` | 11 | Add/edit/delete slot, book/edit/delete pickup, quick book, booking edit syncs order pickup time, add/delete availability window, booking shows — when time not set |
 | `inventory-sales.spec.ts` | 9 | Add inventory, adjust qty (+/−), qty → 0 removes item, delete inventory, log/edit/delete sale, sale with add-on shows label+price in history, add-on resilience (localStorage cleared) |
 | `visual-coverage.spec.ts` | 4 | Cut list board diagram, calendar dot states, order status badge colours (all four states), quote margin badge |
-| `analytics.spec.ts` | 6 | Product filter pills render, active state, KPI label update, dropdown removal |
+| `analytics.spec.ts` | 9 | Product filter pills render, active state, KPI label update, best-sellers dropdown removal, add-on section present, addon chart canvases visible |
 
 ### Authentication
 
