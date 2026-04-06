@@ -3468,6 +3468,60 @@ function renderAnalyticsCharts() {
       }
     }
   });
+
+  // ── Add-on Popularity & Revenue ──
+  const addonCount = {}, addonRev = {};
+  filteredSales.forEach(s => {
+    if (s.sale_date) {
+      const k = isWeekly ? getBucketKey(s.sale_date) : s.sale_date.slice(0, 7);
+      if (keys.length && !keys.includes(k)) return;
+    }
+    if (!Array.isArray(s.add_ons)) return;
+    s.add_ons.forEach(a => {
+      const lbl = a.label || a.id || 'Unknown';
+      addonCount[lbl] = (addonCount[lbl] || 0) + 1;
+      addonRev[lbl] = (addonRev[lbl] || 0) + (a.price || 0);
+    });
+  });
+
+  const addonPopEntries = Object.entries(addonCount).sort((a, b) => b[1] - a[1]);
+  const addonRevEntries = Object.entries(addonRev).sort((a, b) => b[1] - a[1]);
+
+  if (chartAddonPopularity) chartAddonPopularity.destroy();
+  chartAddonPopularity = new Chart(document.getElementById('chart-addon-popularity'), {
+    type: 'bar',
+    data: {
+      labels: addonPopEntries.map(e => e[0]),
+      datasets: [{ label: 'Times Used', data: addonPopEntries.map(e => e[1]), backgroundColor: '#4A86A8', borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} order${ctx.parsed.x !== 1 ? 's' : ''}` } } },
+      scales: {
+        x: { ticks: { color: tickColor, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true },
+        y: { ticks: { color: tickColor }, grid: { color: gridColor } }
+      }
+    }
+  });
+
+  if (chartAddonRevenue) chartAddonRevenue.destroy();
+  chartAddonRevenue = new Chart(document.getElementById('chart-addon-revenue'), {
+    type: 'bar',
+    data: {
+      labels: addonRevEntries.map(e => e[0]),
+      datasets: [{ label: 'Revenue', data: addonRevEntries.map(e => e[1]), backgroundColor: '#C9A55A', borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` $${ctx.parsed.x.toFixed(0)}` } } },
+      scales: {
+        x: { ticks: { color: tickColor, callback: v => '$' + v }, grid: { color: gridColor }, beginAtZero: true },
+        y: { ticks: { color: tickColor }, grid: { color: gridColor } }
+      }
+    }
+  });
 }
 
 function renderTrendBadge(elId, current, prior) {
