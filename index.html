@@ -1015,6 +1015,30 @@ body {
 .window-item .wtext { flex: 1; font-size: 14px; }
 .window-item .wtime { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
 
+/* ── Trend badges on KPI cards ── */
+.trend-badge { font-size: 11px; font-family: 'DM Mono', monospace; margin-top: 2px; font-weight: 600; }
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+.trend-flat { color: var(--text-muted); }
+
+/* ── Analytics page ── */
+#page-analytics { max-width: 1280px; margin: 0 auto; padding: 32px 24px 80px; }
+.analytics-year-toggle { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.analytics-year-toggle button { padding: 6px 18px; border: 1px solid var(--border); border-radius: 20px; background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 32px; font-weight: 600; }
+.analytics-year-toggle button.active { background: var(--sand); color: white; border-color: var(--sand); }
+.analytics-range-toggle { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
+.analytics-range-toggle button { padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px; background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 36px; }
+.analytics-range-toggle button.active { background: var(--ocean); color: white; border-color: var(--ocean); }
+.analytics-product-toggle { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
+.analytics-product-toggle button { padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px; background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 36px; }
+.analytics-product-toggle button.active { background: var(--ocean); color: white; border-color: var(--ocean); }
+.analytics-pnl { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+.analytics-section-header { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 700; border-bottom: 1px solid var(--warm-gray); padding-bottom: 6px; margin: 20px 0 12px; }
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.chart-card h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px; }
+.chart-card--full { grid-column: 1 / -1; }
+
 @media (max-width: 640px) {
   /* ── Grids ── */
   #activeOrdersList { grid-template-columns: 1fr; }
@@ -1168,30 +1192,6 @@ body {
   .sidebar { width: 170px; }
   .sb-lbl { font-size: 12px; }
 }
-
-/* ── Trend badges on KPI cards ── */
-.trend-badge { font-size: 11px; font-family: 'DM Mono', monospace; margin-top: 2px; font-weight: 600; }
-.trend-up { color: var(--green); }
-.trend-down { color: var(--red); }
-.trend-flat { color: var(--text-muted); }
-
-/* ── Analytics page ── */
-#page-analytics { max-width: 1280px; margin: 0 auto; padding: 32px 24px 80px; }
-.analytics-year-toggle { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-.analytics-year-toggle button { padding: 6px 18px; border: 1px solid var(--border); border-radius: 20px; background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 32px; font-weight: 600; }
-.analytics-year-toggle button.active { background: var(--sand); color: white; border-color: var(--sand); }
-.analytics-range-toggle { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
-.analytics-range-toggle button { padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px; background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 36px; }
-.analytics-range-toggle button.active { background: var(--ocean); color: white; border-color: var(--ocean); }
-.analytics-product-toggle { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
-.analytics-product-toggle button { padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px; background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 36px; }
-.analytics-product-toggle button.active { background: var(--ocean); color: white; border-color: var(--ocean); }
-.analytics-pnl { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
-.analytics-section-header { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 700; border-bottom: 1px solid var(--warm-gray); padding-bottom: 6px; margin: 20px 0 12px; }
-.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-.chart-card h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px; }
-.chart-card--full { grid-column: 1 / -1; }
 
 /* ── Desktop (1025px+) ── */
 @media (min-width: 1025px) {
