@@ -1015,6 +1015,40 @@ body {
 .window-item .wtext { flex: 1; font-size: 14px; }
 .window-item .wtime { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
 
+/* ── Quick Actions bar ── */
+.quick-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+.qa-btn { flex: 1; padding: 10px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.qa-btn-primary { background: var(--ocean); color: #fff; }
+.qa-btn-secondary { background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border); }
+.qa-btn-secondary:hover { background: var(--bg-elevated); }
+
+/* ── Today's Focus card ── */
+.focus-card { background: var(--bg-card); border: 1.5px solid var(--ocean); border-radius: 12px; padding: 14px 16px; }
+.focus-items { display: flex; flex-direction: column; gap: 6px; }
+.focus-item { display: flex; align-items: center; gap: 10px; background: var(--bg-elevated); border-radius: 8px; padding: 8px 10px; }
+.focus-ico { font-size: 14px; flex-shrink: 0; }
+.focus-body { flex: 1; min-width: 0; }
+.focus-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.focus-sub { font-size: 10px; color: var(--text-dim); }
+.focus-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+.focus-badge-red    { background: rgba(192,57,43,0.18); color: #e05a4a; }
+.focus-badge-orange { background: rgba(212,120,42,0.18); color: var(--orange); }
+.focus-badge-green  { background: rgba(58,125,92,0.18); color: #5ab38a; }
+.focus-clear { font-size: 12px; color: var(--text-dim); text-align: center; padding: 12px 0; }
+
+/* ── Best Seller card ── */
+.bs-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.bs-size { font-size: 22px; font-weight: 700; font-family: 'Playfair Display', serif; color: var(--text); line-height: 1.1; }
+.bs-product { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+.bs-crown { font-size: 22px; opacity: 0.55; }
+.bs-divider { border: none; border-top: 1px solid var(--border-dim); margin: 10px 0; }
+.bs-stats { display: flex; }
+.bs-stat { flex: 1; text-align: center; }
+.bs-stat + .bs-stat { border-left: 1px solid var(--border-dim); }
+.bs-stat-val { font-size: 16px; font-weight: 700; color: var(--sand); font-family: 'Playfair Display', serif; }
+.bs-stat-lbl { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.bs-empty { font-size: 12px; color: var(--text-dim); text-align: center; padding: 20px 0; }
+
 /* ── Trend badges on KPI cards ── */
 .trend-badge { font-size: 11px; font-family: 'DM Mono', monospace; margin-top: 2px; font-weight: 600; }
 .trend-up { color: var(--green); }
@@ -1053,6 +1087,9 @@ body {
   .rev-grid { grid-template-columns: 1fr 1fr; }
   .rev-grid .rev-card:last-child:nth-child(odd) { grid-column: span 2; }
   .form-row { grid-template-columns: 1fr; }
+  .quick-actions { flex-wrap: wrap; }
+  .qa-btn { flex: 1 1 calc(50% - 4px); min-height: 44px; }
+  .home-new-row { grid-template-columns: 1fr; }
   .analytics-pnl { grid-template-columns: 1fr 1fr; }
   .analytics-pnl .summary-card:nth-child(5) { grid-column: span 2; }
   .analytics-grid { grid-template-columns: 1fr; }
