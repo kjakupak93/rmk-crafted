@@ -3696,7 +3696,7 @@ async function loadHomePickups() {
     const todayStr = todayKey();
     const { data } = await sb
       .from('orders')
-      .select('id, customer_name, pickup_date, pickup_time')
+      .select('id, name, pickup_date, pickup_time')
       .gte('pickup_date', todayStr)
       .not('pickup_date', 'is', null)
       .neq('status', 'completed')
@@ -3731,7 +3731,7 @@ async function loadHomePickups() {
         timeLabel = o.pickup_time ? shortDate + ' ' + o.pickup_time.slice(0, 5) : shortDate;
       }
       const nameClass = isToday ? 'pickup-name' : 'pickup-name tomorrow';
-      const name = esc(o.customer_name || 'Order #' + o.id);
+      const name = esc(o.name || 'Order #' + o.id);
       return '<div class="pickup-row"><span class="pickup-time">' + esc(timeLabel) + '</span><span class="' + nameClass + '">' + name + '</span></div>';
     }).join('');
     // eslint-disable-next-line no-unsanitized/property
@@ -3751,7 +3751,7 @@ async function loadHomeStats() {
     const weekEndKey = dateKey(weekEnd);
 
     const [ordRes, bookTodayRes, bookWeekRes, bookFutureRes, salesRes, invRes] = await Promise.all([
-      sb.from('orders').select('id,status,price,payment,pickup_date,pickup_time,customer_name'),
+      sb.from('orders').select('id,status,price,payment,pickup_date,pickup_time,name'),
       sb.from('schedule_bookings').select('booking_date').eq('booking_date', todayKey()),
       sb.from('schedule_bookings').select('booking_date').gte('booking_date', todayKey()).lte('booking_date', weekEndKey),
       sb.from('schedule_bookings').select('booking_date').gt('booking_date', todayKey()).order('booking_date', { ascending: true }).limit(1),
@@ -3804,7 +3804,7 @@ async function loadHomeStats() {
         const first = todayPickups[0];
         const timePart = first.pickup_time ? ' · ' + first.pickup_time.slice(0, 5) : '';
         document.getElementById('focus-today-count').textContent = todayPickups.length;
-        document.getElementById('focus-today-sub').textContent = (first.customer_name || 'Order #' + first.id) + timePart + (todayPickups.length > 1 ? ' +' + (todayPickups.length - 1) + ' more' : '');
+        document.getElementById('focus-today-sub').textContent = (first.name || 'Order #' + first.id) + timePart + (todayPickups.length > 1 ? ' +' + (todayPickups.length - 1) + ' more' : '');
       }
     }
     if (focusReadyEl) {
