@@ -21,3 +21,21 @@ test('+ New Order shortcut button opens the order modal', async ({ page }) => {
   await btn.click();
   await expect(page.locator('#orderModal')).toHaveClass(/open/, { timeout: 5000 });
 });
+
+test('Quick Actions bar renders 4 buttons', async ({ page }) => {
+  const btns = page.locator('.quick-actions .qa-btn');
+  await expect(btns).toHaveCount(4);
+});
+
+test('Quick Actions New Order button opens order modal', async ({ page }) => {
+  await page.locator('.quick-actions .qa-btn-primary').click();
+  await expect(page.locator('#orderModal')).toHaveClass(/open/, { timeout: 5000 });
+});
+
+test("Today's Focus card is present on home page", async ({ page }) => {
+  await expect(page.locator('.focus-card')).toBeVisible();
+});
+
+test('Best Seller card is present on home page', async ({ page }) => {
+  await expect(page.locator('text=🏆 Best Seller This Month')).toBeVisible();
+});
