@@ -3162,6 +3162,7 @@ async function checkConnection() {
     document.getElementById('connDot').className = 'conn-dot connected';
     document.getElementById('connText').textContent = 'Connected to Supabase';
     loadHomeStats();
+    loadBestSeller();
     loadRecentActivity();
     loadHomePickups();
   } catch(e) {
@@ -3680,7 +3681,7 @@ function goTo(page) {
     if (bnEl) bnEl.classList.toggle('active', p === page);
   });
 
-  if (page==='home')      { setHomeGreeting(); loadHomeStats(); loadRecentActivity(); loadHomePickups(); }
+  if (page==='home')      { setHomeGreeting(); loadHomeStats(); loadBestSeller(); loadRecentActivity(); loadHomePickups(); }
   if (page==='orders')    { loadOrders(); }
   if (page==='materials') { loadPurchases(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
@@ -3844,6 +3845,56 @@ async function loadHomeStats() {
     document.getElementById('kpi-inv-count').textContent = invCount;
     document.getElementById('kpi-owed').textContent = '$'+owed.toFixed(0);
 
+  } catch(e) { console.error(e); }
+}
+
+// ===== BEST SELLER CARD =====
+async function loadBestSeller() {
+  const contentEl = document.getElementById('bs-content');
+  const emptyEl   = document.getElementById('bs-empty');
+  if (!contentEl || !emptyEl) return;
+  try {
+    const nowY = today.getFullYear();
+    const nowM = today.getMonth();
+    const firstOfMonth = nowY + '-' + String(nowM + 1).padStart(2, '0') + '-01';
+    const todayStr = todayKey();
+    const { data } = await sb
+      .from('sales')
+      .select('price, size, style, items, sale_date')
+      .gte('sale_date', firstOfMonth)
+      .lte('sale_date', todayStr);
+
+    if (!data || !data.length) {
+      contentEl.style.display = 'none';
+      emptyEl.style.display = '';
+      return;
+    }
+
+    // Tally by size (use items.rows[0].size for multi-item sales, else flat size)
+    const tally = {};
+    data.forEach(s => {
+      const sz = (s.items && s.items.rows && s.items.rows[0]) ? s.items.rows[0].size : s.size;
+      if (!sz) return;
+      if (!tally[sz]) tally[sz] = { units: 0, revenue: 0, style: s.style || 'Standard' };
+      tally[sz].units++;
+      tally[sz].revenue += parseFloat(s.price) || 0;
+    });
+
+    const topSize = Object.entries(tally).sort((a, b) => b[1].units - a[1].units)[0];
+    if (!topSize) {
+      contentEl.style.display = 'none';
+      emptyEl.style.display = '';
+      return;
+    }
+
+    const [size, stats] = topSize;
+    document.getElementById('bs-size').textContent = size;
+    document.getElementById('bs-product').textContent = stats.style || 'Standard';
+    document.getElementById('bs-units').textContent = stats.units;
+    document.getElementById('bs-revenue').textContent = '$' + stats.revenue.toFixed(0);
+    document.getElementById('bs-avg').textContent = '$' + (stats.revenue / stats.units).toFixed(0);
+    contentEl.style.display = '';
+    emptyEl.style.display = 'none';
   } catch(e) { console.error(e); }
 }
 
