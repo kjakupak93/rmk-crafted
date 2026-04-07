@@ -277,31 +277,31 @@ body {
 
 /* ===== HOME SCREEN ===== */
 #page-home {
-  padding: 20px 20px 60px;
+  padding: 20px 24px 60px;
   max-width: 1280px;
   margin: 0 auto;
 }
 .home-top {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 .home-bottom {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 16px;
 }
 .kpi-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px;
 }
 .kpi-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -339,11 +339,11 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 14px 16px;
 }
 .home-card-head {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 .home-card-title { font-size: 12px; font-weight: 700; color: var(--ocean-light); }
 .home-card-link  { font-size: 10px; color: var(--ocean); text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; }
@@ -365,7 +365,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 14px 16px;
 }
 .order-pills { display: flex; gap: 6px; margin-bottom: 4px; }
 .order-pill {
@@ -387,7 +387,7 @@ body {
   font-size: 11.5px;
 }
 .pickup-row:last-child { border-bottom: none; }
-.pickup-time { color: var(--ocean); font-family: 'DM Mono', monospace; font-size: 11px; min-width: 38px; flex-shrink: 0; }
+.pickup-time { color: var(--ocean); font-family: 'DM Mono', monospace; font-size: 11px; min-width: 60px; flex-shrink: 0; }
 .pickup-name { color: var(--ocean-light); flex: 1; }
 .pickup-name.tomorrow { color: var(--text-dim); font-style: italic; }
 @media (max-width: 640px) {
@@ -3605,9 +3605,15 @@ async function loadHomePickups() {
       tomorrowDate.setDate(tomorrowDate.getDate() + 1);
       const tomorrowStr = dateKey(tomorrowDate);
       const isTomorrow = o.pickup_date === tomorrowStr;
-      const timeLabel  = o.pickup_time
-        ? o.pickup_time.slice(0, 5)
-        : (isToday ? 'Today' : isTomorrow ? 'Tmrw' : o.pickup_date.slice(5));
+      let timeLabel;
+      if (isToday) {
+        timeLabel = o.pickup_time ? o.pickup_time.slice(0, 5) : 'Today';
+      } else if (isTomorrow) {
+        timeLabel = o.pickup_time ? 'Tmrw ' + o.pickup_time.slice(0, 5) : 'Tmrw';
+      } else {
+        const shortDate = o.pickup_date.slice(5).replace('-', '/'); // e.g. "04/08"
+        timeLabel = o.pickup_time ? shortDate + ' ' + o.pickup_time.slice(0, 5) : shortDate;
+      }
       const nameClass = isToday ? 'pickup-name' : 'pickup-name tomorrow';
       const name = esc(o.customer_name || 'Order #' + o.id);
       return '<div class="pickup-row"><span class="pickup-time">' + esc(timeLabel) + '</span><span class="' + nameClass + '">' + name + '</span></div>';
