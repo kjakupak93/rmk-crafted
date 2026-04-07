@@ -23,7 +23,7 @@ The server starts automatically. On CI, `reuseExistingServer` is disabled so a f
 
 ## Smoke Suite (`tests/*.spec.ts`)
 
-26 tests. Fast, read-only — no data writes to Supabase. Runs in parallel.
+30 tests. Fast, read-only — no data writes to Supabase. Runs in parallel.
 
 | File | What it checks |
 |---|---|
