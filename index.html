@@ -1472,6 +1472,13 @@ body {
 
 <!-- ===== HOME PAGE ===== -->
 <div class="page active" id="page-home">
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <button class="qa-btn qa-btn-primary" onclick="goTo('orders');openOrderModal()">＋ New Order</button>
+    <button class="qa-btn qa-btn-secondary" onclick="openSaleModal()">🧾 Log Sale</button>
+    <button class="qa-btn qa-btn-secondary" onclick="openPurchaseModal()">🛒 Log Purchase</button>
+    <button class="qa-btn qa-btn-secondary" onclick="goTo('scheduler')">📅 Schedule</button>
+  </div>
   <div class="home-top">
     <!-- 2x2 KPI Grid -->
     <div class="kpi-grid">
@@ -1557,6 +1564,77 @@ body {
       </div>
       <div id="home-pickups-list"><div style="font-size:11px;color:var(--text-dim);">Loading...</div></div>
     </div>
+  </div>
+
+  <!-- New row: Today's Focus + Best Seller -->
+  <div class="home-bottom home-new-row" style="margin-top:12px">
+
+    <!-- Today's Focus -->
+    <div class="focus-card">
+      <div class="home-card-head">
+        <div class="home-card-title">🎯 Today's Focus</div>
+      </div>
+      <div class="focus-items">
+        <div class="focus-item" id="focus-overdue" style="display:none">
+          <div class="focus-ico">⚠️</div>
+          <div class="focus-body">
+            <div class="focus-title">Overdue pickups</div>
+            <div class="focus-sub" id="focus-overdue-sub"></div>
+          </div>
+          <div class="focus-badge focus-badge-red" id="focus-overdue-count"></div>
+        </div>
+        <div class="focus-item" id="focus-today" style="display:none">
+          <div class="focus-ico">📅</div>
+          <div class="focus-body">
+            <div class="focus-title">Pickups today</div>
+            <div class="focus-sub" id="focus-today-sub"></div>
+          </div>
+          <div class="focus-badge focus-badge-orange" id="focus-today-count"></div>
+        </div>
+        <div class="focus-item" id="focus-ready" style="display:none">
+          <div class="focus-ico">📦</div>
+          <div class="focus-body">
+            <div class="focus-title">Ready for pickup</div>
+            <div class="focus-sub" id="focus-ready-sub"></div>
+          </div>
+          <div class="focus-badge focus-badge-green" id="focus-ready-count"></div>
+        </div>
+        <div class="focus-clear" id="focus-clear" style="display:none">All clear ✓</div>
+      </div>
+    </div>
+
+    <!-- Best Seller -->
+    <div class="home-panel">
+      <div class="home-card-head">
+        <div class="home-card-title" style="color:var(--sand)">🏆 Best Seller This Month</div>
+      </div>
+      <div id="bs-content" style="display:none">
+        <div class="bs-header">
+          <div>
+            <div class="bs-size" id="bs-size"></div>
+            <div class="bs-product" id="bs-product"></div>
+          </div>
+          <div class="bs-crown">🏆</div>
+        </div>
+        <hr class="bs-divider">
+        <div class="bs-stats">
+          <div class="bs-stat">
+            <div class="bs-stat-val" id="bs-units"></div>
+            <div class="bs-stat-lbl">Units</div>
+          </div>
+          <div class="bs-stat">
+            <div class="bs-stat-val" id="bs-revenue"></div>
+            <div class="bs-stat-lbl">Revenue</div>
+          </div>
+          <div class="bs-stat">
+            <div class="bs-stat-val" id="bs-avg"></div>
+            <div class="bs-stat-lbl">Avg</div>
+          </div>
+        </div>
+      </div>
+      <div class="bs-empty" id="bs-empty" style="display:none">No sales yet this month</div>
+    </div>
+
   </div>
 </div>
 
