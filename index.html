@@ -2481,14 +2481,14 @@ let ADDONS = [
   {id:'shelf', label:'Bottom Shelf', base:30, scales:true}
 ];
 async function loadAddonSettings() {
-  const { data: row } = await sb.from('settings').select('value').eq('key', 'addons').single();
+  const { data: row, error: rowErr } = await sb.from('settings').select('value').eq('key', 'addons').single();
   if (row) {
     try {
       const parsed = JSON.parse(row.value);
       if (Array.isArray(parsed) && parsed.length > 0) ADDONS = parsed;
     } catch(e) { /* ignore corrupt */ }
-  } else {
-    // First load: migrate from localStorage if present, else keep defaults
+  } else if (!rowErr || rowErr.code === 'PGRST116') {
+    // Only do first-time migration when row genuinely doesn't exist (not on auth/network errors)
     const lsVal = localStorage.getItem('rmk_addons');
     if (lsVal) {
       try {
@@ -2696,14 +2696,14 @@ let PRODUCT_TYPES = [...DEFAULT_STYLES];
 let PRODUCT_OPTIONS = {}; // { [productName]: [{id, label, choices:[]}] }
 window._setProductOptions = v => { PRODUCT_OPTIONS = v; };
 async function loadProductSettings() {
-  const { data: row } = await sb.from('settings').select('value').eq('key', 'products').single();
+  const { data: row, error: rowErr } = await sb.from('settings').select('value').eq('key', 'products').single();
   if (row) {
     try {
       const parsed = JSON.parse(row.value);
       if (Array.isArray(parsed) && parsed.length > 0) PRODUCT_TYPES = parsed;
     } catch(e) { /* ignore corrupt */ }
-  } else {
-    // First load: migrate from localStorage if present, else keep defaults
+  } else if (!rowErr || rowErr.code === 'PGRST116') {
+    // Only do first-time migration when row genuinely doesn't exist (not on auth/network errors)
     const lsVal = localStorage.getItem('rmk_products');
     if (lsVal) {
       try {
