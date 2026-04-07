@@ -56,7 +56,7 @@
   --navy-dark:   #9fcde0;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
   background: var(--bg-page);
@@ -1047,7 +1047,8 @@ body {
   .price-amount sup { font-size: 24px; }
 
   /* ── iOS input zoom fix — font-size ≥16px prevents Safari auto-zoom ── */
-  .form-control, .std-input, .dim-input, select, textarea { font-size: 16px !important; }
+  .form-control, .std-input, .dim-input, select, textarea,
+  .cl-stock-name-input, .cl-stock-dim { font-size: 16px !important; }
 
   /* ── Filter bar — horizontal scroll ── */
   .filter-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
@@ -1071,8 +1072,11 @@ body {
 
   /* ── Touch targets ── */
   .icon-btn { width: 44px; height: 44px; font-size: 15px; }
-  .filter-btn { padding: 8px 12px; min-height: 36px; white-space: nowrap; flex-shrink: 0; }
-  .sales-filter-btn { padding: 7px 12px; }
+  .tab-btn { min-height: 44px; padding: 12px 10px; }
+  .filter-btn { padding: 8px 12px; min-height: 44px; white-space: nowrap; flex-shrink: 0; }
+  .sales-filter-btn { padding: 7px 12px; min-height: 44px; }
+  .advance-btn { min-height: 44px; }
+  .addon-pill { min-height: 44px; }
   .cal-nav-btn { padding: 10px 14px; min-height: 44px; }
 
   /* ── KPI / summary card values ── */
@@ -1119,7 +1123,7 @@ body {
   .card-top { flex-wrap: wrap; }
   .card-actions { flex-wrap: wrap; gap: 6px; flex-shrink: 1; }
   /* ── Advance status buttons ── */
-  .advance-btn { padding: 7px 12px; font-size: 12px; min-height: 34px; }
+  .advance-btn { padding: 7px 12px; font-size: 12px; }
 
   /* ── Pickup card ── */
   .pickup-card { padding: 12px; gap: 10px; }
@@ -1346,10 +1350,10 @@ body {
   <div style="color:white;font-family:'Playfair Display',serif;font-size:22px;font-weight:700">RMK Crafted</div>
   <div style="display:flex;flex-direction:column;gap:10px;width:280px">
     <input id="auth-email" type="email" autocomplete="email" placeholder="Email"
-      style="padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:white;font-size:15px;outline:none;font-family:'DM Sans',sans-serif;"
+      style="padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif;"
       onkeydown="if(event.key==='Enter')signIn()">
     <input id="auth-password" type="password" autocomplete="current-password" placeholder="Password"
-      style="padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:white;font-size:15px;outline:none;font-family:'DM Sans',sans-serif;"
+      style="padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif;"
       onkeydown="if(event.key==='Enter')signIn()">
   </div>
   <button onclick="signIn()" style="padding:12px 40px;background:#C9A55A;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Sign In</button>
@@ -1369,7 +1373,7 @@ body {
   </div>
   <div style="display:flex;flex-direction:column;gap:10px;width:280px">
     <input id="reset-email" type="email" autocomplete="email" placeholder="Email"
-      style="padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:white;font-size:15px;outline:none;font-family:'DM Sans',sans-serif;"
+      style="padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif;"
       onkeydown="if(event.key==='Enter')sendReset()">
   </div>
   <button onclick="sendReset()" style="padding:12px 40px;background:#C9A55A;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Send Reset Link</button>
@@ -1701,7 +1705,7 @@ body {
             <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Parts</div>
             <div class="table-wrap" style="margin-bottom:10px">
               <table class="data-table" style="min-width:580px">
-                <thead><tr><th style="width:28px">#</th><th style="min-width:140px">Description</th><th style="width:80px">Qty</th><th style="width:120px">Length"</th><th style="width:110px">Width"</th><th style="width:160px">Material</th><th style="width:28px"></th></tr></thead>
+                <thead><tr><th style="width:28px">#</th><th style="min-width:140px">Description</th><th style="width:80px">Qty</th><th style="width:120px">Length"</th><th style="width:120px">Width"</th><th style="width:160px">Material</th><th style="width:28px"></th></tr></thead>
                 <tbody id="cl-rows"></tbody>
               </table>
             </div>
@@ -1918,7 +1922,7 @@ body {
       <div class="form-group"><label>Contact / FB Handle</label><input class="form-control" type="text" id="oContact" placeholder="@janesmith"></div>
     </div>
     <div class="form-group">
-      <label>Items <span style="font-size:11px;color:var(--text-muted);font-weight:400">(Size · Style · Qty · Price)</span></label>
+      <label>Items <span style="font-size:11px;color:var(--text-muted);font-weight:400">(Size · Product · Qty · Price)</span></label>
       <div id="oItemsContainer" class="order-items"></div>
       <button type="button" class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-top:2px" onclick="addOrderItem()">+ Add Item</button>
       <div class="order-items-total">Total: <strong id="oItemsTotal">$0</strong></div>
@@ -1983,7 +1987,7 @@ body {
       <div class="form-group"><label>Date Sold</label><input class="form-control" type="date" id="sDate"></div>
     </div>
     <div class="form-group">
-      <label>Items <span style="font-size:11px;color:var(--text-muted);font-weight:400">(Size · Style · Qty · Price)</span></label>
+      <label>Items <span style="font-size:11px;color:var(--text-muted);font-weight:400">(Size · Product · Qty · Price)</span></label>
       <div id="sItemsContainer" class="order-items"></div>
       <button type="button" class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-top:2px" onclick="addOrderItem('','Standard',1,'',null,'sItemsContainer')">+ Add Item</button>
       <div class="order-items-total">Total: <strong id="sItemsTotal">$0</strong></div>
@@ -2178,7 +2182,7 @@ body {
     <div id="completeVenmoFeeRow" style="display:none;margin-top:14px;text-align:left">
       <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:6px">Venmo fee ($)</label>
       <div style="display:flex;gap:8px">
-        <input type="number" id="completeVenmoFee" min="0" step="0.01" style="flex:1;padding:8px;border:1px solid var(--warm-gray);border-radius:6px;font-size:14px;font-family:'DM Mono',monospace">
+        <input type="number" id="completeVenmoFee" min="0" step="0.01" class="form-control" style="flex:1;padding:8px;font-family:'DM Mono',monospace">
         <button class="modal-btn-primary" style="background:var(--ocean)" onclick="finishCompleteOrder('venmo')">Confirm</button>
       </div>
     </div>

@@ -129,6 +129,12 @@ Always test UI changes for mobile overflow and iOS Safari compatibility. When fi
 
 **iOS safe area**: `index.html` uses `viewport-fit=cover` in the meta viewport tag. `.main-header` includes `padding-top: env(safe-area-inset-top, 0px)` and `height: calc(52px + env(safe-area-inset-top, 0px))` to avoid the Dynamic Island/notch. `.bottom-nav` uses `padding-left/right: env(safe-area-inset-left/right, 0px)` for landscape mode. The mobile media query (`max-width: 640px`) must also include the safe-area padding-top override since shorthand `padding` resets it.
 
+**iOS input zoom fix**: Any `<input>`, `<select>`, or `<textarea>` with `font-size` under 16px triggers iOS Safari auto-zoom on focus. All form controls use `font-size: 16px !important` in the mobile media query via `.form-control, .std-input, .dim-input, select, textarea, .cl-stock-name-input, .cl-stock-dim`. Auth gate inputs (`#auth-email`, `#auth-password`, `#reset-email`) have `font-size: 16px` as inline styles since they can't be overridden by media query. Never set `font-size` below 16px on any input in mobile styles.
+
+**iOS touch targets**: Apple's minimum is 44×44px. All interactive elements in the mobile media query must have `min-height: 44px`. Applies to: `.tab-btn`, `.filter-btn`, `.sales-filter-btn`, `.advance-btn`, `.addon-pill`, `.icon-btn`, `.cal-nav-btn`, `.bn-item`. When adding new interactive elements, add `min-height: 44px` in the `@media (max-width: 640px)` block.
+
+**Tap highlight**: `* { -webkit-tap-highlight-color: transparent; }` is set globally in the `*` reset to suppress the grey tap flash on iOS Safari.
+
 **CSS cascade note:** The desktop `@media (min-width: 1025px)` block is placed **after** all base styles (including `#page-analytics` and `.analytics-grid`) to ensure correct override order. If you add base styles for these elements, keep them before that media query block.
 
 ### Dark Mode
