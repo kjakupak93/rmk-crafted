@@ -3750,7 +3750,7 @@ async function loadHomeStats() {
     const weekEndKey = dateKey(weekEnd);
 
     const [ordRes, bookTodayRes, bookWeekRes, bookFutureRes, salesRes, invRes] = await Promise.all([
-      sb.from('orders').select('id,status,price,payment,pickup_date'),
+      sb.from('orders').select('id,status,price,payment,pickup_date,pickup_time,customer_name'),
       sb.from('schedule_bookings').select('booking_date').eq('booking_date', todayKey()),
       sb.from('schedule_bookings').select('booking_date').gte('booking_date', todayKey()).lte('booking_date', weekEndKey),
       sb.from('schedule_bookings').select('booking_date').gt('booking_date', todayKey()).order('booking_date', { ascending: true }).limit(1),
@@ -3775,6 +3775,47 @@ async function loadHomeStats() {
     if (footEl) {
       const orderTotal = (pending || 0) + (building || 0) + (readyOrd || 0);
       footEl.textContent = orderTotal + ' total' + (overdue ? ' \u00b7 ' + overdue + ' overdue' : '');
+    }
+
+    // ── Today's Focus card ──
+    const todayStr = todayKey();
+    const overdueOrders = activeOrders.filter(o => o.pickup_date && o.pickup_date < todayStr && o.status !== 'completed');
+    const todayPickups  = activeOrders.filter(o => o.pickup_date === todayStr && o.status !== 'completed');
+    const readyOrders   = activeOrders.filter(o => o.status === 'ready');
+
+    const focusOverdueEl = document.getElementById('focus-overdue');
+    const focusTodayEl   = document.getElementById('focus-today');
+    const focusReadyEl   = document.getElementById('focus-ready');
+    const focusClearEl   = document.getElementById('focus-clear');
+
+    if (focusOverdueEl) {
+      const show = overdueOrders.length > 0;
+      focusOverdueEl.style.display = show ? '' : 'none';
+      if (show) {
+        document.getElementById('focus-overdue-count').textContent = overdueOrders.length;
+        document.getElementById('focus-overdue-sub').textContent = overdueOrders.length + ' order' + (overdueOrders.length > 1 ? 's' : '') + ' past pickup date';
+      }
+    }
+    if (focusTodayEl) {
+      const show = todayPickups.length > 0;
+      focusTodayEl.style.display = show ? '' : 'none';
+      if (show) {
+        const first = todayPickups[0];
+        const timePart = first.pickup_time ? ' · ' + first.pickup_time.slice(0, 5) : '';
+        document.getElementById('focus-today-count').textContent = todayPickups.length;
+        document.getElementById('focus-today-sub').textContent = (first.customer_name || 'Order #' + first.id) + timePart + (todayPickups.length > 1 ? ' +' + (todayPickups.length - 1) + ' more' : '');
+      }
+    }
+    if (focusReadyEl) {
+      const show = readyOrders.length > 0;
+      focusReadyEl.style.display = show ? '' : 'none';
+      if (show) {
+        document.getElementById('focus-ready-count').textContent = readyOrders.length;
+        document.getElementById('focus-ready-sub').textContent = readyOrders.length + ' order' + (readyOrders.length > 1 ? 's' : '') + ' waiting';
+      }
+    }
+    if (focusClearEl) {
+      focusClearEl.style.display = (overdueOrders.length + todayPickups.length + readyOrders.length === 0) ? '' : 'none';
     }
 
     // ── Earnings summary ──
