@@ -3870,14 +3870,22 @@ async function loadBestSeller() {
       return;
     }
 
-    // Tally by size (use items.rows[0].size for multi-item sales, else flat size)
+    // Tally by size — iterate all rows for multi-item sales, use qty per row
     const tally = {};
     data.forEach(s => {
-      const sz = (s.items && s.items.rows && s.items.rows[0]) ? s.items.rows[0].size : s.size;
-      if (!sz) return;
-      if (!tally[sz]) tally[sz] = { units: 0, revenue: 0, style: s.style || 'Standard' };
-      tally[sz].units++;
-      tally[sz].revenue += parseFloat(s.price) || 0;
+      const rows = (s.items && s.items.rows && s.items.rows.length)
+        ? s.items.rows
+        : [{ size: s.size, style: s.style || 'Standard', qty: 1 }];
+      // Revenue is per-sale (not split by item), so attribute it to the first row's size only
+      const revenueSize = rows[0] && rows[0].size;
+      rows.forEach((row, idx) => {
+        const sz = row.size;
+        if (!sz) return;
+        const style = row.style || s.style || 'Standard';
+        if (!tally[sz]) tally[sz] = { units: 0, revenue: 0, style };
+        tally[sz].units += (row.qty || 1);
+        if (idx === 0 && revenueSize === sz) tally[sz].revenue += parseFloat(s.price) || 0;
+      });
     });
 
     const topSize = Object.entries(tally).sort((a, b) => b[1].units - a[1].units)[0];
