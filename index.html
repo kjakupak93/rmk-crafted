@@ -3509,7 +3509,7 @@ function renderAnalyticsCharts() {
     if (!s.sale_date || !s.price) return;
     const k = isWeekly ? getBucketKey(s.sale_date) : s.sale_date.slice(0,7);
     if (!k || !keys.includes(k)) return;
-    const cost = estimateOrderCost({ size: s.size, price: s.price });
+    const cost = estimateOrderCost(s);
     _mrgSum[k] = (_mrgSum[k]||0) + ((s.price - cost) / s.price * 100);
     _mrgCnt[k] = (_mrgCnt[k]||0) + 1;
   });
@@ -3533,7 +3533,7 @@ function renderAnalyticsCharts() {
   const _szMrgSum = {}, _szMrgCnt = {}, _szProfSum = {};
   filteredSales.forEach(s => {
     if (!s.size || s.size.includes('+') || !s.price) return;
-    const cost = estimateOrderCost({ size: s.size, price: s.price });
+    const cost = estimateOrderCost(s);
     const mp = (s.price - cost) / s.price * 100;
     _szMrgSum[s.size] = (_szMrgSum[s.size] || 0) + mp;
     _szMrgCnt[s.size] = (_szMrgCnt[s.size] || 0) + 1;
@@ -4353,7 +4353,7 @@ async function completeOrder(id) {
     const _cost = estimateOrderCost(data);
     const _profit = data.price - _cost;
     const _mp = data.price > 0 ? Math.round((_profit / data.price) * 100) : 0;
-    const _isFallback = !(data.items?.rows?.length > 0) && !data.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);
+    const _isFallback = data.picket_count == null && !(data.items?.rows?.length > 0) && !data.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);
     const _mpStr = (_isFallback ? '~' : '') + _mp + '%';
     const _modal = document.querySelector('#completePaymentModal .modal');
     // Idempotent: reuse existing block if modal was opened before
@@ -4772,7 +4772,7 @@ function renderSalesTable() {
     <td style="font-family:'DM Mono',monospace;text-align:center">${(()=>{const _rows=s.items?.rows;if(_rows&&_rows.length)return _rows.reduce((acc,r)=>acc+(r.qty||1),0);return s.qty||1;})()}</td>
     <td>${(()=>{const _rows=s.items?.rows;if(_rows&&_rows.length>1){const _styles=_rows.map(r=>esc(r.style)||'');return _styles.join('<br>');}return esc(s.style)||'';})()}${(()=>{if(s.items?.rows?.length>1)return '';if(!s.product_options)return '';const opts=PRODUCT_OPTIONS[s.style]||[];const parts=opts.filter(o=>s.product_options[o.id]).map(o=>esc(s.product_options[o.id]));return parts.length?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${parts.join(' · ')}</div>`:'';})()} </td>
     <td>${esc(s.name)||'—'}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500;white-space:nowrap">${(()=>{const _vf=s.venmo_fee||0;const _total=s.price+_vf;const _c=estimateOrderCost({size:s.size,price:s.price});const _p=s.price>0?Math.round(((s.price-_c)/s.price)*100):0;const _f=!s.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);return '$'+Number(_total)+(_vf>0?` <span style="color:var(--text-muted);font-size:0.8em">(+$${_vf})</span>`:'')+' <span style="color:'+marginColor(_p)+';font-size:0.8em;margin-left:4px">'+(_f?'~':'')+_p+'%</span>';})()}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:500;white-space:nowrap">${(()=>{const _vf=s.venmo_fee||0;const _total=s.price+_vf;const _c=estimateOrderCost(s);const _p=s.price>0?Math.round(((s.price-_c)/s.price)*100):0;const _f=s.picket_count==null&&!s.size?.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);return '$'+Number(_total)+(_vf>0?` <span style="color:var(--text-muted);font-size:0.8em">(+$${_vf})</span>`:'')+' <span style="color:'+marginColor(_p)+';font-size:0.8em;margin-left:4px">'+(_f?'~':'')+_p+'%</span>';})()}</td>
     <td><span class="badge badge-${(s.payment||'').toLowerCase()}">${esc(s.payment)||''}</span></td>
     <td style="color:var(--text-muted);font-size:12px">${esc(s.notes)||''}</td>
     <td style="display:flex;gap:4px">
