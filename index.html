@@ -3183,7 +3183,7 @@ function goHome() {
 // ===== ANALYTICS =====
 async function loadAnalytics() {
   const [sRes, pRes] = await Promise.all([
-    sb.from('sales').select('price,sale_date,size,qty,style,add_ons'),
+    sb.from('sales').select('price,sale_date,size,qty,style,add_ons,picket_count,twobytwo_count,twobyfour_count'),
     sb.from('purchases').select('total,purchase_date')
   ]);
   analyticsSales = sRes.data || [];
@@ -4139,6 +4139,11 @@ function convertQuoteToOrder(id) {
   const quote = allQuotes.find(q => q.id === id);
   if (!quote) return;
   _pendingQuoteId = quote.id;
+  _pendingQuoteBoardCounts = quote.picket_count != null ? {
+    picket_count: quote.picket_count,
+    twobytwo_count: quote.twobytwo_count ?? null,
+    twobyfour_count: quote.twobyfour_count ?? null
+  } : null;
   const sizeMatch = (quote.cut_list_name || '').match(/\d+[×x]\d+[×x]\d+/i);
   const size = sizeMatch ? sizeMatch[0].replace(/x/gi, '×') : '';
   openOrderModal(null, { name: quote.name || '', notes: quote.notes || '', price: quote.price, size });
@@ -4217,12 +4222,13 @@ async function saveOrder() {
   const total = baseTotal + addonTotal;
   const itemsPayload = {rows: itemRows, add_ons: selectedAddons, add_on_total: addonTotal, add_on_prices: addonPrices};
   const items = itemsPayload;
-  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:itemRows[0].size,style:itemRows[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value,venmo_fee:venmoFee};
+  const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:itemRows[0].size,style:itemRows[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value,venmo_fee:venmoFee,...(_pendingQuoteBoardCounts ? {picket_count:_pendingQuoteBoardCounts.picket_count,twobytwo_count:_pendingQuoteBoardCounts.twobytwo_count,twobyfour_count:_pendingQuoteBoardCounts.twobyfour_count} : {})};
   const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
-  if (error) {_pendingQuoteId=null;showToast('Error saving order','error');console.error(error);return;}
+  if (error) {_pendingQuoteId=null;_pendingQuoteBoardCounts=null;showToast('Error saving order','error');console.error(error);return;}
   if (_pendingQuoteId) {
     await sb.from('quotes').delete().eq('id', _pendingQuoteId);
     _pendingQuoteId = null;
+    _pendingQuoteBoardCounts = null;
   }
   const isNowCompletedPaid = payload.status==='completed' && payload.payment!=='unpaid';
   const wasCompletedPaid = currentEditOrder && currentEditOrder.status==='completed' && currentEditOrder.payment!=='unpaid';
@@ -4234,6 +4240,7 @@ async function saveOrder() {
     const _saleProdOpts=saleItemRows[0]?.options||null;
     const _saleRow={name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||'',venmo_fee:payload.venmo_fee||0,add_ons:_saleAo.length?_saleAo:null};
     if (_saleProdOpts) _saleRow.product_options=_saleProdOpts;
+    if (payload.picket_count != null) { _saleRow.picket_count=payload.picket_count; _saleRow.twobytwo_count=payload.twobytwo_count??null; _saleRow.twobyfour_count=payload.twobyfour_count??null; }
     await sb.from('sales').insert(_saleRow);
   }
   // Sync pickup date+time → schedule_bookings and block off slot
@@ -4281,23 +4288,31 @@ async function saveOrder() {
 }
 
 function estimateOrderCost(order) {
+  // Use actual board counts when available (from cut list via quote → order → sale pipeline)
+  if (order.picket_count != null) {
+    return (order.picket_count * UNIT_COSTS.pickets)
+         + ((order.twobytwo_count || 0) * UNIT_COSTS.twobytwo)
+         + ((order.twobyfour_count || 0) * UNIT_COSTS.twobyfour);
+  }
+  // Fallback: estimate all 3 materials from dimensions
+  function costFromDims(l, w, h, qty) {
+    const std = STANDARD_SIZES.find(s => s.l===l && s.w===w && s.h===h);
+    const pickets = std?.pickets || estPickets(l, w, h);
+    const twobytwo = std?.twobytwo || Math.ceil(4 * h / 72);
+    const twobyfour = std?.twobyfour || Math.ceil(2 * (l + w) / 72);
+    return (pickets * UNIT_COSTS.pickets + twobytwo * UNIT_COSTS.twobytwo + twobyfour * UNIT_COSTS.twobyfour) * (qty || 1);
+  }
   const rows = order.items?.rows;
   if (rows && rows.length > 0) {
     return rows.reduce((total, item) => {
       const parts = (item.size||'').match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);
       if (!parts) return total;
-      const l=+parts[1], w=+parts[2], h=+parts[3];
-      const std = STANDARD_SIZES.find(s => s.l===l && s.w===w && s.h===h);
-      const pickets = std?.pickets || estPickets(l,w,h);
-      return total + pickets * UNIT_COSTS.pickets * (item.qty||1);
+      return total + costFromDims(+parts[1], +parts[2], +parts[3], item.qty||1);
     }, 0);
   }
   const parts = (order.size||'').match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);
   if (!parts) return order.price * 0.37;
-  const l=+parts[1], w=+parts[2], h=+parts[3];
-  const std = STANDARD_SIZES.find(s => s.l===l && s.w===w && s.h===h);
-  const pickets = std?.pickets || estPickets(l,w,h);
-  return pickets * UNIT_COSTS.pickets;
+  return costFromDims(+parts[1], +parts[2], +parts[3], 1);
 }
 
 function marginColor(pct) {
@@ -4309,8 +4324,7 @@ function buildPricingMatrix() {
   if (!tbody) return;
   const rows = STANDARD_SIZES
     .map(s => {
-      const pickets = s.pickets || estPickets(s.l, s.w, s.h);
-      const cost = pickets * UNIT_COSTS.pickets;
+      const cost = estimateOrderCost({ size: `${s.l}×${s.w}×${s.h}`, price: s.price });
       const profit = s.price - cost;
       const margin = Math.round((profit / s.price) * 100);
       return { s, cost, profit, margin };
@@ -4929,7 +4943,9 @@ function renderQuotesTable() {
     if (q.price > 0) {
       let cost, isFallback;
       if (q.picket_count != null) {
-        cost = q.picket_count * UNIT_COSTS.pickets;
+        cost = (q.picket_count * UNIT_COSTS.pickets)
+             + ((q.twobytwo_count || 0) * UNIT_COSTS.twobytwo)
+             + ((q.twobyfour_count || 0) * UNIT_COSTS.twobyfour);
         isFallback = false;
       } else {
         cost = q.price * 0.37;
@@ -5037,6 +5053,7 @@ let clRowId = 0;
 let clLastRunBoardCounts = {};   // { [stockId]: boardCount } — set after each runCutList()
 let allQuotes = [];               // loaded by loadQuotes()
 let _pendingQuoteId = null;       // set when converting a quote, cleared after saveOrder()
+let _pendingQuoteBoardCounts = null; // { picket_count, twobytwo_count, twobyfour_count } from quote
 
 function renderStockTypes() {
   const list = document.getElementById('cl-stock-list');
@@ -5459,9 +5476,13 @@ async function saveQuote() {
   const cut_list_id = clNameEl.dataset.savedId || null;
   const cut_list_name = clNameEl.value.trim() || null;
   const picketStock = clStockTypes.find(s => /picket/i.test(s.shortName || s.name));
+  const twobytwoStock = clStockTypes.find(s => /2.?x.?2|twobytwo/i.test(s.shortName || s.name));
+  const twobyfourStock = clStockTypes.find(s => /2.?x.?4|twobyfour/i.test(s.shortName || s.name));
   const picket_count = picketStock ? (clLastRunBoardCounts[picketStock.id] ?? null) : null;
+  const twobytwo_count = twobytwoStock ? (clLastRunBoardCounts[twobytwoStock.id] ?? null) : null;
+  const twobyfour_count = twobyfourStock ? (clLastRunBoardCounts[twobyfourStock.id] ?? null) : null;
 
-  const { error } = await sb.from('quotes').insert({ name, price, cut_list_id, cut_list_name, picket_count, notes });
+  const { error } = await sb.from('quotes').insert({ name, price, cut_list_id, cut_list_name, picket_count, twobytwo_count, twobyfour_count, notes });
   if (error) { showToast('Error saving quote', 'error'); return; }
   showToast('Quote created!', 'success');
   closeModal('createQuoteModal');
