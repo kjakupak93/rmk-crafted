@@ -163,8 +163,13 @@ Plan material cuts before building. Enter parts, calculate board usage, and save
 1. Set stock materials (defaults: Cedar Picket 6ft, 2×2 8ft, 2×4 8ft) and blade kerf
 2. Add parts — Description, Qty, Length, Width (width optional — used for rip cuts), Material
 3. Add optional Notes for the cut list
-4. Tap **Calculate** to see the board diagram
+4. Tap **Calculate** to see the board diagram and margin estimate
 5. Tap **💾 Save** to store for later
+
+**Margin estimate bar** — after Calculate, a summary bar appears between the diagram and parts list:
+- **Mat. Cost** — calculated from board counts × material unit costs (pickets $3.66, 2×2s $3.23, 2×4s $4.17 each, incl. tax)
+- **Price** — editable field pre-filled with the $10/picket suggested price; change it to see how margin shifts
+- **Margin %** — live-updates as you type; color-coded green (≥50%), orange (≥30%), red (<30%)
 
 **Board diagram:**
 - Each bar represents one physical board

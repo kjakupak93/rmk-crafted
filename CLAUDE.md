@@ -89,6 +89,8 @@ Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
 
 **Stock short names**: `CL_DEFAULT_STOCK` entries have a `shortName` field used in dropdowns (e.g. `Picket 6'`); full `name` used in diagram headers.
 
+**Margin bar**: After `runCutList()` completes, `renderClMarginBar()` is called to populate `#cl-margin-bar` (sits between `#cl-diagram` and `#cl-parts-table`). It calculates material cost from `clLastRunBoardCounts × UNIT_COSTS`, pre-fills the suggested price as `picketCount × PICKET_PRICE_PER_UNIT`, and renders three columns: Mat. Cost (read-only), Price (editable `<input id="cl-margin-price">`), and Margin % (`<span id="cl-margin-pct">`). `updateClMargin(cost)` recalculates margin live on price input changes — green ≥50%, orange ≥30%, red <30%. All DOM elements created programmatically (no innerHTML); `#cl-margin-price` gets `font-size: 16px !important` in the `@media (max-width: 640px)` block to prevent iOS Safari zoom.
+
 **Quote button**: `#cl-quote-btn` is disabled by default; `runCutListBins()` enables it after a successful run. `openCreateQuoteModal()` pre-fills price from `clLastRunBoardCounts` and notes from `#cl-name`. `saveQuote()` inserts to the `quotes` table, then auto-navigates to Orders → Quotes tab via `goTo('orders')` + clicking `#orders-tabs .tab-btn[onclick*="quotes"]`. `convertQuoteToOrder(id)` opens the order modal pre-filled with quote data (including size extracted via regex from `cut_list_name`) and sets `_pendingQuoteId`; `saveOrder()` deletes the quote on completion.
 
 ## Business / Pricing
