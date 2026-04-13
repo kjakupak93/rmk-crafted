@@ -347,7 +347,15 @@ test('stock cost editable, persists, and drives margin bar', async ({ page }) =>
   // Note: after edit opens, row.innerHTML is replaced so picketRow filter no longer matches by text.
   // Use the stock list's Save button directly.
   await costInput.fill('4');
-  await page.locator('#cl-stock-list button:has-text("Save")').click();
+  // Wait for the saveStockCosts() upsert to complete before reloading — it's async
+  // (fire-and-forget in saveStockEdit) so without this the in-flight request gets aborted.
+  await Promise.all([
+    page.waitForResponse(
+      res => res.url().includes('supabase.co/rest/v1/settings') && res.request().method() === 'POST',
+      { timeout: 10000 }
+    ),
+    page.locator('#cl-stock-list button:has-text("Save")').click(),
+  ]);
   await expect(page.locator('#cl-stock-list .cl-stock-row').filter({ hasText: 'Cedar Picket 6ft' })).toBeVisible();
 
   // Reload page to verify persistence
