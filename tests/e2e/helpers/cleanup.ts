@@ -1,4 +1,11 @@
 // tests/e2e/helpers/cleanup.ts
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Persist the settings snapshot to disk so it survives process crashes between beforeAll and afterAll.
+// If afterAll doesn't run (e.g. runner killed mid-test), the next run reads the snapshot from disk
+// before calling resetSettings(), preventing defaults from being permanently committed.
+const SNAPSHOT_FILE = path.join(__dirname, '../.settings-snapshot.json');
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const ANON_KEY = process.env.SUPABASE_ANON_KEY!;
@@ -158,12 +165,14 @@ export async function cleanupById(table: string, id: string): Promise<void> {
 }
 
 const DEFAULT_ADDONS = [
-  { id: 'sealant',  label: 'Sealant',       base: 20, scales: true  },
-  { id: 'liner',    label: 'Fabric Liner',   base: 15, scales: true  },
-  { id: 'casters',  label: 'Casters',        base: 40, scales: false },
-  { id: 'shelf',    label: 'Bottom Shelf',   base: 30, scales: true  },
+  { id: 'sealant',               label: 'Sealant',       base: 20, scales: true  },
+  { id: 'liner',                 label: 'Fabric Liner',  base: 15, scales: true  },
+  { id: 'casters',               label: 'Casters',       base: 40, scales: false },
+  { id: 'shelf',                 label: 'Bottom Shelf',  base: 30, scales: true  },
+  { id: 'addon_1775498627856',   label: 'Farmhouse Style', base: 0,  scales: false },
+  { id: 'addon_1775498955297',   label: 'Non-Slip Feet', base: 10, scales: false },
 ];
-const DEFAULT_PRODUCTS = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
+const DEFAULT_PRODUCTS = ['Standard Planter', 'Vertical Planter', 'Tiered Planter', 'Dog Bowl Stand'];
 const DEFAULT_STOCK_COSTS: Record<string, number> = {
   'Cedar Picket 6ft': 3.66,
   'Pine 2×2 8ft': 3.23,
@@ -175,8 +184,23 @@ export type SettingsSnapshot = { addons: string; products: string; product_optio
 /**
  * Snapshot current 'addons', 'products', and 'product_options' settings rows.
  * Call in beforeAll before resetSettings() so real data can be restored after tests.
+ * Also persists the snapshot to disk so it survives process crashes between beforeAll and afterAll.
  */
 export async function snapshotSettings(): Promise<SettingsSnapshot> {
+  // If a snapshot file exists from a prior crashed run, restore it first before taking a new snapshot.
+  // This prevents a crashed run from leaving defaults in Supabase, which would then be snapshotted
+  // as the "real" data on the next run.
+  if (fs.existsSync(SNAPSHOT_FILE)) {
+    try {
+      const prior = JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf8')) as SettingsSnapshot;
+      console.log('cleanup: found snapshot from prior run, restoring before taking new snapshot');
+      await restoreSettings(prior);
+      fs.unlinkSync(SNAPSHOT_FILE);
+    } catch (e) {
+      console.warn('cleanup: failed to restore prior snapshot:', e);
+    }
+  }
+
   const token = await getAuthToken();
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/settings?key=in.(addons,products,product_options,stock_costs)&select=key,value`,
@@ -191,12 +215,23 @@ export async function snapshotSettings(): Promise<SettingsSnapshot> {
     if (k === 'stock_costs') return JSON.stringify(DEFAULT_STOCK_COSTS);
     return '{}';
   };
-  return { addons: get('addons'), products: get('products'), product_options: get('product_options'), stock_costs: get('stock_costs') };
+  const snapshot: SettingsSnapshot = {
+    addons: get('addons'),
+    products: get('products'),
+    product_options: get('product_options'),
+    stock_costs: get('stock_costs'),
+  };
+
+  // Persist to disk so afterAll can recover even if the process is killed mid-test.
+  fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(snapshot, null, 2), 'utf8');
+
+  return snapshot;
 }
 
 /**
  * Restore 'addons', 'products', and 'product_options' settings rows from a snapshot.
  * Call in afterAll to undo any changes made during tests.
+ * Cleans up the on-disk snapshot file on successful completion.
  */
 export async function restoreSettings(snapshot: SettingsSnapshot): Promise<void> {
   const token = await getAuthToken();
@@ -210,6 +245,10 @@ export async function restoreSettings(snapshot: SettingsSnapshot): Promise<void>
       const text = await res.text();
       console.warn(`cleanup: PATCH settings/${key} failed — ${res.status} ${text}`);
     }
+  }
+  // Remove the on-disk snapshot after successful restore.
+  if (fs.existsSync(SNAPSHOT_FILE)) {
+    try { fs.unlinkSync(SNAPSHOT_FILE); } catch { /* ignore */ }
   }
 }
 

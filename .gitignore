@@ -7,3 +7,4 @@ playwright-report/
 tests/.auth-state.json
 .env
 tests/.auth-state.json
+tests/e2e/.settings-snapshot.json
