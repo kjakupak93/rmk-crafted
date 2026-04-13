@@ -352,9 +352,7 @@ test('stock cost editable, persists, and drives margin bar', async ({ page }) =>
 
   // Reload page to verify persistence
   await page.reload();
-  await waitForSettings(page);
-  await page.click('button:has-text("Cut List")');
-  await page.waitForSelector('#mtab-cutlist.active');
+  await goToCutList(page);
 
   const picketRowAfterReload = page.locator('#cl-stock-list .cl-stock-row').filter({ hasText: 'Cedar Picket 6ft' });
   await picketRowAfterReload.locator('button[title="Edit"]').click();
