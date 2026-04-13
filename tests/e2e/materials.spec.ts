@@ -344,8 +344,10 @@ test('stock cost editable, persists, and drives margin bar', async ({ page }) =>
   await expect(costInput).toHaveValue('3.66');
 
   // Change cost to 4.00 and save
+  // Note: after edit opens, row.innerHTML is replaced so picketRow filter no longer matches by text.
+  // Use the stock list's Save button directly.
   await costInput.fill('4');
-  await picketRow.locator('button:has-text("Save")').click();
+  await page.locator('#cl-stock-list button:has-text("Save")').click();
   await expect(page.locator('#cl-stock-list .cl-stock-row').filter({ hasText: 'Cedar Picket 6ft' })).toBeVisible();
 
   // Reload page to verify persistence
@@ -358,8 +360,8 @@ test('stock cost editable, persists, and drives margin bar', async ({ page }) =>
   await picketRowAfterReload.locator('button[title="Edit"]').click();
   const costInputAfterReload = page.locator('[id^="cl-sedit-cost-"]');
   await expect(costInputAfterReload).toHaveValue('4');
-  // Cancel the edit
-  await picketRowAfterReload.locator('button[title="Cancel"]').click();
+  // Cancel the edit — again use stock list scope since row text is replaced
+  await page.locator('#cl-stock-list button[title="Cancel"]').click();
 
   // Run a cut list with one 36" piece on pickets → 1 board × $4.00 = $4.00 mat cost
   await page.fill('#cl-kerf', '0.11');
