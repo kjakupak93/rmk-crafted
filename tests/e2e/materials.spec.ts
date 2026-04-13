@@ -23,6 +23,13 @@ async function goToProducts(page: Page) {
   await page.waitForSelector('#mtab-products.active');
 }
 
+async function goToCutList(page: Page) {
+  await goToMaterials(page);
+  await waitForSettings(page);
+  await page.click('button:has-text("Cut List")');
+  await page.waitForSelector('#mtab-cutlist.active');
+}
+
 async function addPurchase(page: Page, storeName: string): Promise<void> {
   await page.click('button:has-text("Purchases")');
   await page.waitForSelector('#mtab-purchases.active');
@@ -55,7 +62,7 @@ async function confirmDelete(page: Page): Promise<void> {
   await page.click('#confirmOkBtn');
 }
 
-let settingsSnapshot: SettingsSnapshot = { addons: '', products: '', product_options: '{}' };
+let settingsSnapshot: SettingsSnapshot = { addons: '', products: '', product_options: '{}', stock_costs: '' };
 
 test.beforeAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
@@ -323,4 +330,49 @@ test('option dropdown appears in order modal when product with options is select
 
   await page.click('button.modal-btn-cancel');
   // Add-on cleanup handled by afterAll restoreSettings()
+});
+
+test('stock cost editable, persists, and drives margin bar', async ({ page }) => {
+  await goToCutList(page);
+
+  // Find the Cedar Picket 6ft row, open edit
+  const picketRow = page.locator('#cl-stock-list .cl-stock-row').filter({ hasText: 'Cedar Picket 6ft' });
+  await picketRow.locator('button[title="Edit"]').click();
+
+  // Verify cost input is pre-filled with default 3.66
+  const costInput = page.locator('[id^="cl-sedit-cost-"]');
+  await expect(costInput).toHaveValue('3.66');
+
+  // Change cost to 4.00 and save
+  await costInput.fill('4');
+  await picketRow.locator('button:has-text("Save")').click();
+  await expect(page.locator('#cl-stock-list .cl-stock-row').filter({ hasText: 'Cedar Picket 6ft' })).toBeVisible();
+
+  // Reload page to verify persistence
+  await page.reload();
+  await waitForSettings(page);
+  await page.click('button:has-text("Cut List")');
+  await page.waitForSelector('#mtab-cutlist.active');
+
+  const picketRowAfterReload = page.locator('#cl-stock-list .cl-stock-row').filter({ hasText: 'Cedar Picket 6ft' });
+  await picketRowAfterReload.locator('button[title="Edit"]').click();
+  const costInputAfterReload = page.locator('[id^="cl-sedit-cost-"]');
+  await expect(costInputAfterReload).toHaveValue('4');
+  // Cancel the edit
+  await picketRowAfterReload.locator('button[title="Cancel"]').click();
+
+  // Run a cut list with one 36" piece on pickets → 1 board × $4.00 = $4.00 mat cost
+  await page.fill('#cl-kerf', '0.11');
+  await page.fill('#cl-name', `${TAG} Cost Test`);
+  await page.click('button:has-text("+ Add Part")');
+  const lastRow = page.locator('#cl-rows tr:last-child');
+  await lastRow.locator('[id^="cl-qty-"]').fill('1');
+  await lastRow.locator('[id^="cl-len-"]').fill('36');
+  await lastRow.locator('[id^="cl-mat-"]').selectOption({ label: 'Picket 6\'' });
+  await page.click('#mtab-cutlist button:has-text("Calculate")');
+  await expect(page.locator('#cl-results')).toBeVisible({ timeout: 10000 });
+
+  // Margin bar mat cost should be $4.00 (1 board × $4.00)
+  const matCostCol = page.locator('#cl-margin-bar').locator('div').filter({ hasText: /Mat\. Cost/ }).first();
+  await expect(matCostCol).toContainText('$4.00');
 });

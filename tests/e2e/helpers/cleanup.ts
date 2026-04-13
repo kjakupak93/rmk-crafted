@@ -164,8 +164,13 @@ const DEFAULT_ADDONS = [
   { id: 'shelf',    label: 'Bottom Shelf',   base: 30, scales: true  },
 ];
 const DEFAULT_PRODUCTS = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
+const DEFAULT_STOCK_COSTS: Record<string, number> = {
+  'Cedar Picket 6ft': 3.66,
+  'Pine 2×2 8ft': 3.23,
+  'Douglas Fir 2×4 8ft': 4.17,
+};
 
-export type SettingsSnapshot = { addons: string; products: string; product_options: string };
+export type SettingsSnapshot = { addons: string; products: string; product_options: string; stock_costs: string };
 
 /**
  * Snapshot current 'addons', 'products', and 'product_options' settings rows.
@@ -174,7 +179,7 @@ export type SettingsSnapshot = { addons: string; products: string; product_optio
 export async function snapshotSettings(): Promise<SettingsSnapshot> {
   const token = await getAuthToken();
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/settings?key=in.(addons,products,product_options)&select=key,value`,
+    `${SUPABASE_URL}/rest/v1/settings?key=in.(addons,products,product_options,stock_costs)&select=key,value`,
     { headers: makeHeaders(token) },
   );
   const rows: { key: string; value: string }[] = res.ok ? await res.json() : [];
@@ -183,9 +188,10 @@ export async function snapshotSettings(): Promise<SettingsSnapshot> {
     if (found) return found.value;
     if (k === 'addons') return JSON.stringify(DEFAULT_ADDONS);
     if (k === 'products') return JSON.stringify(DEFAULT_PRODUCTS);
+    if (k === 'stock_costs') return JSON.stringify(DEFAULT_STOCK_COSTS);
     return '{}';
   };
-  return { addons: get('addons'), products: get('products'), product_options: get('product_options') };
+  return { addons: get('addons'), products: get('products'), product_options: get('product_options'), stock_costs: get('stock_costs') };
 }
 
 /**
@@ -215,9 +221,10 @@ export async function resetSettings(): Promise<void> {
   const token = await getAuthToken();
   const headers = makeHeaders(token);
   for (const { key, value } of [
-    { key: 'addons',          value: JSON.stringify(DEFAULT_ADDONS)   },
-    { key: 'products',        value: JSON.stringify(DEFAULT_PRODUCTS) },
-    { key: 'product_options', value: '{}'                             },
+    { key: 'addons',          value: JSON.stringify(DEFAULT_ADDONS)      },
+    { key: 'products',        value: JSON.stringify(DEFAULT_PRODUCTS)    },
+    { key: 'product_options', value: '{}'                                },
+    { key: 'stock_costs',     value: JSON.stringify(DEFAULT_STOCK_COSTS) },
   ]) {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/settings?key=eq.${key}`,

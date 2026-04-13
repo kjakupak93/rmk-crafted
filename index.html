@@ -1786,6 +1786,10 @@ body {
               <label>Height (in)</label>
               <input class="std-input" type="number" id="cl-new-stock-hgt" value="" min="0.25" step="0.25" placeholder="opt.">
             </div>
+            <div class="input-group" style="margin-bottom:0;flex:0 0 74px">
+              <label>$/ea</label>
+              <input class="std-input" type="number" id="cl-new-stock-cost" value="" min="0" step="0.01" placeholder="opt.">
+            </div>
             <button class="btn-secondary" onclick="addStockType()" style="flex-shrink:0">+ Add</button>
           </div>
         </div>
@@ -2383,7 +2387,7 @@ window.sb = sb;
   async function loadSettings() {
     if (_settingsLoaded) return;
     _settingsLoaded = true;
-    await Promise.all([loadAddonSettings(), loadProductSettings(), loadProductOptions()]);
+    await Promise.all([loadAddonSettings(), loadProductSettings(), loadProductOptions(), loadStockCosts()]);
     populateProductSelects();
     window._settingsDidLoad = true;
     if (_settingsResolve) { _settingsResolve(); _settingsResolve = null; }
@@ -2475,6 +2479,24 @@ const STANDARD_SIZES = [
 ];
 const UNIT_COSTS = {pickets:3.66, twobytwo:3.23, twobyfour:4.17};
 const PICKET_PRICE_PER_UNIT = 10;
+const STOCK_COSTS_DEFAULTS = {'Cedar Picket 6ft':3.66,'Pine 2×2 8ft':3.23,'Douglas Fir 2×4 8ft':4.17};
+let STOCK_COSTS = {...STOCK_COSTS_DEFAULTS};
+
+async function loadStockCosts() {
+  const { data: row } = await sb.from('settings').select('value').eq('key','stock_costs').single();
+  if (row) {
+    try { STOCK_COSTS = JSON.parse(row.value); } catch(e) { STOCK_COSTS = {...STOCK_COSTS_DEFAULTS}; }
+  } else {
+    STOCK_COSTS = {...STOCK_COSTS_DEFAULTS};
+    await saveStockCosts();
+  }
+}
+
+async function saveStockCosts() {
+  const { error } = await sb.from('settings').upsert({ key: 'stock_costs', value: JSON.stringify(STOCK_COSTS) }, { onConflict: 'key' });
+  if (error) showToast('Failed to save stock costs', 'error');
+}
+
 let ADDONS = [
   {id:'sealant', label:'Sealant', base:20, scales:true},
   {id:'liner', label:'Fabric Liner', base:15, scales:true},
@@ -5117,6 +5139,7 @@ function editStockType(id) {
     '<input class="cl-stock-dim" id="cl-sedit-wid-' + id + '" type="number" value="' + (stock.width || '') + '" min="0.25" step="0.25" title="Width (in)" placeholder="W">' +
     '<span class="cl-stock-sep">×</span>' +
     '<input class="cl-stock-dim" id="cl-sedit-hgt-' + id + '" type="number" value="' + (stock.height || '') + '" min="0.25" step="0.25" title="Height (in)" placeholder="H">' +
+    '<input class="cl-stock-dim" id="cl-sedit-cost-' + id + '" type="number" value="' + (STOCK_COSTS[stock.name] != null ? STOCK_COSTS[stock.name] : '') + '" min="0" step="0.01" title="Cost per board ($)" placeholder="$/ea">' +
     '<button class="btn-secondary" style="font-size:12px;padding:3px 10px;flex-shrink:0" onclick="saveStockEdit(\'' + id + '\')">Save</button>' +
     '<button class="cl-stock-remove" onclick="renderStockTypes()" title="Cancel" style="font-size:13px">✕</button>';
   document.getElementById('cl-sedit-name-' + id)?.focus();
@@ -5124,11 +5147,17 @@ function editStockType(id) {
 function saveStockEdit(id) {
   const stock = clStockTypes.find(s => s.id === id);
   if (!stock) return;
+  const oldName = stock.name;
   const name = (document.getElementById('cl-sedit-name-' + id)?.value || '').trim() || stock.name;
   const len = parseFloat(document.getElementById('cl-sedit-len-' + id)?.value) || stock.len;
   const width = parseFloat(document.getElementById('cl-sedit-wid-' + id)?.value) || null;
   const height = parseFloat(document.getElementById('cl-sedit-hgt-' + id)?.value) || null;
+  const costRaw = document.getElementById('cl-sedit-cost-' + id)?.value;
+  const cost = (costRaw !== '' && costRaw != null) ? (parseFloat(costRaw) || 0) : 0;
   stock.name = name; stock.len = len; stock.width = width; stock.height = height;
+  if (name !== oldName) delete STOCK_COSTS[oldName];
+  STOCK_COSTS[name] = cost;
+  saveStockCosts();
   renderStockTypes();
 }
 
@@ -5137,21 +5166,29 @@ function addStockType() {
   const lenEl = document.getElementById('cl-new-stock-len');
   const widEl = document.getElementById('cl-new-stock-wid');
   const hgtEl = document.getElementById('cl-new-stock-hgt');
+  const costEl = document.getElementById('cl-new-stock-cost');
   const name = (nameEl.value || '').trim();
   const len = parseFloat(lenEl.value) || 0;
   const width = parseFloat(widEl.value) || null;
   const height = hgtEl ? (parseFloat(hgtEl.value) || null) : null;
+  const costRaw = costEl?.value;
+  const cost = (costRaw !== '' && costRaw != null) ? (parseFloat(costRaw) || 0) : 0;
   if (!name) { showToast('Enter a material name', 'error'); return; }
   if (len <= 0) { showToast('Enter a valid length', 'error'); return; }
   clStockTypes.push({ id: 'st-' + (++clStockIdCounter), name, len, width, height });
+  STOCK_COSTS[name] = cost;
+  saveStockCosts();
   nameEl.value = '';
   lenEl.value = '96';
   widEl.value = '';
   if (hgtEl) hgtEl.value = '';
+  if (costEl) costEl.value = '';
   renderStockTypes();
 }
 
 function removeStockType(id) {
+  const stock = clStockTypes.find(s => s.id === id);
+  if (stock) { delete STOCK_COSTS[stock.name]; saveStockCosts(); }
   clStockTypes = clStockTypes.filter(s => s.id !== id);
   renderStockTypes();
 }
@@ -5447,14 +5484,10 @@ function runCutList() {
 
 function renderClMarginBar() {
   const picketStock    = clStockTypes.find(s => /picket/i.test(s.shortName || s.name));
-  const twobytwoStock  = clStockTypes.find(s => /2.?x.?2|twobytwo/i.test(s.shortName || s.name));
-  const twobyfourStock = clStockTypes.find(s => /2.?x.?4|twobyfour/i.test(s.shortName || s.name));
-  const picketCount    = picketStock    ? (clLastRunBoardCounts[picketStock.id]    ?? 0) : 0;
-  const twobytwoCount  = twobytwoStock  ? (clLastRunBoardCounts[twobytwoStock.id]  ?? 0) : 0;
-  const twobyfourCount = twobyfourStock ? (clLastRunBoardCounts[twobyfourStock.id] ?? 0) : 0;
-  const cost           = (picketCount * UNIT_COSTS.pickets)
-                       + (twobytwoCount * UNIT_COSTS.twobytwo)
-                       + (twobyfourCount * UNIT_COSTS.twobyfour);
+  const picketCount    = picketStock ? (clLastRunBoardCounts[picketStock.id] ?? 0) : 0;
+  const cost           = clStockTypes.reduce((sum, s) => {
+    return sum + (clLastRunBoardCounts[s.id] || 0) * (STOCK_COSTS[s.name] || 0);
+  }, 0);
   const suggestedPrice = picketCount * PICKET_PRICE_PER_UNIT;
 
   const bar = document.getElementById('cl-margin-bar');
