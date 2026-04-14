@@ -178,11 +178,16 @@ const DEFAULT_STOCK_COSTS: Record<string, number> = {
   'Pine 2×2 8ft': 3.23,
   'Douglas Fir 2×4 8ft': 4.17,
 };
+const DEFAULT_CL_STOCK_TYPES = [
+  { id: 'st-1', name: 'Cedar Picket 6ft', shortName: "Picket 6'", len: 72, width: 5.5, height: 0.75 },
+  { id: 'st-2', name: 'Pine 2×2 8ft', shortName: "2×2 8'", len: 96, width: 1.5, height: 1.5 },
+  { id: 'st-3', name: 'Douglas Fir 2×4 8ft', shortName: "2×4 8'", len: 96, width: 3.5, height: 1.5 },
+];
 
-export type SettingsSnapshot = { addons: string; products: string; product_options: string; stock_costs: string };
+export type SettingsSnapshot = { addons: string; products: string; product_options: string; stock_costs: string; cl_stock_types: string };
 
 /**
- * Snapshot current 'addons', 'products', and 'product_options' settings rows.
+ * Snapshot current 'addons', 'products', 'product_options', 'stock_costs', and 'cl_stock_types' settings rows.
  * Call in beforeAll before resetSettings() so real data can be restored after tests.
  * Also persists the snapshot to disk so it survives process crashes between beforeAll and afterAll.
  */
@@ -203,7 +208,7 @@ export async function snapshotSettings(): Promise<SettingsSnapshot> {
 
   const token = await getAuthToken();
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/settings?key=in.(addons,products,product_options,stock_costs)&select=key,value`,
+    `${SUPABASE_URL}/rest/v1/settings?key=in.(addons,products,product_options,stock_costs,cl_stock_types)&select=key,value`,
     { headers: makeHeaders(token) },
   );
   const rows: { key: string; value: string }[] = res.ok ? await res.json() : [];
@@ -213,6 +218,7 @@ export async function snapshotSettings(): Promise<SettingsSnapshot> {
     if (k === 'addons') return JSON.stringify(DEFAULT_ADDONS);
     if (k === 'products') return JSON.stringify(DEFAULT_PRODUCTS);
     if (k === 'stock_costs') return JSON.stringify(DEFAULT_STOCK_COSTS);
+    if (k === 'cl_stock_types') return JSON.stringify(DEFAULT_CL_STOCK_TYPES);
     return '{}';
   };
   const snapshot: SettingsSnapshot = {
@@ -220,6 +226,7 @@ export async function snapshotSettings(): Promise<SettingsSnapshot> {
     products: get('products'),
     product_options: get('product_options'),
     stock_costs: get('stock_costs'),
+    cl_stock_types: get('cl_stock_types'),
   };
 
   // Persist to disk so afterAll can recover even if the process is killed mid-test.
@@ -229,7 +236,7 @@ export async function snapshotSettings(): Promise<SettingsSnapshot> {
 }
 
 /**
- * Restore 'addons', 'products', and 'product_options' settings rows from a snapshot.
+ * Restore 'addons', 'products', 'product_options', 'stock_costs', and 'cl_stock_types' settings rows from a snapshot.
  * Call in afterAll to undo any changes made during tests.
  * Cleans up the on-disk snapshot file on successful completion.
  */
@@ -260,10 +267,11 @@ export async function resetSettings(): Promise<void> {
   const token = await getAuthToken();
   const headers = makeHeaders(token);
   for (const { key, value } of [
-    { key: 'addons',          value: JSON.stringify(DEFAULT_ADDONS)      },
-    { key: 'products',        value: JSON.stringify(DEFAULT_PRODUCTS)    },
-    { key: 'product_options', value: '{}'                                },
-    { key: 'stock_costs',     value: JSON.stringify(DEFAULT_STOCK_COSTS) },
+    { key: 'addons',          value: JSON.stringify(DEFAULT_ADDONS)          },
+    { key: 'products',        value: JSON.stringify(DEFAULT_PRODUCTS)        },
+    { key: 'product_options', value: '{}'                                    },
+    { key: 'stock_costs',     value: JSON.stringify(DEFAULT_STOCK_COSTS)     },
+    { key: 'cl_stock_types',  value: JSON.stringify(DEFAULT_CL_STOCK_TYPES)  },
   ]) {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/settings?key=eq.${key}`,

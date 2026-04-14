@@ -36,7 +36,7 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 | `availability_windows` | Recurring availability windows for the share message |
 | `cut_lists` | Saved cut lists — columns: `id`, `name`, `kerf`, `cuts` (JSONB), `stock_types` (JSONB), `notes`, `style` (text, nullable), `product_options` (JSONB, nullable), `created_at`, `updated_at` |
 | `quotes` | Quotes generated from cut lists — columns: `id`, `name`, `price`, `cut_list_id`, `cut_list_name`, `picket_count`, `notes`, `created_at` |
-| `settings` | App configuration key/value rows — keys: `addons` (JSON array), `products` (JSON array), `product_options` (JSON object) |
+| `settings` | App configuration key/value rows — keys: `addons` (JSON array), `products` (JSON array), `product_options` (JSON object), `stock_costs` (JSON object, `{name: price}`), `cl_stock_types` (JSON array, globally persisted cut list stock materials) |
 
 RLS is enabled on all tables. All business tables require `authenticated` role. Anon has **no direct SELECT or UPDATE on `orders`** — the `schedule.html` booking flow uses two SECURITY DEFINER RPC functions instead: `get_order_by_token(uuid)` (SELECT, returns one order row by token) and `book_order_pickup(uuid, date, text)` (UPDATE, writes pickup date/time). Anon EXECUTE is granted on both functions; anon has no direct table access. Anon INSERT on `schedule_bookings` requires a valid `order_id` linked to an unbooked order. The `settings` table has no anon access. The `orders` table has a `booking_token` UUID column (indexed) — `schedule.html` resolves orders by `?token=<uuid>` only (legacy `?order=<id>` parameter removed).
 
@@ -74,7 +74,9 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 - Purchase modal: materials use a dynamic dropdown-based row system (`#pMaterialRows`). `addPurchaseMaterialRow(matType, qty, price)` adds a row; material dropdown auto-fills price from `PURCH_MAT_PRICES` (four options: Cedar Pickets, 2×2s, 2×4s, Other — `other:0` clears the price field for manual entry). `savePurchase` accumulates `otherTotal` for "Other" rows; they contribute to `total` but are not synced to any stock column. Total override field (`#pTotal`) always pre-fills from saved `item.total` when editing.
 
 ### Cut List Calculator (Materials → Cut List tab)
-Key globals: `clStockTypes` (array), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
+Key globals: `clStockTypes` (array — current working stock types), `clGlobalStockTypes` (array — globally persisted baseline), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
+
+**Global stock type persistence**: `clStockTypes` is the working copy for the current cut list; `clGlobalStockTypes` is the globally persisted baseline stored in `settings` key `cl_stock_types`. `loadClStockTypes()` loads it at startup; `saveClStockTypes()` persists it after any add/edit/remove. `clearCutList()` restores from `clGlobalStockTypes` (not `CL_DEFAULT_STOCK`), so custom materials persist across new cut lists. When a saved cut list is loaded, `clStockTypes` is set from the cut list's saved `stock_types` (for ID matching) but `clGlobalStockTypes` is not changed. One-time migration in `loadSavedCutLists()` seeds global stock types from all saved cut lists on first deploy (handles pre-existing custom materials like Douglas Fir 2x6).
 
 **Packing algorithm** (`runCutListBins`): first-fit-decreasing by length. Before running, rip-cut pieces (width < stock.width) are batched: `ripsPerBoard = Math.floor(stock.width / piece.width)` — groups of up to that many pieces are packed as a single length slot, reducing board count.
 

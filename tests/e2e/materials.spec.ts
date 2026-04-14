@@ -62,7 +62,7 @@ async function confirmDelete(page: Page): Promise<void> {
   await page.click('#confirmOkBtn');
 }
 
-let settingsSnapshot: SettingsSnapshot = { addons: '', products: '', product_options: '{}', stock_costs: '' };
+let settingsSnapshot: SettingsSnapshot = { addons: '', products: '', product_options: '{}', stock_costs: '', cl_stock_types: '' };
 
 test.beforeAll(async () => {
   await cleanupTestData(['purchases', 'cut_lists']);
@@ -383,4 +383,25 @@ test('stock cost editable, persists, and drives margin bar', async ({ page }) =>
   // Margin bar mat cost should be $4.00 (1 board × $4.00)
   const matCostCol = page.locator('#cl-margin-bar').locator('div').filter({ hasText: /Mat\. Cost/ }).first();
   await expect(matCostCol).toContainText('$4.00');
+});
+
+test('adding a stock type persists globally — survives Clear', async ({ page }) => {
+  await goToCutList(page);
+
+  const stockName = 'TestWood 8ft';
+
+  // Add a new stock material
+  await page.fill('#cl-new-stock-name', stockName);
+  await page.fill('#cl-new-stock-len', '96');
+  await page.click('button[onclick="addStockType()"]');
+  await expect(page.locator('#cl-stock-list').getByText(stockName)).toBeVisible({ timeout: 5000 });
+
+  // Clear the cut list form — should restore from clGlobalStockTypes (global), not CL_DEFAULT_STOCK
+  await page.click('button[onclick="clearCutList()"]');
+  await expect(page.locator('#cl-stock-list').getByText(stockName)).toBeVisible({ timeout: 5000 });
+
+  // Clean up: remove the custom stock type (restoreSettings in afterAll also handles this)
+  const stockRow = page.locator('#cl-stock-list .cl-stock-row').filter({ hasText: stockName });
+  await stockRow.locator('button[title="Remove"]').click();
+  await expect(page.locator('#cl-stock-list').getByText(stockName)).toHaveCount(0, { timeout: 5000 });
 });

@@ -160,7 +160,7 @@ View profitability at a glance, revenue trends, and best-selling planter sizes �
 Plan material cuts before building. Enter parts, calculate board usage, and save cut lists for any planter size.
 
 **How to use:**
-1. Set stock materials (defaults: Cedar Picket 6ft, 2×2 8ft, 2×4 8ft) and blade kerf
+1. Set stock materials (defaults: Cedar Picket 6ft, 2×2 8ft, 2×4 8ft — add custom materials once and they persist globally across all cut lists) and blade kerf
 2. Add parts — Description, Qty, Length, Width (width optional — used for rip cuts), Material
 3. Add optional Notes for the cut list
 4. Tap **Calculate** to see the board diagram and margin estimate
@@ -334,7 +334,7 @@ The project has a two-tier Playwright test suite. See [`tests/README.md`](tests/
 | Suite | Command | Tests | What it covers |
 |---|---|---|---|
 | Smoke | `npx playwright test --project=smoke` | 30 | UI presence, navigation, no data writes |
-| E2E | `npx playwright test --project=e2e` | 75 | Full workflows with real Supabase reads/writes |
+| E2E | `npx playwright test --project=e2e` | 76 | Full workflows with real Supabase reads/writes |
 
 Both suites run automatically on every push to `main` via GitHub Actions (`.github/workflows/e2e.yml`).
 
