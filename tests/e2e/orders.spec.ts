@@ -23,7 +23,7 @@ async function createOrder(page: Page, name: string, payment = 'unpaid'): Promis
   await expect(page.locator('#activeOrdersList .card-title', { hasText: name })).toBeVisible({ timeout: 10000 });
 }
 
-let settingsSnapshot: SettingsSnapshot = { addons: '', products: '', product_options: '{}', stock_costs: '' };
+let settingsSnapshot: SettingsSnapshot = { addons: '', products: '', product_options: '{}', stock_costs: '', cl_stock_types: '' };
 
 test.beforeAll(async () => {
   await cleanupTestData(['orders', 'sales', 'activity_log']);

@@ -172,7 +172,7 @@ const DEFAULT_ADDONS = [
   { id: 'addon_1775498627856',   label: 'Farmhouse Style', base: 0,  scales: false },
   { id: 'addon_1775498955297',   label: 'Non-Slip Feet', base: 10, scales: false },
 ];
-const DEFAULT_PRODUCTS = ['Standard Planter', 'Vertical Planter', 'Tiered Planter', 'Dog Bowl Stand'];
+const DEFAULT_PRODUCTS = ['Standard', 'Vertical', 'Tiered', 'Dog Bowl'];
 const DEFAULT_STOCK_COSTS: Record<string, number> = {
   'Cedar Picket 6ft': 3.66,
   'Pine 2×2 8ft': 3.23,
