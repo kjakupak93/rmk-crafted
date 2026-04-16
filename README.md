@@ -323,7 +323,7 @@ The `?token=` parameter links their booking to a specific order via a UUID booki
 | `availability_windows` | Recurring availability settings |
 | `cut_lists` | Saved cut lists — name, kerf, cuts (JSONB), stock types (JSONB), notes, style (text nullable), `product_options` (JSONB nullable), updated_at |
 | `quotes` | Quotes saved from the Cut List Calculator — name, price, picket count, linked cut list |
-| `settings` | App configuration — rows for `addons` (JSON array), `products` (JSON array), `product_options` (JSON object keyed by product name) |
+| `settings` | App configuration — rows for `addons` (JSON array), `products` (JSON array), `product_options` (JSON object keyed by product name), `stock_costs` (JSON object `{name: price}`), `cl_stock_types` (JSON array — globally persisted cut list stock materials) |
 
 ---
 
@@ -334,7 +334,7 @@ The project has a two-tier Playwright test suite. See [`tests/README.md`](tests/
 | Suite | Command | Tests | What it covers |
 |---|---|---|---|
 | Smoke | `npx playwright test --project=smoke` | 30 | UI presence, navigation, no data writes |
-| E2E | `npx playwright test --project=e2e` | 76 | Full workflows with real Supabase reads/writes |
+| E2E | `npx playwright test --project=e2e` | 77 | Full workflows with real Supabase reads/writes |
 
 Both suites run automatically on every push to `main` via GitHub Actions (`.github/workflows/e2e.yml`).
 

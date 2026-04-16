@@ -76,7 +76,8 @@ Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pa
 ### Cut List Calculator (Materials → Cut List tab)
 Key globals: `clStockTypes` (array — current working stock types), `clGlobalStockTypes` (array — globally persisted baseline), `CL_DEFAULT_STOCK`, `CL_COLORS`, `clRowId`
 
-**Global stock type persistence**: `clStockTypes` is the working copy for the current cut list; `clGlobalStockTypes` is the globally persisted baseline stored in `settings` key `cl_stock_types`. `loadClStockTypes()` loads it at startup; `saveClStockTypes()` persists it after any add/edit/remove. `clearCutList()` restores from `clGlobalStockTypes` (not `CL_DEFAULT_STOCK`), so custom materials persist across new cut lists. When a saved cut list is loaded, `clStockTypes` is set from the cut list's saved `stock_types` (for ID matching) but `clGlobalStockTypes` is not changed. One-time migration in `loadSavedCutLists()` seeds global stock types from all saved cut lists on first deploy (handles pre-existing custom materials like Douglas Fir 2x6).
+**Global stock type persistence**: `clStockTypes` is the working copy for the current cut list; `clGlobalStockTypes` is the globally persisted baseline stored in `settings` key `cl_stock_types`. `loadClStockTypes()` loads it at startup and — after a successful load — calls `renderStockTypes()` to repaint the stock list panel and `refreshCutRowStockSelects()` to update the Material dropdown in any already-rendered cut rows (the IIFE at script end renders before auth, so these calls are required to sync the UI after settings load). `saveClStockTypes()` persists it after any add/edit/remove. `clearCutList()` restores from `clGlobalStockTypes` (not `CL_DEFAULT_STOCK`), so custom materials persist across new cut lists. When a saved cut list is loaded, `clStockTypes` is set from the cut list's saved `stock_types` (for ID matching) but `clGlobalStockTypes` is not changed. One-time migration in `loadSavedCutLists()` seeds global stock types from all saved cut lists on first deploy (handles pre-existing custom materials like Douglas Fir 2x6).
+- `refreshCutRowStockSelects()` — iterates `#cl-rows tr` and rebuilds each Material `<select>` from `clStockTypes`, preserving the currently selected value. Called by `loadClStockTypes()` after a successful load so pre-rendered rows (from the startup IIFE) reflect the persisted materials.
 
 **Packing algorithm** (`runCutListBins`): first-fit-decreasing by length. Before running, rip-cut pieces (width < stock.width) are batched: `ripsPerBoard = Math.floor(stock.width / piece.width)` — groups of up to that many pieces are packed as a single length slot, reducing board count.
 
@@ -149,7 +150,7 @@ This app supports dark mode. When adding new UI elements or pages, ensure they w
 Two-tier Playwright suite — see `tests/README.md` for full details.
 
 - **Smoke** (`tests/*.spec.ts`) — 30 tests, read-only, runs in parallel. Covers page load, navigation, and UI presence for all pages.
-- **E2E** (`tests/e2e/*.spec.ts`) — 75 tests, writes real data to Supabase, serial per file. Run with `npx playwright test --project=e2e`.
+- **E2E** (`tests/e2e/*.spec.ts`) — 77 tests, writes real data to Supabase, serial per file. Run with `npx playwright test --project=e2e`.
 
 E2E coverage by file:
 
@@ -157,7 +158,7 @@ E2E coverage by file:
 |---|---|
 | `orders.spec.ts` | Create/edit/delete order, advance status, complete (Cash + Venmo), skip, prepaid bypass, filter, add-on saved on order, multi-item, mark all paid (Cash + Venmo), product option on card, option restored on edit, option flows to sales history |
 | `cutlist-quotes.spec.ts` | Quote button enable, modal pre-fill, save/convert/delete quote |
-| `materials.spec.ts` | Purchase CRUD, cut list run/save/re-save UPDATE/load-delete, add/rename/delete product, add/delete add-on, new add-on syncs to order modal dropdown, product options panel toggle, add option to product, option dropdown in order modal |
+| `materials.spec.ts` | Purchase CRUD, cut list run/save/re-save UPDATE/load-delete, add/rename/delete product, add/delete add-on, new add-on syncs to order modal dropdown, product options panel toggle, add option to product, option dropdown in order modal, custom stock type persists globally (survives Clear), custom stock type survives page reload and appears in cut row dropdown |
 | `scheduler.spec.ts` | Slot CRUD, booking CRUD, quick book, booking edit syncs `orders.pickup_time`, availability window add/delete |
 | `inventory-sales.spec.ts` | Inventory add/qty-adjust/qty→0-removes/delete, sale log/edit/delete, sale with add-on shows label+price in history, add-on resilience (ADDONS cleared from localStorage) |
 | `visual-coverage.spec.ts` | Cut list board diagram, calendar dot states, order status badge colours, quote margin badge |
