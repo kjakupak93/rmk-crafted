@@ -1277,6 +1277,12 @@ body {
     display: block;
     margin-bottom: 8px;
   }
+
+  /* Cut list inputs: larger on desktop */
+  #cut-list-calc .std-input {
+    padding: 14px 16px;
+    font-size: 20px;
+  }
 }
 
 .customer-booked-badge {
@@ -2510,6 +2516,8 @@ async function loadClStockTypes() {
         const maxId = Math.max(...loaded.map(s => parseInt(s.id.replace('st-','')) || 0));
         if (maxId > clStockIdCounter) clStockIdCounter = maxId;
         _clStockTypesSettingFound = true;
+        renderStockTypes();
+        refreshCutRowStockSelects();
       }
     } catch(e) {}
   }
@@ -5221,6 +5229,22 @@ function removeStockType(id) {
   clGlobalStockTypes = clStockTypes.map(s => ({...s}));
   saveClStockTypes();
   renderStockTypes();
+}
+
+function refreshCutRowStockSelects() {
+  document.querySelectorAll('#cl-rows tr').forEach(row => {
+    const id = row.id.replace('cl-row-', '');
+    const sel = document.getElementById('cl-mat-' + id);
+    if (!sel) return;
+    const curVal = sel.value;
+    sel.replaceChildren(...clStockTypes.map(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.shortName || s.name;
+      opt.selected = s.id === curVal;
+      return opt;
+    }));
+  });
 }
 
 function addCutRow(qty, len, width, label, stockId) {

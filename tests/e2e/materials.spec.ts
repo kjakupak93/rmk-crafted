@@ -405,3 +405,41 @@ test('adding a stock type persists globally — survives Clear', async ({ page }
   await stockRow.locator('button[title="Remove"]').click();
   await expect(page.locator('#cl-stock-list').getByText(stockName)).toHaveCount(0, { timeout: 5000 });
 });
+
+test('adding a stock type persists — survives page reload and appears in cut row dropdown', async ({ page }) => {
+  await goToCutList(page);
+
+  const stockName = 'TestWood Reload 8ft';
+
+  // Add a new stock material
+  await page.fill('#cl-new-stock-name', stockName);
+  await page.fill('#cl-new-stock-len', '96');
+  await page.click('button[onclick="addStockType()"]');
+  await expect(page.locator('#cl-stock-list').getByText(stockName)).toBeVisible({ timeout: 5000 });
+
+  // Wait for the async Supabase save to flush before reloading (saveClStockTypes is fire-and-forget)
+  await page.waitForFunction(
+    async (name: string) => {
+      const res = await (window as any).sb.from('settings').select('value').eq('key', 'cl_stock_types').single();
+      const parsed = JSON.parse(res.data?.value || '[]');
+      return Array.isArray(parsed) && parsed.some((s: any) => s.name === name);
+    },
+    stockName,
+    { timeout: 8000 },
+  );
+
+  // Full page reload — simulates user closing and reopening the app
+  await goToCutList(page);
+
+  // Stock type must still appear in the stock list panel
+  await expect(page.locator('#cl-stock-list').getByText(stockName)).toBeVisible({ timeout: 8000 });
+
+  // It must also appear as an option in the material dropdown of a cut row
+  const matSelect = page.locator('#cl-rows tr:last-child [id^="cl-mat-"]');
+  await expect(matSelect.locator(`option:has-text("${stockName}")`)).toHaveCount(1, { timeout: 5000 });
+
+  // Clean up
+  const stockRow = page.locator('#cl-stock-list .cl-stock-row').filter({ hasText: stockName });
+  await stockRow.locator('button[title="Remove"]').click();
+  await expect(page.locator('#cl-stock-list').getByText(stockName)).toHaveCount(0, { timeout: 5000 });
+});
