@@ -1278,16 +1278,29 @@ body {
     margin-bottom: 8px;
   }
 
-  /* Cut list inputs: larger on desktop, match dim-input row sizing */
-  #cut-list-calc .std-input {
-    padding: 14px 16px;
-    font-size: 20px;
+  /* Uniform font size + compact padding for all inputs on cut list tab */
+  #mtab-cutlist .std-input,
+  #mtab-cutlist .dim-input {
+    font-size: 15px;
+    padding: 8px 12px;
   }
-  /* Reduce td padding so inputs fill the cell like the Add Stock row */
+  #mtab-cutlist .cl-stock-name-input {
+    font-size: 15px;
+    padding: 5px 8px;
+  }
+  #mtab-cutlist .cl-stock-dim {
+    font-size: 15px;
+    padding: 5px 6px;
+  }
+  #mtab-cutlist .cl-stock-name,
+  #mtab-cutlist .cl-stock-dims {
+    font-size: 15px;
+  }
+  /* Reduce td padding so inputs sit flush in the parts table */
   #cut-list-calc .data-table td {
-    padding: 5px 4px;
+    padding: 4px 4px;
   }
-  /* Cap cut list name + product selects — they don't need to fill the whole card */
+  /* Cap cut list name + product selects */
   #cl-name, #cl-product {
     max-width: 480px;
   }
