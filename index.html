@@ -1287,6 +1287,14 @@ body {
   #cut-list-calc .data-table td {
     padding: 5px 4px;
   }
+  /* Cap cut list name + product selects — they don't need to fill the whole card */
+  #cl-name, #cl-product {
+    max-width: 480px;
+  }
+  /* Cap the add-stock row Name input */
+  #cl-new-stock-name {
+    max-width: 200px;
+  }
 }
 
 .customer-booked-badge {
