@@ -4316,7 +4316,7 @@ async function saveOrder() {
     const saleItemRows=payload.items?.rows||[];
     const saleQty=saleItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
     const saleSizeStr=saleItemRows.length>1?saleItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(payload.size||'');
-    const _saleAo=(payload.items?.add_ons||[]).map(id=>{const a=ADDONS.find(x=>x.id===id);const p=payload.items?.add_on_prices?.[id]??0;return a?{id:a.id,label:a.label,price:p}:null;}).filter(Boolean);
+    const _saleAo=(payload.items?.add_ons||[]).map(id=>{const a=ADDONS.find(x=>x.id===id);const p=payload.items?.add_on_prices?.[id]??a?.base??0;return a?{id:a.id,label:a.label,price:p}:null;}).filter(Boolean);
     const _saleProdOpts=saleItemRows[0]?.options||null;
     const _saleRow={name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||'',venmo_fee:payload.venmo_fee||0,add_ons:_saleAo.length?_saleAo:null};
     if (_saleProdOpts) _saleRow.product_options=_saleProdOpts;
@@ -4500,7 +4500,7 @@ async function _doCompleteOrder(data, payment) {
     const compItemRows=data.items?.rows||[];
     const compQty=compItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
     const compSizeStr=compItemRows.length>1?compItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(data.size||'');
-    const _compAo=(data.items?.add_ons||[]).map(id=>{const a=ADDONS.find(x=>x.id===id);const p=data.items?.add_on_prices?.[id]??0;return a?{id:a.id,label:a.label,price:p}:null;}).filter(Boolean);
+    const _compAo=(data.items?.add_ons||[]).map(id=>{const a=ADDONS.find(x=>x.id===id);const p=data.items?.add_on_prices?.[id]??a?.base??0;return a?{id:a.id,label:a.label,price:p}:null;}).filter(Boolean);
     const _compProdOpts=compItemRows[0]?.options||null;
     const _compRow={name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes,venmo_fee:data.venmo_fee||0,add_ons:_compAo.length?_compAo:null};
     if (_compProdOpts) _compRow.product_options=_compProdOpts;
