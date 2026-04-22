@@ -2549,7 +2549,8 @@ async function loadClStockTypes() {
 }
 
 async function saveClStockTypes() {
-  await sb.from('settings').upsert({ key: 'cl_stock_types', value: JSON.stringify(clGlobalStockTypes) }, { onConflict: 'key' });
+  const { error } = await sb.from('settings').upsert({ key: 'cl_stock_types', value: JSON.stringify(clGlobalStockTypes) }, { onConflict: 'key' });
+  if (error) { console.error('saveClStockTypes error:', error); showToast('Failed to save stock materials', 'error'); return; }
   _clStockTypesSettingFound = true;
 }
 
@@ -5806,9 +5807,11 @@ function loadCutList(idOrObj) {
   document.getElementById('cl-rows').innerHTML = '';
   document.getElementById('cl-results').style.display = 'none';
   clRowId = 0;
-  clStockTypes = (cl.stock_types && cl.stock_types.length)
+  const baseTypes = (cl.stock_types && cl.stock_types.length)
     ? cl.stock_types.map(s => ({...s}))
     : clGlobalStockTypes.map(s => ({...s}));
+  const baseIds = new Set(baseTypes.map(s => s.id));
+  clStockTypes = [...baseTypes, ...clGlobalStockTypes.filter(s => !baseIds.has(s.id))];
   renderStockTypes();
   (cl.cuts || []).forEach(c => addCutRow(c.qty, c.len, c.width, c.label, c.stockId));
   showToast('Cut list loaded');
