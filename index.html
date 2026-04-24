@@ -564,8 +564,8 @@ body {
   text-transform: uppercase;
 }
 .badge-pending { background: #FEF3E2; color: var(--orange); }
-.badge-building { background: #E3EEF5; color: var(--ocean); }
-.badge-ready { background: #E3F0E9; color: var(--green); }
+.badge-building { background: rgba(74,134,168,0.18); color: var(--ocean-light); }
+.badge-ready { background: rgba(58,125,92,0.20); color: var(--green); }
 .badge-completed { background: var(--warm-gray); color: var(--text-muted); }
 .badge-overdue { background: #fde8e8; color: var(--red); }
 .badge-cash { background: #e8f5e9; color: #388e3c; }
@@ -624,10 +624,10 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 .settings-card {
   background: var(--bg-card);
@@ -1496,6 +1496,7 @@ body {
       <div class="conn-dot" id="connDot"></div>
       <span id="connText">Connecting...</span>
     </div>
+    <span id="headerDate" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);letter-spacing:0.3px;"></span>
   </div>
 </header>
 
@@ -2660,7 +2661,7 @@ function renderAddonsTab() {
             '<span class="toggle-knob"></span>' +
           '</label>' +
         '</div>' +
-        '<button class="btn-secondary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="startAddonRename(' + i + ')">Rename</button>' +
+        '<button class="icon-btn" style="flex-shrink:0" title="Rename" onclick="startAddonRename(' + i + ')">✏️</button>' +
         '<button class="icon-btn" style="color:var(--red);flex-shrink:0" onclick="deleteAddon(' + i + ')" title="Delete">🗑</button>' +
       '</div>' +
     '</div>';
@@ -3044,7 +3045,7 @@ function renderProductsTab() {
         '<span style="flex:1;font-size:14px;font-weight:600;color:var(--navy);min-width:0">' + esc(s) + '</span>' +
         optBadge +
         '<button class="btn-secondary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="toggleProductOptions(' + i + ')">' + optBtnLabel + '</button>' +
-        '<button class="btn-secondary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="startProductRename(' + i + ')">Rename</button>' +
+        '<button class="icon-btn" style="flex-shrink:0" title="Rename" onclick="startProductRename(' + i + ')">✏️</button>' +
         '<button class="icon-btn" style="color:var(--red);flex-shrink:0" onclick="deleteProduct(' + i + ')" title="Delete">🗑</button>' +
       '</div>';
     if (isExpanded) row += _renderOptionsPanel(i);
@@ -3241,7 +3242,7 @@ async function checkConnection() {
     const { error } = await sb.from('orders').select('id').limit(1);
     if (error) throw error;
     document.getElementById('connDot').className = 'conn-dot connected';
-    document.getElementById('connText').textContent = 'Connected to Supabase';
+    document.getElementById('connText').textContent = 'Live';
     loadHomeStats();
     loadBestSeller();
     loadRecentActivity();
@@ -4151,7 +4152,7 @@ function orderCardHTML(o) {
   const bl={pending:'Pending',building:'Building',ready:'Ready for Pickup',completed:'Completed'}[o.status]||o.status;
   const pc={cash:'badge-cash',venmo:'badge-venmo',unpaid:'badge-unpaid'}[o.payment]||'badge-unpaid';
   const pl={cash:'Cash',venmo:'Venmo',unpaid:'Unpaid'}[o.payment]||'';
-  const pickup=o.pickup_date?`📅 ${fmtDate(o.pickup_date)}${o.pickup_time?' @ '+formatTime(o.pickup_time):''}`:'';
+  const pickup=o.pickup_date?(()=>{const [,m,d]=o.pickup_date.split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1];return`📅 ${mn} ${+d}${o.pickup_time?' @ '+formatTime(o.pickup_time):''}`;})():'';
   const isOverdue = o.status!=='completed' && o.pickup_date && o.pickup_date < todayKey();
   const overdueClass = isOverdue ? ' s-overdue' : '';
   const overdueBadge = isOverdue ? `<span class="badge badge-overdue">Overdue</span>` : '';
@@ -4170,7 +4171,7 @@ function orderCardHTML(o) {
     <div class="card-subtitle">${subtitleItems}${contactSuffix}</div>
     ${o.customer_booked ? '<span class="customer-booked-badge">📅 Self-booked</span>' : ''}
     <div class="card-meta">
-      <div class="meta-item"><strong>$${o.price||0}</strong></div>
+      <div class="meta-item">💰 <strong>$${o.price||0}</strong></div>
       <div class="meta-item"><span class="badge ${pc}">${pl}</span></div>
       ${pickup?`<div class="meta-item">${pickup}</div>`:''}
       ${addonBadges}
@@ -4735,13 +4736,10 @@ async function loadInventory() {
   if (!data||!data.length) {grid.innerHTML=emptyState('📦','No ready-to-sell items yet.');return;}
   grid.innerHTML=data.map(item=>`<div class="inv-card">
     <div><div class="inv-size">${esc(item.size)}"</div><div class="inv-product">${esc(item.style)}</div></div>
-    <div class="inv-price">$${item.price}</div>
-    <div class="qty-ctrl">
-      <button class="qty-btn" onclick="adjustInvQty('${item.id}',${item.qty},-1)">−</button>
-      <span class="qty-num">${item.qty}</span>
-      <button class="qty-btn" onclick="adjustInvQty('${item.id}',${item.qty},1)">+</button>
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <div class="inv-price">$${item.price}</div>
+      <div style="font-size:11px;color:var(--text-muted)">${item.qty} in stock</div>
     </div>
-    <div style="font-size:11px;color:var(--text-muted)">in stock</div>
     ${item.add_ons&&item.add_ons.length?`<div style="font-size:11px;color:var(--ocean)">✨ ${item.add_ons.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?esc(a.label):id;}).join(' · ')}</div>`:''}
     ${item.notes?`<div style="font-size:12px;color:var(--text-muted)">${esc(item.notes)}</div>`:''}
     <div style="display:flex;gap:6px;margin-top:4px">
@@ -6399,6 +6397,7 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 buildStdTable();
 setHomeGreeting();
 checkConnection();
+(function(){const n=new Date();const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][n.getMonth()];document.getElementById('headerDate').textContent=`${mn} ${n.getDate()}, ${n.getFullYear()}`;})();
 
 function formatTime(hhmm) {
   if (!hhmm) return '';
