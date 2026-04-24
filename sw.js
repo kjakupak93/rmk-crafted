@@ -1,13 +1,18 @@
-const CACHE = 'rmk-v1';
-const ASSETS = ['./', './index.html', './manifest.json', './icon.png'];
+const CACHE = 'rmk-v2';
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon.png',
+  './fonts/fonts.css',
+  './rmk-redesign-patch.css',
+];
 
-// Install: cache app shell, activate immediately
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
-// Activate: clear old caches, take control of all open tabs
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
@@ -16,8 +21,10 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch: network-first for HTML navigation, cache-first for other assets
 self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  const isSameOrigin = url.origin === self.location.origin;
+
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request)
@@ -26,6 +33,16 @@ self.addEventListener('fetch', e => {
           return res;
         })
         .catch(() => caches.match(e.request))
+    );
+  } else if (isSameOrigin) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(res => {
+          if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          return res;
+        });
+      })
     );
   }
 });
