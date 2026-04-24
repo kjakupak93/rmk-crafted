@@ -3,6 +3,11 @@
 ## Project Overview
 Single-page web app (`index.html`) — all-in-one business dashboard for RMK Crafted, a solo woodworking business in Oceanside, CA selling cedar planter boxes via Facebook Marketplace (pickup only, Cash or Venmo @RMKCrafted).
 
+## Workflow Discipline
+- Explore the codebase briefly before creating task lists; do not over-plan or create excessive tasks before understanding context.
+- When the user asks for a removal or a simple change, proceed directly rather than exhaustively mapping every dependency first.
+- Before editing existing files (especially utility/config files like cleanup.ts), preserve existing values exactly — do not 'reformat' defaults.
+
 ## Tech Stack
 - Frontend: HTML, JavaScript (vanilla) — single `index.html`, no build step, no framework
 - Backend: Supabase (PostgreSQL + RLS policies), client variable `sb`
@@ -42,6 +47,10 @@ RLS is enabled on all tables. All business tables require `authenticated` role. 
 
 ### Authentication
 Dashboard uses Supabase Auth (email/password). The `#pin-gate` div is shown immediately on load and hidden by `sb.auth.onAuthStateChange()` once a session is confirmed. `signIn()` calls `sb.auth.signInWithPassword()`. Sign-out clears the session and re-shows the gate. The Supabase client `sb` is exposed on `window.sb` for use in Playwright `page.evaluate()` calls. `window.sb` is intentionally kept exposed (not gated to localhost) because the Playwright e2e suite runs against the live GitHub Pages URL and uses authenticated `window.sb` calls for test setup/teardown — restricting it to localhost would break CI.
+
+## Error Handling
+- Never silently ignore Supabase or database errors. Always check the `error` field on every Supabase response and surface/log it — do not fall through to default/reset branches on error.
+- When inserts or updates fail, check for: (1) missing columns in schema cache, (2) CHECK constraints rejecting new enum values, (3) RLS policy mismatches.
 
 ## App Structure
 Multi-page navigation — pages shown/hidden via CSS classes, no URL routing. Pages load data when navigated to (not all at startup).
@@ -144,6 +153,12 @@ Always test UI changes for mobile overflow and iOS Safari compatibility. When fi
 
 ### Dark Mode
 This app supports dark mode. When adding new UI elements or pages, ensure they work with the dark mode theme. Check for contrast, badge colors, and analytics styling.
+
+## Testing & Deployment Checklist
+- After any UI or selector change, run the full e2e suite locally before pushing — do not rely on CI to catch stale selectors.
+- Snapshot tests: update BOTH darwin AND linux snapshots (or regenerate on the CI platform) to avoid a second CI failure.
+- When adding a new enum value (frequency, category, etc.), check for matching Supabase CHECK constraints and ship a migration in the same commit.
+- Always update CLAUDE.md, README.md, and test counts when completing a feature.
 
 ## Testing
 
