@@ -1734,8 +1734,7 @@ body {
       <div class="sales-filter-tabs">
         <button class="sales-filter-btn" onclick="setSalesFilter('week',this)">This Week</button>
         <button class="sales-filter-btn" onclick="setSalesFilter('month',this)">This Month</button>
-        <button class="sales-filter-btn" onclick="setSalesFilter('2026',this)">2026</button>
-        <button class="sales-filter-btn" onclick="setSalesFilter('2025',this)">2025</button>
+        <span id="sales-year-btns"></span>
         <button class="sales-filter-btn active" onclick="setSalesFilter('all',this)">All Time</button>
       </div>
       <div class="table-wrap">
@@ -1776,8 +1775,7 @@ body {
         <button class="sales-filter-btn" onclick="setPurchasesFilter('lastweek',this)">Last Week</button>
         <button class="sales-filter-btn" onclick="setPurchasesFilter('month',this)">This Month</button>
         <button class="sales-filter-btn" onclick="setPurchasesFilter('lastmonth',this)">Last Month</button>
-        <button class="sales-filter-btn" onclick="setPurchasesFilter('2026',this)">2026</button>
-        <button class="sales-filter-btn" onclick="setPurchasesFilter('2025',this)">2025</button>
+        <span id="purchases-year-btns"></span>
         <button class="sales-filter-btn active" onclick="setPurchasesFilter('all',this)">All Time</button>
       </div>
       <div class="table-wrap">
@@ -4876,6 +4874,19 @@ function setPurchasesFilter(period, btn) {
   renderPurchaseList();
 }
 
+function renderYearFilterBtns(containerId, years, currentFilter, setFilterFn) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.textContent = '';
+  years.forEach(y => {
+    const btn = document.createElement('button');
+    btn.className = 'sales-filter-btn' + (currentFilter === String(y) ? ' active' : '');
+    btn.textContent = String(y);
+    btn.onclick = function() { window[setFilterFn](String(y), this); };
+    el.appendChild(btn);
+  });
+}
+
 function renderSalesTable() {
   const now = new Date();
   let data = allSales;
@@ -4884,7 +4895,7 @@ function renderSalesTable() {
   } else if (salesFilter === 'week') {
     const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
     data = allSales.filter(s=>{if(!s.sale_date)return false;return new Date(s.sale_date+'T00:00:00')>=weekAgo;});
-  } else if (salesFilter === '2025' || salesFilter === '2026') {
+  } else if (/^\d{4}$/.test(salesFilter)) {
     data = allSales.filter(s=>s.sale_date&&s.sale_date.startsWith(salesFilter));
   }
   const total=data.reduce((s,x)=>s+(x.price||0)+(x.venmo_fee||0),0);
@@ -4915,6 +4926,8 @@ async function loadSales() {
   const {data,error}=await sb.from('sales').select('*').order('sale_date',{ascending:false});
   if (error) { showToast('Error loading sales history','error'); console.error(error); return; }
   allSales = data||[];
+  const saleYears = [...new Set((data||[]).map(s=>s.sale_date?.slice(0,4)).filter(Boolean))].sort((a,b)=>b-a);
+  renderYearFilterBtns('sales-year-btns', saleYears, salesFilter, 'setSalesFilter');
   renderSalesTable();
 }
 
@@ -5920,6 +5933,8 @@ async function loadPurchases() {
   const {data,error}=await sb.from('purchases').select('*').order('purchase_date',{ascending:false});
   if (error) {showToast('Error loading purchases','error');return;}
   allPurchases=data||[];
+  const purchaseYears = [...new Set((data||[]).map(p=>p.purchase_date?.slice(0,4)).filter(Boolean))].sort((a,b)=>b-a);
+  renderYearFilterBtns('purchases-year-btns', purchaseYears, purchasesFilter, 'setPurchasesFilter');
   renderPurchaseList();
 }
 
@@ -5934,7 +5949,7 @@ function renderPurchaseList() {
     if (purchasesFilter==='all') return true;
     if (!p.purchase_date) return false;
     const d=new Date(p.purchase_date+'T00:00:00');
-    if (purchasesFilter==='2025'||purchasesFilter==='2026') return p.purchase_date.startsWith(purchasesFilter);
+    if (/^\d{4}$/.test(purchasesFilter)) return p.purchase_date.startsWith(purchasesFilter);
     if (purchasesFilter==='lastweek') {
       const dow=now.getDay(); // 0=Sun
       const lastMon=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(dow===0?6:dow-1)-7);
