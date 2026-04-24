@@ -2616,11 +2616,13 @@ async function addNewAddon() {
   await saveAddons();
   renderAddonsTab();
 }
-async function deleteAddon(idx) {
-  await window._settingsReady;
-  ADDONS.splice(idx, 1);
-  await saveAddons();
-  renderAddonsTab();
+function deleteAddon(idx) {
+  showConfirm(`Delete "${ADDONS[idx]?.label || 'this add-on'}"?`, async () => {
+    await window._settingsReady;
+    ADDONS.splice(idx, 1);
+    await saveAddons();
+    renderAddonsTab();
+  }, 'Delete');
 }
 function startAddonRename(idx) { _editingAddonIdx = idx; renderAddonsTab(); }
 function cancelAddonRename() { _editingAddonIdx = null; renderAddonsTab(); }
