@@ -4348,7 +4348,8 @@ async function saveOrder() {
     const _saleRow={name:payload.name,size:saleSizeStr,style:payload.style||'Standard',price:payload.price||0,qty:saleQty,payment:payload.payment,sale_date:new Date().toISOString().split('T')[0],notes:payload.notes||'',venmo_fee:payload.venmo_fee||0,add_ons:_saleAo.length?_saleAo:null};
     if (_saleProdOpts) _saleRow.product_options=_saleProdOpts;
     if (payload.picket_count != null) { _saleRow.picket_count=payload.picket_count; _saleRow.twobytwo_count=payload.twobytwo_count??null; _saleRow.twobyfour_count=payload.twobyfour_count??null; }
-    await sb.from('sales').insert(_saleRow);
+    const { error: _inlineSaleErr } = await sb.from('sales').insert(_saleRow);
+    if (_inlineSaleErr) { showToast('Order saved but sale record failed — check Sales tab', 'error'); console.error(_inlineSaleErr); }
   }
   // Sync pickup date+time → schedule_bookings and block off slot
   const pickupDate = payload.pickup_date;
@@ -4358,7 +4359,8 @@ async function saveOrder() {
     let orderId = id || newOrderId;
     if (orderId) {
       // Remove any existing booking for this order first (clean slate on update)
-      await sb.from('schedule_bookings').delete().eq('order_id', orderId);
+      const { error: _delBkErr } = await sb.from('schedule_bookings').delete().eq('order_id', orderId);
+      if (_delBkErr) console.warn('Booking cleanup failed:', _delBkErr.message);
 
       // Insert fresh booking with current date+time
       const bookingRow = {
@@ -4372,7 +4374,8 @@ async function saveOrder() {
         payment: payload.payment || 'unpaid',
         notes: payload.notes || ''
       };
-      await sb.from('schedule_bookings').insert(bookingRow);
+      const { error: _insBkErr } = await sb.from('schedule_bookings').insert(bookingRow);
+      if (_insBkErr) showToast('Order saved, but calendar sync failed — check Scheduler', 'error');
 
       // If a matching open schedule_slot exists for this date+time, it's now occupied
       // (The calendar reads bookings separately, so this is automatic —
