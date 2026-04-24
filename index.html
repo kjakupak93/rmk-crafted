@@ -2101,7 +2101,7 @@ body {
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="oNotes" placeholder="Custom requests, etc."></div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('orderModal')">Cancel</button>
-      <button class="modal-btn-primary" onclick="saveOrder()">Save Order</button>
+      <button class="modal-btn-primary" id="orderSaveBtn" onclick="saveOrder()">Save Order</button>
     </div>
   </div>
 </div>
@@ -2163,7 +2163,7 @@ body {
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="sNotes" placeholder="Optional"></div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('saleModal')">Cancel</button>
-      <button class="modal-btn-primary" onclick="saveSale()">Log Sale</button>
+      <button class="modal-btn-primary" id="saleSaveBtn" onclick="saveSale()">Log Sale</button>
     </div>
   </div>
 </div>
@@ -2267,7 +2267,7 @@ body {
     <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="qbNotes" placeholder="Optional"></div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('quickBookModal')">Cancel</button>
-      <button class="modal-btn-primary" onclick="saveQuickBook()">Book It</button>
+      <button class="modal-btn-primary" id="quickBookSaveBtn" onclick="saveQuickBook()">Book It</button>
     </div>
   </div>
 </div>
@@ -2292,7 +2292,7 @@ body {
     </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('windowModal')">Cancel</button>
-      <button class="modal-btn-primary" onclick="saveWindow()">Save Window</button>
+      <button class="modal-btn-primary" id="windowSaveBtn" onclick="saveWindow()">Save Window</button>
     </div>
   </div>
 </div>
@@ -3195,6 +3195,13 @@ function showToast(msg, type='') {
   t.textContent = msg;
   t.className = 'toast show' + (type ? ' '+type : '');
   setTimeout(() => t.className = 'toast', 2500);
+}
+
+async function _withSaving(btnId, fn) {
+  const btn = document.getElementById(btnId);
+  if (btn?.disabled) return;
+  if (btn) btn.disabled = true;
+  try { await fn(); } finally { if (btn) btn.disabled = false; }
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -4286,6 +4293,7 @@ async function editOrder(id) {
 }
 
 async function saveOrder() {
+  await _withSaving('orderSaveBtn', async () => {
   const id=document.getElementById('editOrderId').value;
   const itemRows=getOrderItems();
   if (!document.getElementById('oName').value) {showToast('Customer name required','error');return;}
@@ -4375,6 +4383,7 @@ async function saveOrder() {
   if (document.getElementById('page-scheduler') && document.getElementById('page-scheduler').classList.contains('active')) {
     renderCalendar(); loadUpcoming();
   }
+  });
 }
 
 function estimateOrderCost(order) {
@@ -4947,6 +4956,7 @@ function editSale(id) {
 }
 
 async function saveSale() {
+  await _withSaving('saleSaveBtn', async () => {
   const _spmt = document.getElementById('sPayment').value;
   const itemRows = getOrderItems('sItemsContainer');
   if (!itemRows.length || !itemRows[0].size) { showToast('At least one item with a size is required', 'error'); return; }
@@ -4983,6 +4993,7 @@ async function saveSale() {
     showToast('Sale logged!', 'success');
   }
   closeModal('saleModal'); loadSales();
+  });
 }
 
 async function deleteSale(id) {
@@ -6039,6 +6050,7 @@ function updatePurchEst() {
 }
 
 async function savePurchase() {
+  await _withSaving('purchSaveBtn', async () => {
   let pickets=0,pp=3.66,t22=0,t22p=3.23,t24=0,t24p=4.17,otherTotal=0;
   document.querySelectorAll('.purch-mat-row').forEach(function(row){
     const sel=row.querySelector('select');
@@ -6069,6 +6081,7 @@ async function savePurchase() {
     showToast('Purchase logged!','success');
     closeModal('purchaseModal'); loadPurchases(); loadRecentActivity();
   }
+  });
 }
 
 async function deletePurchase(id) {
@@ -6200,6 +6213,7 @@ async function editSlot(id) {
 }
 
 async function saveSlot() {
+  await _withSaving('slotModalSaveBtn', async () => {
   if (!selectedDate) return;
   const payload={slot_date:selectedDate,start_time:document.getElementById('slotStart').value,end_time:document.getElementById('slotEnd').value,notes:document.getElementById('slotNotes').value};
   const editId=document.getElementById('editSlotId').value;
@@ -6213,6 +6227,7 @@ async function saveSlot() {
     showToast('Slot added!','success');
   }
   closeModal('slotModal'); loadDayDetail(); renderCalendar();
+  });
 }
 
 function openBookingModal() {
@@ -6245,6 +6260,7 @@ async function editBooking(id) {
 }
 
 async function saveBooking() {
+  await _withSaving('bookingModalSaveBtn', async () => {
   const bookingDate = document.getElementById('bkDate').value;
   if (!bookingDate) {showToast('Pickup date required','error');return;}
   const payload={booking_date:bookingDate,name:document.getElementById('bkName').value,contact:document.getElementById('bkContact').value,pickup_time:document.getElementById('bkTime').value,size:document.getElementById('bkSize').value,amount:parseFloat(document.getElementById('bkAmount').value)||0,payment:document.getElementById('bkPayment').value,notes:document.getElementById('bkNotes').value};
@@ -6268,6 +6284,7 @@ async function saveBooking() {
     showToast('Pickup booked!','success');
   }
   closeModal('bookingModal'); loadDayDetail(); renderCalendar(); loadUpcoming(); loadRecentActivity();
+  });
 }
 
 function openQuickBookModal() {
@@ -6277,6 +6294,7 @@ function openQuickBookModal() {
   openModal('quickBookModal');
 }
 async function saveQuickBook() {
+  await _withSaving('quickBookSaveBtn', async () => {
   const dateVal=document.getElementById('qbDate').value;
   if (!dateVal) {showToast('Date required','error');return;}
   const payload={booking_date:dateVal,name:document.getElementById('qbName').value,contact:document.getElementById('qbContact').value,pickup_time:document.getElementById('qbTime').value,size:document.getElementById('qbSize').value,amount:parseFloat(document.getElementById('qbAmount').value)||0,payment:document.getElementById('qbPayment').value,notes:document.getElementById('qbNotes').value};
@@ -6288,6 +6306,7 @@ async function saveQuickBook() {
   showToast('Pickup booked!','success'); closeModal('quickBookModal');
   calYear=parseInt(y); calMonth=parseInt(m)-1; selectedDate=dateVal;
   renderCalendar(); loadUpcoming();
+  });
 }
 
 function showSchedTab(tab,btn) {
@@ -6346,10 +6365,12 @@ async function loadWindows() {
 
 function openWindowModal() { openModal('windowModal'); }
 async function saveWindow() {
+  await _withSaving('windowSaveBtn', async () => {
   const payload={days:document.getElementById('wDays').value,start_time:document.getElementById('wStart').value,end_time:document.getElementById('wEnd').value};
   const {error} = await sb.from('availability_windows').insert(payload);
   if (error) { showToast('Error saving window','error'); console.error(error); return; }
   showToast('Window added!','success'); closeModal('windowModal'); loadWindows();
+  });
 }
 async function deleteWindow(id) {
   showConfirm('Remove this availability window?', async () => {
