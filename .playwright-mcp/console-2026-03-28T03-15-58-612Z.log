@@ -1,0 +1,2 @@
+[     557ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ https://kjakupak93.github.io/rmk-crafted/:0
+[  121027ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://mfsejmfmyuvhuclzuitc.supabase.co/rest/v1/sales?buyer=in.%28QA+Test+Customer%2CQA+Manual+Sale%29&select=*:0

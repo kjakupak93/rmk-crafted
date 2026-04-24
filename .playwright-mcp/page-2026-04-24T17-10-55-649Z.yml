@@ -1,0 +1,125 @@
+- generic [ref=e10]:
+  - navigation [ref=e11]:
+    - generic [ref=e12]:
+      - img "RMK Crafted" [ref=e13]
+      - generic [ref=e14]:
+        - generic [ref=e15]: RMK Crafted
+        - generic [ref=e16]: Workshop
+    - generic [ref=e17]:
+      - button "⊞ Dashboard" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: ⊞
+        - generic [ref=e20]: Dashboard
+      - button "📋 Orders" [active] [ref=e21] [cursor=pointer]:
+        - generic [ref=e22]: 📋
+        - generic [ref=e23]: Orders
+      - button "🪚 Materials" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]: 🪚
+        - generic [ref=e26]: Materials
+      - button "📅 Scheduler" [ref=e27] [cursor=pointer]:
+        - generic [ref=e28]: 📅
+        - generic [ref=e29]: Scheduler
+      - button "📊 Analytics" [ref=e30] [cursor=pointer]:
+        - generic [ref=e31]: 📊
+        - generic [ref=e32]: Analytics
+    - button "＋ New Order" [ref=e33] [cursor=pointer]
+    - button "🔓 Sign Out" [ref=e35] [cursor=pointer]:
+      - generic [ref=e36]: 🔓
+      - generic [ref=e37]: Sign Out
+  - generic [ref=e38]:
+    - banner [ref=e39]:
+      - generic [ref=e40]: Orders
+      - generic [ref=e44]: Connected to Supabase
+    - generic [ref=e119]:
+      - generic [ref=e120]:
+        - button "📋 Active" [ref=e121] [cursor=pointer]
+        - button "📦 Ready to Sell" [ref=e122] [cursor=pointer]
+        - button "📈 Sales History" [ref=e123] [cursor=pointer]
+        - button "💬 Quotes" [ref=e124] [cursor=pointer]
+      - generic [ref=e125]:
+        - heading "Orders" [level=2] [ref=e126]
+        - generic [ref=e127]:
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - generic [ref=e130]: "1"
+              - generic [ref=e131]: Pending
+            - generic [ref=e132]:
+              - generic [ref=e133]: "2"
+              - generic [ref=e134]: Building
+            - generic [ref=e135]:
+              - generic [ref=e136]: "1"
+              - generic [ref=e137]: Ready for Pickup
+            - generic [ref=e138]:
+              - generic [ref=e139]: $690
+              - generic [ref=e140]: Total Value
+          - generic [ref=e141]:
+            - heading "Active Orders" [level=2] [ref=e142]
+            - generic [ref=e143]:
+              - button "Mark all paid" [ref=e144] [cursor=pointer]
+              - button "⬇️ CSV" [ref=e145] [cursor=pointer]
+              - button "+ New Order" [ref=e146] [cursor=pointer]
+          - generic [ref=e147]:
+            - button "All" [ref=e148] [cursor=pointer]
+            - button "Pending" [ref=e149] [cursor=pointer]
+            - button "Building" [ref=e150] [cursor=pointer]
+            - button "Ready for Pickup" [ref=e151] [cursor=pointer]
+            - button "Overdue 1" [ref=e152] [cursor=pointer]
+          - generic [ref=e153]:
+            - generic [ref=e154]:
+              - generic [ref=e155]: Haley
+              - generic [ref=e156]: 1× 36x16x17" — Standard Planter
+              - generic [ref=e157]:
+                - strong [ref=e159]: $60
+                - generic [ref=e161]: Unpaid
+                - generic [ref=e162]: 📅 4/28/2026
+              - generic [ref=e163]:
+                - generic [ref=e164]: Pending
+                - button "→ Building" [ref=e165] [cursor=pointer]
+                - button "✏️" [ref=e166] [cursor=pointer]
+                - button "✅" [ref=e167] [cursor=pointer]
+                - button "🗑️" [ref=e168] [cursor=pointer]
+                - button "🔗" [ref=e169] [cursor=pointer]
+            - generic [ref=e170]:
+              - generic [ref=e171]: Sianna
+              - generic [ref=e172]: 2× 48x24x27" — Standard Planter
+              - generic [ref=e173]:
+                - strong [ref=e175]: $240
+                - generic [ref=e177]: Unpaid
+                - generic [ref=e178]: 📅 4/25/2026
+              - generic [ref=e179]:
+                - generic [ref=e180]: Building
+                - button "→ Ready" [ref=e181] [cursor=pointer]
+                - button "✏️" [ref=e182] [cursor=pointer]
+                - button "✅" [ref=e183] [cursor=pointer]
+                - button "🗑️" [ref=e184] [cursor=pointer]
+                - button "🔗" [ref=e185] [cursor=pointer]
+            - generic [ref=e186]:
+              - generic [ref=e187]: Zach
+              - generic [ref=e188]: 1× Large" — Tiered Planter · 3
+              - generic [ref=e189]:
+                - strong [ref=e191]: $90
+                - generic [ref=e193]: Unpaid
+                - generic [ref=e194]: 📅 4/25/2026
+                - generic [ref=e195]: ✨ Sealant
+              - generic [ref=e196]:
+                - generic [ref=e197]: Building
+                - button "→ Ready" [ref=e198] [cursor=pointer]
+                - button "✏️" [ref=e199] [cursor=pointer]
+                - button "✅" [ref=e200] [cursor=pointer]
+                - button "🗑️" [ref=e201] [cursor=pointer]
+                - button "🔗" [ref=e202] [cursor=pointer]
+            - generic [ref=e203]:
+              - generic [ref=e204]: Max
+              - generic [ref=e205]: 2× 48x24x16" — Standard Planter
+              - generic [ref=e206]:
+                - strong [ref=e208]: $300
+                - generic [ref=e210]: Unpaid
+                - generic [ref=e211]: 📅 4/23/2026
+                - generic [ref=e212]: ✨ Sealant · Fabric Liner
+              - generic [ref=e213]:
+                - generic [ref=e214]: Overdue
+                - generic [ref=e215]: Ready for Pickup
+                - button "✏️" [ref=e216] [cursor=pointer]
+                - button "✅" [ref=e217] [cursor=pointer]
+                - button "🗑️" [ref=e218] [cursor=pointer]
+                - button "🔗" [ref=e219] [cursor=pointer]
+    - text: Select a day

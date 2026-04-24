@@ -1,0 +1,95 @@
+- generic [ref=e10]:
+  - navigation [ref=e11]:
+    - generic [ref=e12]:
+      - img "RMK Crafted" [ref=e13]
+      - generic [ref=e14]:
+        - generic [ref=e15]: RMK Crafted
+        - generic [ref=e16]: Workshop
+    - generic [ref=e17]:
+      - button "⊞ Dashboard" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: ⊞
+        - generic [ref=e20]: Dashboard
+      - button "📋 Orders" [ref=e21] [cursor=pointer]:
+        - generic [ref=e22]: 📋
+        - generic [ref=e23]: Orders
+      - button "🪚 Materials" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]: 🪚
+        - generic [ref=e26]: Materials
+      - button "📅 Scheduler" [ref=e27] [cursor=pointer]:
+        - generic [ref=e28]: 📅
+        - generic [ref=e29]: Scheduler
+      - button "📊 Analytics" [ref=e30] [cursor=pointer]:
+        - generic [ref=e31]: 📊
+        - generic [ref=e32]: Analytics
+    - button "＋ New Order" [ref=e33] [cursor=pointer]
+    - button "🔓 Sign Out" [ref=e35] [cursor=pointer]:
+      - generic [ref=e36]: 🔓
+      - generic [ref=e37]: Sign Out
+  - generic [ref=e38]:
+    - banner [ref=e39]:
+      - generic [ref=e40]: Workshop Dashboard
+      - generic [ref=e44]: Connected to Supabase
+    - generic [ref=e46]:
+      - generic [ref=e47]:
+        - button "＋ New Order" [ref=e48] [cursor=pointer]
+        - button "🧾 Log Sale" [ref=e49] [cursor=pointer]
+        - button "🛒 Log Purchase" [ref=e50] [cursor=pointer]
+        - button "📅 Schedule" [ref=e51] [cursor=pointer]
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - generic [ref=e55]: 💰
+            - generic [ref=e56]:
+              - generic [ref=e57]: This Month
+              - generic [ref=e59]: $0
+              - generic [ref=e60]: vs last month
+          - generic [ref=e62]:
+            - generic [ref=e63]: 📈
+            - generic [ref=e64]:
+              - generic [ref=e65]: YTD Sales
+              - generic [ref=e67]: $0
+              - generic [ref=e68]: Since Jan 1
+          - generic [ref=e70]:
+            - generic [ref=e71]: 📦
+            - generic [ref=e72]:
+              - generic [ref=e73]: Ready to Sell
+              - generic [ref=e74]: "0"
+              - generic [ref=e75]: In inventory
+          - generic [ref=e76]:
+            - generic [ref=e77]: ⏳
+            - generic [ref=e78]:
+              - generic [ref=e79]: Amount Owed
+              - generic [ref=e80]: $0
+              - generic [ref=e81]: Unpaid orders
+        - generic [ref=e83]:
+          - generic [ref=e84]: ⏱ Recent Activity
+          - generic [ref=e85] [cursor=pointer]: FULL LOG →
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - generic [ref=e89]: 📋 Active Orders
+            - generic [ref=e90] [cursor=pointer]: VIEW ALL →
+          - generic [ref=e91]:
+            - generic [ref=e92]:
+              - generic [ref=e93]: "0"
+              - generic [ref=e94]: Pending
+            - generic [ref=e95]:
+              - generic [ref=e96]: "0"
+              - generic [ref=e97]: Building
+            - generic [ref=e98]:
+              - generic [ref=e99]: "0"
+              - generic [ref=e100]: Ready
+          - generic [ref=e114]: 0 total
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - generic [ref=e103]: 📅 Next Pickups
+            - generic [ref=e104] [cursor=pointer]: SCHEDULE →
+          - generic [ref=e115]: No upcoming pickups
+      - generic [ref=e107]:
+        - generic [ref=e108]:
+          - generic [ref=e110]: 🎯 Today's Focus
+          - generic [ref=e117]: All clear ✓
+        - generic [ref=e111]:
+          - generic [ref=e113]: 🏆 Best Seller This Month
+          - generic [ref=e118]: No sales yet this month
+    - text: Select a day

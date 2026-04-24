@@ -194,13 +194,14 @@ body {
 .conn-pill {
   display: flex;
   align-items: center;
-  gap: 5px;
-  background: var(--bg-page);
-  border: 1px solid var(--border-dim);
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 10px;
-  color: var(--text-dim);
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
   font-family: 'DM Mono', monospace;
   flex-shrink: 0;
 }
@@ -1492,11 +1493,11 @@ body {
   <div class="main-title" id="main-page-title">Workshop Dashboard</div>
   <div style="display:flex;align-items:center;gap:8px;">
     <button class="header-new-order-btn" onclick="goTo('orders');openOrderModal()" title="New Order">&#xFF0B;</button>
+    <div class="conn-pill" id="headerDate"></div>
     <div class="conn-pill">
       <div class="conn-dot" id="connDot"></div>
       <span id="connText">Connecting...</span>
     </div>
-    <span id="headerDate" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);letter-spacing:0.3px;"></span>
   </div>
 </header>
 
@@ -6397,7 +6398,7 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 buildStdTable();
 setHomeGreeting();
 checkConnection();
-(function(){const n=new Date();const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][n.getMonth()];document.getElementById('headerDate').textContent=`${mn} ${n.getDate()}, ${n.getFullYear()}`;})();
+(function(){const n=new Date();const dy=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][n.getDay()];const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][n.getMonth()];document.getElementById('headerDate').textContent=`${dy}, ${mn} ${n.getDate()}`.toUpperCase();})();
 
 function formatTime(hhmm) {
   if (!hhmm) return '';
