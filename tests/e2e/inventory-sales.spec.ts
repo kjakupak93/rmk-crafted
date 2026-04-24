@@ -96,7 +96,10 @@ test('decrementing qty to zero prompts removal and removes the item', async ({ p
   await addInventoryItem(page, { size: '36×12×16', price: '55', qty: '1', notes: `${TAG} Inv Zero` });
 
   const card = page.locator('#invGrid .inv-card').filter({ hasText: `${TAG} Inv Zero` });
-  await card.locator('button.qty-btn', { hasText: '−' }).click();
+  // Extract item ID from the edit button onclick (no +/- UI buttons; call adjustInvQty directly)
+  const onclick = await card.locator('button[title="Edit"]').getAttribute('onclick');
+  const id = onclick?.match(/'([^']+)'/)?.[1];
+  await page.evaluate((itemId) => (window as any).adjustInvQty(itemId, 1, -1), id);
 
   // Custom confirm modal — not native browser dialog
   await page.waitForSelector('#confirmModal', { state: 'visible' });

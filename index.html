@@ -4743,8 +4743,8 @@ async function loadInventory() {
     ${item.add_ons&&item.add_ons.length?`<div style="font-size:11px;color:var(--ocean)">✨ ${item.add_ons.map(id=>{const a=ADDONS.find(x=>x.id===id);return a?esc(a.label):id;}).join(' · ')}</div>`:''}
     ${item.notes?`<div style="font-size:12px;color:var(--text-muted)">${esc(item.notes)}</div>`:''}
     <div style="display:flex;gap:6px;margin-top:4px">
-      <button class="icon-btn" onclick="openEditInvModal('${item.id}')">✏️</button>
-      <button class="icon-btn" onclick="deleteInvItem('${item.id}')">🗑️</button>
+      <button class="icon-btn" title="Edit" onclick="openEditInvModal('${item.id}')">✏️</button>
+      <button class="icon-btn" title="Delete" onclick="deleteInvItem('${item.id}')">🗑️</button>
     </div>
   </div>`).join('');
 }

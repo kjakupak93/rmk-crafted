@@ -208,7 +208,7 @@ test('delete product with no cut lists removes it from list', async ({ page }) =
   // Delete (still uses confirm() dialog)
   const row = page.locator('#products-list div').filter({ hasText: productName });
   page.once('dialog', d => d.accept());
-  await row.locator('.icon-btn').click();
+  await row.locator('button[title="Delete"]').click();
   await expect(page.locator('#products-list').getByText(productName)).toHaveCount(0);
 });
 
