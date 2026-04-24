@@ -3269,6 +3269,8 @@ async function loadAnalytics() {
     sb.from('sales').select('price,sale_date,size,qty,style,add_ons,picket_count,twobytwo_count,twobyfour_count'),
     sb.from('purchases').select('total,purchase_date')
   ]);
+  if (sRes.error) { showToast('Error loading analytics sales data','error'); console.error(sRes.error); }
+  if (pRes.error) { showToast('Error loading analytics purchase data','error'); console.error(pRes.error); }
   analyticsSales = sRes.data || [];
   analyticsPurchases = pRes.data || [];
 
@@ -4733,7 +4735,8 @@ async function advanceOrderStatus(id, currentStatus) {
   const next = {pending:'building', building:'ready'}[currentStatus];
   if (!next) return;
   const {data:ord} = await sb.from('orders').select('name,size').eq('id',id).single();
-  await sb.from('orders').update({status:next}).eq('id',id);
+  const {error: advErr} = await sb.from('orders').update({status:next}).eq('id',id);
+  if (advErr) { showToast('Error updating status — try again', 'error'); console.error(advErr); return; }
   const icon = next==='building'?'🔨':'📦';
   await logActivity(icon, ord?.name||'', `Status → ${next.charAt(0).toUpperCase()+next.slice(1)}${ord?.size?' — '+ord.size+'"':''}`);
   showToast('Status updated to '+next,'success');
@@ -4881,7 +4884,7 @@ function renderSalesTable() {
 
 async function loadSales() {
   const {data,error}=await sb.from('sales').select('*').order('sale_date',{ascending:false});
-  if (error) return;
+  if (error) { showToast('Error loading sales history','error'); console.error(error); return; }
   allSales = data||[];
   renderSalesTable();
 }
@@ -6194,10 +6197,12 @@ async function saveSlot() {
   const payload={slot_date:selectedDate,start_time:document.getElementById('slotStart').value,end_time:document.getElementById('slotEnd').value,notes:document.getElementById('slotNotes').value};
   const editId=document.getElementById('editSlotId').value;
   if (editId) {
-    await sb.from('schedule_slots').update(payload).eq('id',editId);
+    const {error} = await sb.from('schedule_slots').update(payload).eq('id',editId);
+    if (error) { showToast('Error saving slot','error'); console.error(error); return; }
     showToast('Slot updated!','success');
   } else {
-    await sb.from('schedule_slots').insert(payload);
+    const {error} = await sb.from('schedule_slots').insert(payload);
+    if (error) { showToast('Error saving slot','error'); console.error(error); return; }
     showToast('Slot added!','success');
   }
   closeModal('slotModal'); loadDayDetail(); renderCalendar();
@@ -6242,14 +6247,16 @@ async function saveBooking() {
   const [by,bm,bd] = bookingDate.split('-');
   const dateLabel = MONTH_SHORT[parseInt(bm)-1]+' '+parseInt(bd)+(payload.pickup_time?' '+fmtTime(payload.pickup_time):'');
   if (editId) {
-    await sb.from('schedule_bookings').update(payload).eq('id',editId);
+    const {error} = await sb.from('schedule_bookings').update(payload).eq('id',editId);
+    if (error) { showToast('Error saving booking','error'); console.error(error); return; }
     if (linkedOrderId) {
       await sb.from('orders').update({pickup_date:bookingDate,pickup_time:payload.pickup_time||null}).eq('id',linkedOrderId);
     }
     await logActivity('📅', payload.name, `Booking updated — ${dateLabel}`);
     showToast('Booking updated!','success');
   } else {
-    await sb.from('schedule_bookings').insert(payload);
+    const {error} = await sb.from('schedule_bookings').insert(payload);
+    if (error) { showToast('Error saving booking','error'); console.error(error); return; }
     await logActivity('📅', payload.name, `Booked pickup ${dateLabel}`);
     showToast('Pickup booked!','success');
   }
@@ -6267,7 +6274,8 @@ async function saveQuickBook() {
   if (!dateVal) {showToast('Date required','error');return;}
   const payload={booking_date:dateVal,name:document.getElementById('qbName').value,contact:document.getElementById('qbContact').value,pickup_time:document.getElementById('qbTime').value,size:document.getElementById('qbSize').value,amount:parseFloat(document.getElementById('qbAmount').value)||0,payment:document.getElementById('qbPayment').value,notes:document.getElementById('qbNotes').value};
   if (!payload.name) {showToast('Buyer name required','error');return;}
-  await sb.from('schedule_bookings').insert(payload);
+  const {error} = await sb.from('schedule_bookings').insert(payload);
+  if (error) { showToast('Error saving booking','error'); console.error(error); return; }
   const [y,m,d]=dateVal.split('-');
   await logActivity('📅', payload.name, `Booked pickup ${MONTH_SHORT[parseInt(m)-1]} ${parseInt(d)}${payload.pickup_time?' '+fmtTime(payload.pickup_time):''}`);
   showToast('Pickup booked!','success'); closeModal('quickBookModal');
@@ -6332,7 +6340,8 @@ async function loadWindows() {
 function openWindowModal() { openModal('windowModal'); }
 async function saveWindow() {
   const payload={days:document.getElementById('wDays').value,start_time:document.getElementById('wStart').value,end_time:document.getElementById('wEnd').value};
-  await sb.from('availability_windows').insert(payload);
+  const {error} = await sb.from('availability_windows').insert(payload);
+  if (error) { showToast('Error saving window','error'); console.error(error); return; }
   showToast('Window added!','success'); closeModal('windowModal'); loadWindows();
 }
 async function deleteWindow(id) {
