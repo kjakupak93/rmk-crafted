@@ -4002,7 +4002,12 @@ async function loadBestSeller() {
 
 // ===== RECENT ACTIVITY FEED =====
 async function logActivity(icon, name, sub) {
-  await sb.from('activity_log').insert({icon, name, sub});
+  try {
+    const { error } = await sb.from('activity_log').insert({ icon, name, sub });
+    if (error) console.warn('logActivity failed:', error.message);
+  } catch (e) {
+    console.warn('logActivity threw:', e);
+  }
 }
 
 async function loadRecentActivity() {
