@@ -3853,6 +3853,10 @@ async function loadHomeStats() {
       sb.from('inventory').select('qty,price')
     ]);
 
+    if (ordRes.error) { console.error('loadHomeStats orders:', ordRes.error); showToast('Error loading order stats','error'); }
+    if (salesRes.error) { console.error('loadHomeStats sales:', salesRes.error); showToast('Error loading sales stats','error'); }
+    if (invRes.error) { console.error('loadHomeStats inventory:', invRes.error); showToast('Error loading inventory stats','error'); }
+
     // ── Active orders ──
     const activeOrders = (ordRes.data||[]).filter(o => !(o.status === 'completed' && o.payment !== 'unpaid'));
 
