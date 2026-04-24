@@ -4501,23 +4501,37 @@ async function finishCompleteOrder(method) {
 }
 
 async function _doCompleteOrder(data, payment) {
-  await sb.from('orders').update({status:'completed', pickup_date:null, pickup_time:null}).eq('id',data.id);
-  if (payment!=='unpaid') {
-    const compItemRows=data.items?.rows||[];
-    const compQty=compItemRows.reduce((s,i)=>s+(i.qty||1),0)||1;
-    const compSizeStr=compItemRows.length>1?compItemRows.map(i=>`${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + '):(data.size||'');
-    const _compAo=(data.items?.add_ons||[]).map(id=>{const a=ADDONS.find(x=>x.id===id);const p=data.items?.add_on_prices?.[id]??a?.base??0;return a?{id:a.id,label:a.label,price:p}:null;}).filter(Boolean);
-    const _compProdOpts=compItemRows[0]?.options||null;
-    const _compRow={name:data.name,size:compSizeStr,style:data.style,price:data.price,qty:compQty,payment:payment,sale_date:new Date().toISOString().split('T')[0],notes:data.notes,venmo_fee:data.venmo_fee||0,add_ons:_compAo.length?_compAo:null};
-    if (_compProdOpts) _compRow.product_options=_compProdOpts;
-    const {error:_compSaleErr}=await sb.from('sales').insert(_compRow);
-    if (_compSaleErr) console.error('sales insert error:', JSON.stringify(_compSaleErr));
+  if (payment !== 'unpaid') {
+    const compItemRows = data.items?.rows || [];
+    const compQty = compItemRows.reduce((s,i) => s+(i.qty||1), 0) || 1;
+    const compSizeStr = compItemRows.length>1
+      ? compItemRows.map(i => `${(i.qty||1)>1?(i.qty+'× '):''}${i.size}`).join(' + ')
+      : (data.size || '');
+    const _compAo = (data.items?.add_ons || []).map(id => {
+      const a = ADDONS.find(x => x.id === id);
+      const p = data.items?.add_on_prices?.[id] ?? a?.base ?? 0;
+      return a ? {id: a.id, label: a.label, price: p} : null;
+    }).filter(Boolean);
+    const _compProdOpts = compItemRows[0]?.options || null;
+    const _compRow = {name:data.name, size:compSizeStr, style:data.style, price:data.price, qty:compQty, payment:payment, sale_date:new Date().toISOString().split('T')[0], notes:data.notes, venmo_fee:data.venmo_fee||0, add_ons:_compAo.length?_compAo:null};
+    if (_compProdOpts) _compRow.product_options = _compProdOpts;
+    if (data.picket_count != null) { _compRow.picket_count = data.picket_count; _compRow.twobytwo_count = data.twobytwo_count ?? null; _compRow.twobyfour_count = data.twobyfour_count ?? null; }
+    const {error: _compSaleErr} = await sb.from('sales').insert(_compRow);
+    if (_compSaleErr) {
+      showToast('Failed to record sale — order NOT completed. Try again.', 'error');
+      console.error('sales insert error:', JSON.stringify(_compSaleErr));
+      return;
+    }
+    const {error: _ordErr} = await sb.from('orders').update({status:'completed', pickup_date:null, pickup_time:null}).eq('id',data.id);
+    if (_ordErr) { showToast('Sale recorded but order status update failed.', 'error'); console.error(_ordErr); return; }
     const _cost = estimateOrderCost(data);
     const _profit = data.price - _cost;
     const _margin = data.price > 0 ? Math.round((_profit / data.price) * 100) : 0;
     showToast(`Order complete 🎉 · Est. profit $${Math.round(_profit)} (${_margin}% margin)`, 'success');
   } else {
-    showToast('Marked as completed — set payment to move to Completed tab.','success');
+    const {error: _ordErr} = await sb.from('orders').update({status:'completed', pickup_date:null, pickup_time:null}).eq('id',data.id);
+    if (_ordErr) { showToast('Error completing order', 'error'); console.error(_ordErr); return; }
+    showToast('Marked as completed — set payment to move to Completed tab.', 'success');
   }
   await logActivity('✅', data.name, `Order completed — ${data.size||''}" · $${data.price||0}`);
   loadOrders(); loadHomeStats(); loadRecentActivity();
