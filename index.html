@@ -4187,7 +4187,8 @@ function orderCardHTML(o) {
   const addonBadges = addonIds.length
     ? `<div class="meta-item" style="color:var(--ocean)">✨ ${resolvedAddonLabels.join(' · ')}</div>`
     : '';
-  return `<div class="order-card s-${o.status}${overdueClass}">
+  const statusCls = {pending:'s-pending',building:'s-building',ready:'s-ready',completed:'s-completed'}[o.status]||'s-pending';
+  return `<div class="order-card ${statusCls}${overdueClass}">
     <div class="card-title">${esc(o.name)}</div>
     <div class="card-subtitle">${subtitleItems}${contactSuffix}</div>
     ${o.customer_booked ? '<span class="customer-booked-badge">📅 Self-booked</span>' : ''}
@@ -6478,7 +6479,11 @@ function copyBookingLink(orderId, e) {
   const btn = e.currentTarget;
   const base = window.location.origin + window.location.pathname.replace('index.html', '');
   const orderObj = allOrders.find(o => o.id === orderId);
-  const token = orderObj?.booking_token || orderId;
+  const token = orderObj?.booking_token;
+  if (!token) {
+    showToast('No booking link — re-save the order to generate one', 'error');
+    return;
+  }
   const url = base + 'schedule.html?token=' + token;
   navigator.clipboard.writeText(url).then(() => {
     const orig = btn.innerHTML;
