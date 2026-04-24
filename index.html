@@ -3195,6 +3195,19 @@ function showToast(msg, type='') {
   setTimeout(() => t.className = 'toast', 2500);
 }
 
+function showPageLoading(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'loading';
+  const spin = document.createElement('div');
+  spin.className = 'spinner';
+  wrap.appendChild(spin);
+  wrap.appendChild(document.createTextNode('Loading…'));
+  el.textContent = '';
+  el.appendChild(wrap);
+}
+
 async function _withSaving(btnId, fn) {
   const btn = document.getElementById(btnId);
   if (btn?.disabled) return;
@@ -3774,7 +3787,7 @@ function goTo(page) {
   });
 
   if (page==='home')      { setHomeGreeting(); loadHomeStats(); loadBestSeller(); loadRecentActivity(); loadHomePickups(); }
-  if (page==='orders')    { loadOrders(); }
+  if (page==='orders')    { showPageLoading('activeOrdersList'); loadOrders(); }
   if (page==='materials') { loadPurchases(); }
   if (page==='scheduler') { renderCalendar(); loadWindows(); }
   if (page==='analytics') { loadAnalytics(); }

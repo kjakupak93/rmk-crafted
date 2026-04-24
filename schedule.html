@@ -801,6 +801,9 @@
     if (!contact) { document.getElementById('hint-contact').classList.add('show'); valid = false; }
     else document.getElementById('hint-contact').classList.remove('show');
     if (!selectedDate) { alert('Please select a pickup date.'); return; }
+    if (selectedDate < new Date().toISOString().split('T')[0]) {
+      alert('Please select a future date.'); return;
+    }
     if (!selectedTime) { alert('Please select a pickup time.'); return; }
     if (!valid) return;
 
