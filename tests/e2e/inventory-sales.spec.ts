@@ -64,21 +64,19 @@ test('add inventory item appears in Ready to Sell grid', async ({ page }) => {
   await expect(page.locator('#invGrid .inv-card .inv-size', { hasText: '36×16×16' })).toBeVisible();
 });
 
-test('adjust inventory qty increments and decrements the displayed count', async ({ page }) => {
+test('adjust inventory qty via edit modal updates the displayed count', async ({ page }) => {
   await goToInventoryTab(page);
   await addInventoryItem(page, { size: '48×16×16', price: '85', qty: '3', notes: `${TAG} Inv Qty` });
 
   const card = page.locator('#invGrid .inv-card').filter({ hasText: '48×16×16' }).filter({ hasText: `${TAG} Inv Qty` });
+  await expect(card.locator('text=3 in stock')).toBeVisible();
 
-  // Click + once → expect 4
-  await card.locator('button.qty-btn', { hasText: '+' }).click();
-  await expect(card.locator('.qty-num')).toHaveText('4', { timeout: 10000 });
-
-  // Click − twice → expect 2
-  await card.locator('button.qty-btn', { hasText: '−' }).click();
-  await expect(card.locator('.qty-num')).toHaveText('3', { timeout: 10000 });
-  await card.locator('button.qty-btn', { hasText: '−' }).click();
-  await expect(card.locator('.qty-num')).toHaveText('2', { timeout: 10000 });
+  // Edit qty to 5 via edit modal
+  await card.locator('button.icon-btn:has-text("✏️")').click();
+  await page.waitForSelector('#invModal.open');
+  await page.fill('#iQty', '5');
+  await page.click('button[onclick="saveInvItem()"]');
+  await expect(card.locator('text=5 in stock')).toBeVisible({ timeout: 10000 });
 });
 
 test('delete inventory item removes it from the grid', async ({ page }) => {

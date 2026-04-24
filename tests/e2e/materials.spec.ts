@@ -190,7 +190,7 @@ test('rename product from Products tab updates name in list', async ({ page }) =
   await expect(page.locator('#products-list').getByText(original)).toBeVisible({ timeout: 5000 });
   // Rename using inline input
   const row = page.locator('#products-list div').filter({ hasText: original });
-  await row.locator('button:has-text("Rename")').click();
+  await row.locator('button[title="Rename"]').click();
   await page.fill('#prod-rename-inp', renamed);
   await page.press('#prod-rename-inp', 'Enter');
   await expect(page.locator('#products-list').getByText(renamed)).toBeVisible({ timeout: 5000 });
