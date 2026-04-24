@@ -27,6 +27,7 @@ Single-page web app (`index.html`) — all-in-one business dashboard for RMK Cra
 ## Supabase Config
 - **Project URL**: `https://mfsejmfmyuvhuclzuitc.supabase.co`
 - **Anon Key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc2VqbWZteXV2aHVjbHp1aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTgzODksImV4cCI6MjA4NzYzNDM4OX0.Ve8dY-CvGqCMSWfifd6HvrDvmrJo4J00auhos8aezpY`
+- **schedule.html Publishable Key**: `sb_publishable_Hpy9CeMe5TgKgFbC2bLdHg_NT6uipTT` — Supabase's newer publishable-key format (equivalent to the anon JWT, grants `anon` role). Used in `schedule.html` instead of the JWT anon key. Security model is identical: RLS enforces access.
 
 ## Database Tables
 | Table | Purpose |
