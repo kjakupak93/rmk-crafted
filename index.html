@@ -4306,8 +4306,15 @@ async function saveOrder() {
   const itemsPayload = {rows: itemRows, add_ons: selectedAddons, add_on_total: addonTotal, add_on_prices: addonPrices};
   const items = itemsPayload;
   const payload={name:document.getElementById('oName').value,contact:document.getElementById('oContact').value,size:itemRows[0].size,style:itemRows[0].style,price:total,items:items,payment:document.getElementById('oPayment').value,status:document.getElementById('oStatus').value,pickup_date:document.getElementById('oPickup').value||null,pickup_time:document.getElementById('oPickupTime').value||null,notes:document.getElementById('oNotes').value,venmo_fee:venmoFee,...(_pendingQuoteBoardCounts ? {picket_count:_pendingQuoteBoardCounts.picket_count,twobytwo_count:_pendingQuoteBoardCounts.twobytwo_count,twobyfour_count:_pendingQuoteBoardCounts.twobyfour_count} : {})};
-  const {error}=id ? await sb.from('orders').update(payload).eq('id',id) : await sb.from('orders').insert(payload);
-  if (error) {_pendingQuoteId=null;_pendingQuoteBoardCounts=null;showToast('Error saving order','error');console.error(error);return;}
+  let newOrderId = null;
+  if (id) {
+    const {error}=await sb.from('orders').update(payload).eq('id',id);
+    if (error) {_pendingQuoteId=null;_pendingQuoteBoardCounts=null;showToast('Error saving order','error');console.error(error);return;}
+  } else {
+    const {data:insertedOrder,error}=await sb.from('orders').insert(payload).select('id').single();
+    if (error) {_pendingQuoteId=null;_pendingQuoteBoardCounts=null;showToast('Error saving order','error');console.error(error);return;}
+    newOrderId = insertedOrder?.id;
+  }
   if (_pendingQuoteId) {
     await sb.from('quotes').delete().eq('id', _pendingQuoteId);
     _pendingQuoteId = null;
@@ -4331,11 +4338,7 @@ async function saveOrder() {
   const pickupTime = payload.pickup_time;
   if (pickupDate) {
     // Get the saved order's ID (for new orders, fetch the latest one we just inserted)
-    let orderId = id;
-    if (!orderId) {
-      const {data: newOrder} = await sb.from('orders').select('id').eq('name', payload.name).order('created_at', {ascending:false}).limit(1).single();
-      orderId = newOrder?.id;
-    }
+    let orderId = id || newOrderId;
     if (orderId) {
       // Remove any existing booking for this order first (clean slate on update)
       await sb.from('schedule_bookings').delete().eq('order_id', orderId);
