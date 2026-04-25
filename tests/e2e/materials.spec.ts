@@ -246,6 +246,7 @@ test('delete add-on removes it from the list', async ({ page }) => {
   await expect(rows).toHaveCount(beforeCount + 1, { timeout: 5000 });
   // Delete the last row
   await rows.last().locator('button[title="Delete"]').click();
+  await confirmDelete(page);
   await expect(rows).toHaveCount(beforeCount, { timeout: 5000 });
 });
 
