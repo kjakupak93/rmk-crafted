@@ -4469,8 +4469,8 @@ function buildPricingMatrix() {
 let _pendingCompleteOrderData = null;
 
 async function completeOrder(id) {
-  const {data}=await sb.from('orders').select('*').eq('id',id).single();
-  if (!data) return;
+  const { data, error: _fetchErr } = await sb.from('orders').select('*').eq('id',id).single();
+  if (_fetchErr || !data) { showToast('Error loading order', 'error'); console.error(_fetchErr); return; }
   if (data.payment==='unpaid') {
     _pendingCompleteOrderData = data;
     // Compute margin (all values are numeric — safe for DOM insertion)
