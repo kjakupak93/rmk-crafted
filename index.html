@@ -2961,22 +2961,23 @@ async function deleteProduct(idx) {
   const msg = count > 0
     ? count + ' cut list(s) use this product. They\'ll be moved to Uncategorized. Delete product "' + name + '"?'
     : 'Delete product "' + name + '"?';
-  if (!confirm(msg)) return;
-  const newList = PRODUCT_TYPES.filter(s => s !== name);
-  const { error: saveErr } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(newList) }, { onConflict: 'key' });
-  if (saveErr) { showToast('Failed to save product list', 'error'); return; }
-  if (count > 0) {
-    const { error: _clErr } = await sb.from('cut_lists').update({ style: null }).eq('style', name);
-    if (_clErr) { showToast('Product deleted but cut list update failed — some lists may need re-categorizing', 'error'); console.error(_clErr); }
-  }
-  PRODUCT_TYPES = newList;
-  if (PRODUCT_OPTIONS[name] !== undefined) {
-    delete PRODUCT_OPTIONS[name];
-    await saveProductOptions();
-  }
-  populateProductSelects();
-  renderProductsTab();
-  showToast('Product deleted');
+  showConfirm(msg, async () => {
+    const newList = PRODUCT_TYPES.filter(s => s !== name);
+    const { error: saveErr } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(newList) }, { onConflict: 'key' });
+    if (saveErr) { showToast('Failed to save product list', 'error'); return; }
+    if (count > 0) {
+      const { error: _clErr } = await sb.from('cut_lists').update({ style: null }).eq('style', name);
+      if (_clErr) { showToast('Product deleted but cut list update failed — some lists may need re-categorizing', 'error'); console.error(_clErr); }
+    }
+    PRODUCT_TYPES = newList;
+    if (PRODUCT_OPTIONS[name] !== undefined) {
+      delete PRODUCT_OPTIONS[name];
+      await saveProductOptions();
+    }
+    populateProductSelects();
+    renderProductsTab();
+    showToast('Product deleted');
+  });
 }
 function _renderOptionsPanel(productIdx) {
   const name = PRODUCT_TYPES[productIdx];
@@ -3113,15 +3114,16 @@ async function deleteOption(productIdx, optionIdx) {
   const name = PRODUCT_TYPES[productIdx];
   const opt = (PRODUCT_OPTIONS[name] || [])[optionIdx];
   if (!opt) return;
-  if (!confirm('Delete option "' + opt.label + '"?')) return;
-  PRODUCT_OPTIONS[name].splice(optionIdx, 1);
-  if (!PRODUCT_OPTIONS[name].length) delete PRODUCT_OPTIONS[name];
-  const ok = await saveProductOptions();
-  if (ok) {
-    _editingOptionState = null;
-    renderProductsTab();
-    showToast('Option deleted');
-  }
+  showConfirm('Delete option "' + opt.label + '"?', async () => {
+    PRODUCT_OPTIONS[name].splice(optionIdx, 1);
+    if (!PRODUCT_OPTIONS[name].length) delete PRODUCT_OPTIONS[name];
+    const ok = await saveProductOptions();
+    if (ok) {
+      _editingOptionState = null;
+      renderProductsTab();
+      showToast('Option deleted');
+    }
+  });
 }
 function onClProductChange(sel) {
   if (sel.value !== '__new__') {
@@ -5042,10 +5044,11 @@ async function saveSale() {
 }
 
 async function deleteSale(id) {
-  if (!confirm('Delete this sale record?')) return;
-  const {error} = await sb.from('sales').delete().eq('id',id);
-  if (error) { showToast('Error: '+error.message,'error'); return; }
-  showToast('Deleted','success'); loadSales();
+  showConfirm('Delete this sale record?', async () => {
+    const {error} = await sb.from('sales').delete().eq('id',id);
+    if (error) { showToast('Error: '+error.message,'error'); return; }
+    showToast('Deleted','success'); loadSales();
+  });
 }
 
 async function loadQuotes() {
@@ -5170,11 +5173,12 @@ function renderQuotesTable() {
 }
 
 async function deleteQuote(id) {
-  if (!confirm('Delete this quote?')) return;
-  const { error } = await sb.from('quotes').delete().eq('id', id);
-  if (error) { showToast('Error deleting quote', 'error'); return; }
-  showToast('Deleted', 'success');
-  await loadQuotes();
+  showConfirm('Delete this quote?', async () => {
+    const { error } = await sb.from('quotes').delete().eq('id', id);
+    if (error) { showToast('Error deleting quote', 'error'); return; }
+    showToast('Deleted', 'success');
+    await loadQuotes();
+  });
 }
 
 let _editingQuoteId = null;
@@ -6444,7 +6448,7 @@ function copyShareMsg() {
     const b=document.getElementById('copyShareBtn');
     b.textContent='✓ Copied!';b.classList.add('copied');
     setTimeout(()=>{b.textContent='Copy message';b.classList.remove('copied');},2000);
-  });
+  }).catch(() => showToast('Could not copy — please copy manually', 'error'));
 }
 
 // ===== CSV EXPORT =====
