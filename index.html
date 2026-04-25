@@ -4531,7 +4531,8 @@ async function finishCompleteOrder(method) {
       data.venmo_fee = fee;
       localStorage.setItem('rmk_venmo_fee', fee);
     }
-    await sb.from('orders').update(updates).eq('id', data.id);
+    const { error: _payErr } = await sb.from('orders').update(updates).eq('id', data.id);
+    if (_payErr) { showToast('Failed to record payment — try again', 'error'); console.error(_payErr); return; }
     data.payment = method;
   }
   await _doCompleteOrder(data, method);
