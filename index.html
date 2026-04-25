@@ -5954,7 +5954,8 @@ async function loadPurchases() {
 function renderPurchaseList() {
   const tbody=document.getElementById('purchaseBody');
   // Sync active state on filter buttons (restores highlight when returning to tab)
-  document.querySelectorAll('#mtab-purchases .sales-filter-btn').forEach(b=>b.classList.remove('active'));
+  // Exclude year buttons — their active state is owned by renderYearFilterBtns (JS onclick, not HTML attribute)
+  document.querySelectorAll('#mtab-purchases .sales-filter-btn:not(#purchases-year-btns .sales-filter-btn)').forEach(b=>b.classList.remove('active'));
   const activeBtn=document.querySelector(`#mtab-purchases .sales-filter-btn[onclick*="'${purchasesFilter}'"]`);
   if (activeBtn) activeBtn.classList.add('active');
   const now=new Date();
