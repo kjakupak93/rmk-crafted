@@ -842,7 +842,7 @@
       showSuccess(name, selectedDate, selectedTime);
 
     } catch (err) {
-      console.error('Booking submission failed');
+      console.error('Booking submission failed:', err);
       window._bookingSubmitted = false;
       btn.disabled = false;
       btn.innerHTML = '<span>Confirm Pickup</span> <span>→</span>';
