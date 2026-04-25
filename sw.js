@@ -1,11 +1,10 @@
-const CACHE = 'rmk-v2';
+const CACHE = 'rmk-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon.png',
   './fonts/fonts.css',
-  './rmk-redesign-patch.css',
 ];
 
 self.addEventListener('install', e => {
