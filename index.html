@@ -2966,7 +2966,8 @@ async function deleteProduct(idx) {
   const { error: saveErr } = await sb.from('settings').upsert({ key: 'products', value: JSON.stringify(newList) }, { onConflict: 'key' });
   if (saveErr) { showToast('Failed to save product list', 'error'); return; }
   if (count > 0) {
-    await sb.from('cut_lists').update({ style: null }).eq('style', name);
+    const { error: _clErr } = await sb.from('cut_lists').update({ style: null }).eq('style', name);
+    if (_clErr) { showToast('Product deleted but cut list update failed — some lists may need re-categorizing', 'error'); console.error(_clErr); }
   }
   PRODUCT_TYPES = newList;
   if (PRODUCT_OPTIONS[name] !== undefined) {
