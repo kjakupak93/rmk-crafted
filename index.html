@@ -1867,7 +1867,7 @@ body {
             <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
               <button class="btn-secondary" onclick="addCutRow()">+ Add Part</button>
               <button class="btn-primary" onclick="runCutList()">Calculate</button>
-              <button class="btn-primary" onclick="saveCutList()" style="background:var(--green)">💾 Save</button>
+              <button id="clSaveBtn" class="btn-primary" onclick="saveCutList()" style="background:var(--green)">💾 Save</button>
               <button id="cl-quote-btn" class="btn btn-secondary" onclick="openCreateQuoteModal()" disabled title="Run Calculate first">+ Quote</button>
             </div>
             <div id="cl-results" style="display:none">
@@ -2125,7 +2125,7 @@ body {
     </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal('invModal')">Cancel</button>
-      <button class="modal-btn-primary" onclick="saveInvItem()">Save</button>
+      <button id="invSaveBtn" class="modal-btn-primary" onclick="saveInvItem()">Save</button>
     </div>
   </div>
 </div>
@@ -2371,7 +2371,7 @@ body {
     <input id="cqNotes" class="form-control" type="text" style="width:100%;margin-bottom:16px">
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-secondary" onclick="closeModal('createQuoteModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveQuote()">Create Quote</button>
+      <button id="cqSaveBtn" class="btn btn-primary" onclick="saveQuote()">Create Quote</button>
     </div>
   </div>
 </div>
@@ -2387,7 +2387,7 @@ body {
     <input id="eqNotes" class="form-control" type="text" style="width:100%;margin-bottom:16px">
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-secondary" onclick="closeModal('editQuoteModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveQuoteEdit()">Save</button>
+      <button id="eqSaveBtn" class="btn btn-primary" onclick="saveQuoteEdit()">Save</button>
     </div>
   </div>
 </div>
@@ -4839,13 +4839,15 @@ function openEditInvModal(id) {
 }
 
 async function saveInvItem() {
-  const id=document.getElementById('editInvId').value;
-  const addons = Array.from(document.querySelectorAll('#invAddonList input[type="checkbox"]:checked')).map(cb=>cb.dataset.id);
-  const payload={size:document.getElementById('iSize').value,style:document.getElementById('iProduct').value,price:parseFloat(document.getElementById('iPrice').value)||0,qty:parseInt(document.getElementById('iQty').value)||1,notes:document.getElementById('iNotes').value,add_ons:addons.length?addons:null};
-  if (!payload.size) {showToast('Size required','error');return;}
-  const {error}=id ? await sb.from('inventory').update(payload).eq('id',id) : await sb.from('inventory').insert(payload);
-  if (error) {showToast('Error saving','error');return;}
-  showToast(id?'Item updated!':'Item added!','success'); closeModal('invModal'); loadInventory(); loadHomeStats();
+  await _withSaving('invSaveBtn', async () => {
+    const id=document.getElementById('editInvId').value;
+    const addons = Array.from(document.querySelectorAll('#invAddonList input[type="checkbox"]:checked')).map(cb=>cb.dataset.id);
+    const payload={size:document.getElementById('iSize').value,style:document.getElementById('iProduct').value,price:parseFloat(document.getElementById('iPrice').value)||0,qty:parseInt(document.getElementById('iQty').value)||1,notes:document.getElementById('iNotes').value,add_ons:addons.length?addons:null};
+    if (!payload.size) {showToast('Size required','error');return;}
+    const {error}=id ? await sb.from('inventory').update(payload).eq('id',id) : await sb.from('inventory').insert(payload);
+    if (error) {showToast('Error saving','error');return;}
+    showToast(id?'Item updated!':'Item added!','success'); closeModal('invModal'); loadInventory(); loadHomeStats();
+  });
 }
 
 async function adjustInvQty(id, currentQty, delta) {
@@ -5188,15 +5190,17 @@ function openEditQuoteModal(id) {
 }
 
 async function saveQuoteEdit() {
-  const name = document.getElementById('eqName').value.trim();
-  const price = parseFloat(document.getElementById('eqPrice').value) || 0;
-  const notes = document.getElementById('eqNotes').value.trim();
-  const { error } = await sb.from('quotes').update({ name, price, notes }).eq('id', _editingQuoteId);
-  if (error) { showToast('Error saving quote', 'error'); return; }
-  showToast('Quote updated', 'success');
-  closeModal('editQuoteModal');
-  _editingQuoteId = null;
-  await loadQuotes();
+  await _withSaving('eqSaveBtn', async () => {
+    const name = document.getElementById('eqName').value.trim();
+    const price = parseFloat(document.getElementById('eqPrice').value) || 0;
+    const notes = document.getElementById('eqNotes').value.trim();
+    const { error } = await sb.from('quotes').update({ name, price, notes }).eq('id', _editingQuoteId);
+    if (error) { showToast('Error saving quote', 'error'); return; }
+    showToast('Quote updated', 'success');
+    closeModal('editQuoteModal');
+    _editingQuoteId = null;
+    await loadQuotes();
+  });
 }
 
 // ===== MATERIALS =====
@@ -5740,58 +5744,62 @@ function openCreateQuoteModal() {
 }
 
 async function saveQuote() {
-  const name = document.getElementById('cqName').value.trim() || null;
-  const price = parseFloat(document.getElementById('cqPrice').value) || 0;
-  if (!price || price <= 0) { showToast('Enter a price before saving', 'error'); return; }
-  const notes = document.getElementById('cqNotes').value.trim() || null;
-  const clNameEl = document.getElementById('cl-name');
-  const cut_list_id = clNameEl.dataset.savedId || null;
-  const cut_list_name = clNameEl.value.trim() || null;
-  const picketStock = clStockTypes.find(s => /picket/i.test(s.shortName || s.name));
-  const twobytwoStock = clStockTypes.find(s => /2.?x.?2|twobytwo/i.test(s.shortName || s.name));
-  const twobyfourStock = clStockTypes.find(s => /2.?x.?4|twobyfour/i.test(s.shortName || s.name));
-  const picket_count = picketStock ? (clLastRunBoardCounts[picketStock.id] ?? null) : null;
-  const twobytwo_count = twobytwoStock ? (clLastRunBoardCounts[twobytwoStock.id] ?? null) : null;
-  const twobyfour_count = twobyfourStock ? (clLastRunBoardCounts[twobyfourStock.id] ?? null) : null;
+  await _withSaving('cqSaveBtn', async () => {
+    const name = document.getElementById('cqName').value.trim() || null;
+    const price = parseFloat(document.getElementById('cqPrice').value) || 0;
+    if (!price || price <= 0) { showToast('Enter a price before saving', 'error'); return; }
+    const notes = document.getElementById('cqNotes').value.trim() || null;
+    const clNameEl = document.getElementById('cl-name');
+    const cut_list_id = clNameEl.dataset.savedId || null;
+    const cut_list_name = clNameEl.value.trim() || null;
+    const picketStock = clStockTypes.find(s => /picket/i.test(s.shortName || s.name));
+    const twobytwoStock = clStockTypes.find(s => /2.?x.?2|twobytwo/i.test(s.shortName || s.name));
+    const twobyfourStock = clStockTypes.find(s => /2.?x.?4|twobyfour/i.test(s.shortName || s.name));
+    const picket_count = picketStock ? (clLastRunBoardCounts[picketStock.id] ?? null) : null;
+    const twobytwo_count = twobytwoStock ? (clLastRunBoardCounts[twobytwoStock.id] ?? null) : null;
+    const twobyfour_count = twobyfourStock ? (clLastRunBoardCounts[twobyfourStock.id] ?? null) : null;
 
-  const { error } = await sb.from('quotes').insert({ name, price, cut_list_id, cut_list_name, picket_count, twobytwo_count, twobyfour_count, notes });
-  if (error) { showToast('Error saving quote', 'error'); return; }
-  showToast('Quote created!', 'success');
-  closeModal('createQuoteModal');
-  goTo('orders');
-  document.querySelector('#orders-tabs .tab-btn[onclick*="quotes"]')?.click();
+    const { error } = await sb.from('quotes').insert({ name, price, cut_list_id, cut_list_name, picket_count, twobytwo_count, twobyfour_count, notes });
+    if (error) { showToast('Error saving quote', 'error'); return; }
+    showToast('Quote created!', 'success');
+    closeModal('createQuoteModal');
+    goTo('orders');
+    document.querySelector('#orders-tabs .tab-btn[onclick*="quotes"]')?.click();
+  });
 }
 
 async function saveCutList() {
-  const name = (document.getElementById('cl-name').value || '').trim();
-  if (!name) { showToast('Give this cut list a name first', 'error'); return; }
-  const kerf = parseFloat(document.getElementById('cl-kerf').value) || 0;
-  const cuts = collectCutGroups();
-  if (!cuts.length) { showToast('Add at least one cut first', 'error'); return; }
-  const notes = (document.getElementById('cl-notes').value || '').trim();
-  const styleVal = document.getElementById('cl-product').value;
-  const style = (styleVal && styleVal !== '__new__') ? styleVal : null;
-  const product_options = readProductOptionSelects(document.getElementById('cl-product-options'));
-  const stock_types = clStockTypes;
-  const picket_len = 72;
+  await _withSaving('clSaveBtn', async () => {
+    const name = (document.getElementById('cl-name').value || '').trim();
+    if (!name) { showToast('Give this cut list a name first', 'error'); return; }
+    const kerf = parseFloat(document.getElementById('cl-kerf').value) || 0;
+    const cuts = collectCutGroups();
+    if (!cuts.length) { showToast('Add at least one cut first', 'error'); return; }
+    const notes = (document.getElementById('cl-notes').value || '').trim();
+    const styleVal = document.getElementById('cl-product').value;
+    const style = (styleVal && styleVal !== '__new__') ? styleVal : null;
+    const product_options = readProductOptionSelects(document.getElementById('cl-product-options'));
+    const stock_types = clStockTypes;
+    const picket_len = 72;
 
-  // If editing an existing saved list, update it; otherwise insert
-  const nameEl = document.getElementById('cl-name');
-  const existingId = nameEl.dataset.savedId || null;
-  let error;
-  if (existingId) {
-    ({ error } = await sb.from('cut_lists').update({ name, kerf, cuts, stock_types, notes, style, product_options, updated_at: new Date().toISOString() }).eq('id', existingId));
-  } else {
-    // Block duplicate names
-    const duplicate = allCutLists.find(cl => cl.name.trim().toLowerCase() === name.toLowerCase());
-    if (duplicate) { showToast(`A cut list named "${duplicate.name}" already exists`, 'error'); return; }
-    const { data: inserted, error: insertErr } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types, notes, style, product_options }).select().single();
-    error = insertErr;
-    if (!insertErr && inserted) nameEl.dataset.savedId = inserted.id;
-  }
-  if (error) { showToast('Save failed', 'error'); console.error(error); return; }
-  showToast('Cut list saved!');
-  loadSavedCutLists();
+    // If editing an existing saved list, update it; otherwise insert
+    const nameEl = document.getElementById('cl-name');
+    const existingId = nameEl.dataset.savedId || null;
+    let error;
+    if (existingId) {
+      ({ error } = await sb.from('cut_lists').update({ name, kerf, cuts, stock_types, notes, style, product_options, updated_at: new Date().toISOString() }).eq('id', existingId));
+    } else {
+      // Block duplicate names
+      const duplicate = allCutLists.find(cl => cl.name.trim().toLowerCase() === name.toLowerCase());
+      if (duplicate) { showToast(`A cut list named "${duplicate.name}" already exists`, 'error'); return; }
+      const { data: inserted, error: insertErr } = await sb.from('cut_lists').insert({ name, picket_len, kerf, cuts, stock_types, notes, style, product_options }).select().single();
+      error = insertErr;
+      if (!insertErr && inserted) nameEl.dataset.savedId = inserted.id;
+    }
+    if (error) { showToast('Save failed', 'error'); console.error(error); return; }
+    showToast('Cut list saved!');
+    loadSavedCutLists();
+  });
 }
 
 async function loadSavedCutLists() {
