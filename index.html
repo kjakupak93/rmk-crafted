@@ -4851,12 +4851,14 @@ async function adjustInvQty(id, currentQty, delta) {
   const newQty=Math.max(0,currentQty+delta);
   if (newQty===0) {
     showConfirm('Quantity is 0. Remove this item?', async () => {
-      await sb.from('inventory').delete().eq('id',id);
+      const { error: _delErr } = await sb.from('inventory').delete().eq('id',id);
+      if (_delErr) { showToast('Error removing item', 'error'); console.error(_delErr); return; }
       loadInventory(); loadHomeStats();
     }, 'Remove');
     return;
   }
-  await sb.from('inventory').update({qty:newQty}).eq('id',id);
+  const { error: _updErr } = await sb.from('inventory').update({qty:newQty}).eq('id',id);
+  if (_updErr) { showToast('Error updating quantity', 'error'); console.error(_updErr); return; }
   loadInventory(); loadHomeStats();
 }
 
