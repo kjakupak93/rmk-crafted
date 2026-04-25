@@ -132,9 +132,9 @@ test('delete quote removes it from Quotes tab', async ({ page }) => {
   const quoteRow = page.locator('#otab-quotes tr').filter({ hasText: quoteName });
   await expect(quoteRow).toBeVisible({ timeout: 10000 });
 
-  // deleteQuote uses native confirm() — accept it via dialog handler
-  page.once('dialog', dialog => dialog.accept());
   await quoteRow.locator('button:has-text("Delete")').click();
+  await page.waitForSelector('#confirmModal', { state: 'visible' });
+  await page.click('#confirmOkBtn');
 
   await expect(page.locator('#otab-quotes tr').filter({ hasText: quoteName })).toHaveCount(0);
 });

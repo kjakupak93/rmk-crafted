@@ -164,9 +164,9 @@ test('load cut list restores name; delete removes it from saved list', async ({ 
   // Wait for saved list to finish re-rendering before interacting with it
   await expect(page.locator('#cl-saved-list tr').filter({ hasText: cutListName })).toBeVisible({ timeout: 5000 });
 
-  // deleteCutList uses native browser confirm() — accept the dialog
-  page.once('dialog', dialog => dialog.accept());
   await savedRow.locator('button[title="Delete"]').click();
+  await page.waitForSelector('#confirmModal', { state: 'visible' });
+  await page.click('#confirmOkBtn');
   await expect(page.locator('#cl-saved-list tr').filter({ hasText: cutListName })).toHaveCount(0, { timeout: 10000 });
 });
 
@@ -205,10 +205,10 @@ test('delete product with no cut lists removes it from list', async ({ page }) =
   await page.fill('#prod-add-inp', productName);
   await page.press('#prod-add-inp', 'Enter');
   await expect(page.locator('#products-list').getByText(productName)).toBeVisible({ timeout: 5000 });
-  // Delete (still uses confirm() dialog)
   const row = page.locator('#products-list div').filter({ hasText: productName });
-  page.once('dialog', d => d.accept());
   await row.locator('button[title="Delete"]').click();
+  await page.waitForSelector('#confirmModal', { state: 'visible' });
+  await page.click('#confirmOkBtn');
   await expect(page.locator('#products-list').getByText(productName)).toHaveCount(0);
 });
 

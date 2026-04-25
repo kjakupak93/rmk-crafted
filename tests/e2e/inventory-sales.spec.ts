@@ -138,9 +138,9 @@ test('delete a sale removes it from the table', async ({ page }) => {
   await logSale(page, { name, size: '36×16×16', price: '60' });
 
   const row = page.locator('#salesBody tr').filter({ hasText: name });
-  // deleteSale uses native confirm() — accept the dialog
-  page.once('dialog', dialog => dialog.accept());
   await row.locator('button:has-text("🗑️")').click();
+  await page.waitForSelector('#confirmModal', { state: 'visible' });
+  await page.click('#confirmOkBtn');
 
   await expect(page.locator('#salesBody tr').filter({ hasText: name })).toHaveCount(0, { timeout: 10000 });
 });
