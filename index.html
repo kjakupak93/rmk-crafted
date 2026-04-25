@@ -5907,9 +5907,11 @@ function duplicateCutList(id) {
 }
 
 async function deleteCutList(id) {
-  if (!confirm('Delete this cut list?')) return;
-  await sb.from('cut_lists').delete().eq('id', id);
-  loadSavedCutLists();
+  showConfirm('Delete this cut list?', async () => {
+    const { error } = await sb.from('cut_lists').delete().eq('id', id);
+    if (error) { showToast('Error deleting cut list', 'error'); console.error(error); return; }
+    showToast('Cut list deleted'); loadSavedCutLists();
+  });
 }
 
 // Initialize stock types and one empty cut row
@@ -6132,7 +6134,8 @@ async function savePurchase() {
 
 async function deletePurchase(id) {
   showConfirm('Delete this purchase record?', async () => {
-    await sb.from('purchases').delete().eq('id',id);
+    const { error } = await sb.from('purchases').delete().eq('id',id);
+    if (error) { showToast('Error deleting purchase', 'error'); console.error(error); return; }
     showToast('Deleted'); loadPurchases();
   });
 }
@@ -6224,14 +6227,16 @@ async function loadDayDetail() {
 
 async function deleteSlot(id) {
   showConfirm('Remove this time slot?', async () => {
-    await sb.from('schedule_slots').delete().eq('id',id);
+    const { error } = await sb.from('schedule_slots').delete().eq('id',id);
+    if (error) { showToast('Error removing slot', 'error'); console.error(error); return; }
     showToast('Slot removed'); loadDayDetail(); renderCalendar();
   }, 'Remove');
 }
 
 async function deleteBooking(id) {
   showConfirm('Remove this booking?', async () => {
-    await sb.from('schedule_bookings').delete().eq('id',id);
+    const { error } = await sb.from('schedule_bookings').delete().eq('id',id);
+    if (error) { showToast('Error removing booking', 'error'); console.error(error); return; }
     showToast('Booking removed'); loadDayDetail(); renderCalendar(); loadUpcoming();
   }, 'Remove');
 }
@@ -6420,7 +6425,8 @@ async function saveWindow() {
 }
 async function deleteWindow(id) {
   showConfirm('Remove this availability window?', async () => {
-    await sb.from('availability_windows').delete().eq('id',id);
+    const { error } = await sb.from('availability_windows').delete().eq('id',id);
+    if (error) { showToast('Error removing window', 'error'); console.error(error); return; }
     showToast('Removed'); loadWindows();
   }, 'Remove');
 }
