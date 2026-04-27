@@ -1863,6 +1863,73 @@ body {
   border-color: var(--border-bright) !important;
 }
 
+/* ── 31. HEADER TITLE STRUCTURE ── */
+.header-page { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.header-sub  { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+.header-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-dim); padding: 5px 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; white-space: nowrap; }
+
+/* ── 32. KPI CARDS — vertical layout ── */
+.kpi-card {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  padding: 18px 20px !important;
+  gap: 0 !important;
+}
+.kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.kpi-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+.kpi-icon  { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.k-gold .kpi-icon  { background: rgba(201,165,90,0.15); }
+.k-blue .kpi-icon  { background: rgba(61,122,158,0.15); }
+.k-green .kpi-icon { background: rgba(45,122,82,0.15); }
+.k-orange .kpi-icon { background: rgba(201,111,38,0.15); }
+
+.kpi-value { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; line-height: 1; margin-bottom: 6px; letter-spacing: -0.02em; }
+.k-gold .kpi-value  { color: var(--sand); }
+.k-blue .kpi-value  { color: var(--ocean-light); }
+.k-green .kpi-value { color: var(--green-light); }
+.k-orange .kpi-value { color: var(--orange); }
+
+.kpi-footer { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kpi-footer .kpi-sub { font-size: 11px; color: var(--text-dim); }
+.kpi-footer .trend-badge { margin: 0; }
+
+/* sparkline */
+.sparkline { height: 22px; display: flex; align-items: flex-end; gap: 2px; margin-top: 10px; }
+.spark-bar { flex: 1; border-radius: 2px; min-height: 2px; opacity: 0.45; }
+.spark-bar.cur { opacity: 1; }
+.k-gold  .spark-bar { background: var(--sand); }
+.k-blue  .spark-bar { background: var(--ocean); }
+.k-green .spark-bar { background: var(--green); }
+.k-orange .spark-bar { background: var(--orange); }
+
+/* hide the old icon element inside kpi-card when using new layout */
+.kpi-card .kpi-ico { display: none !important; }
+/* hide old kpi-body wrapper styles — content now direct children */
+.kpi-card .kpi-body { min-width: unset; display: contents; }
+/* old kpi-val becomes kpi-value — handled by HTML rewrite */
+
+/* ── 33. ORDER PILLS ── */
+.order-pill {
+  border: 1px solid var(--border) !important;
+}
+.order-pill-val { font-size: 26px !important; }
+.pill-orange { color: var(--orange) !important; }
+.pill-blue   { color: var(--ocean-light) !important; }
+.pill-green  { color: var(--green-light) !important; }
+
+/* ── 34. ACTIVITY FEED — dot style ── */
+.activity-item { gap: 9px !important; padding: 8px 0 !important; }
+.activity-icon {
+  width: 7px !important; height: 7px !important;
+  border-radius: 50% !important;
+  background: var(--ocean-light) !important;
+  margin-top: 5px;
+  font-size: 0 !important;
+}
+.activity-text > div:first-child { font-size: 12.5px !important; }
+.activity-sub { font-family: 'DM Mono', monospace !important; }
+.activity-time { font-family: 'DM Mono', monospace !important; }
+
 /* ===== ORDER MODAL REDESIGN ===== */
 #orderModal {
   display: flex;
@@ -2066,13 +2133,15 @@ body {
 
 <!-- MAIN HEADER -->
 <header class="main-header">
-  <div class="main-title" id="main-page-title">Workshop Dashboard</div>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <span class="header-page" id="main-page-title">Dashboard</span>
+    <span class="header-sub" id="hdr-sub">· Workshop Overview</span>
+  </div>
   <div style="display:flex;align-items:center;gap:8px;">
-    <button class="header-new-order-btn" onclick="goTo('orders');openOrderModal()" title="New Order">&#xFF0B;</button>
-    <div class="conn-pill" id="headerDate"></div>
+    <div class="header-date" id="headerDate"></div>
     <div class="conn-pill">
       <div class="conn-dot" id="connDot"></div>
-      <span id="connText">Connecting...</span>
+      <span id="connText">Connecting…</span>
     </div>
   </div>
 </header>
@@ -2092,42 +2161,78 @@ body {
   <div class="home-top">
     <!-- 2x2 KPI Grid -->
     <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-ico kpi-ico-gold">&#x1F4B0;</div>
-        <div class="kpi-body">
-          <div class="kpi-lbl">This Month</div>
-          <div class="kpi-val">
-            <span class="kpi-val-gold" id="kpi-month-rev">&#x2014;</span>
-          </div>
-          <div class="kpi-sub">vs last month</div>
+      <div class="kpi-card k-gold">
+        <div class="kpi-top">
+          <div class="kpi-label">Monthly Revenue</div>
+          <div class="kpi-icon">&#x1F4B0;</div>
+        </div>
+        <div class="kpi-value" id="kpi-month-rev">&#x2014;</div>
+        <div class="kpi-footer">
+          <span class="kpi-sub">vs last month</span>
           <span class="trend-badge" id="kpi-month-trend"></span>
         </div>
+        <div class="sparkline">
+          <div class="spark-bar" style="height:35%"></div>
+          <div class="spark-bar" style="height:55%"></div>
+          <div class="spark-bar" style="height:42%"></div>
+          <div class="spark-bar" style="height:68%"></div>
+          <div class="spark-bar" style="height:52%"></div>
+          <div class="spark-bar cur" style="height:100%"></div>
+        </div>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-ico kpi-ico-blue">&#x1F4C8;</div>
-        <div class="kpi-body">
-          <div class="kpi-lbl">YTD Sales</div>
-          <div class="kpi-val">
-            <span class="kpi-val-dimtext" id="kpi-ytd-rev">&#x2014;</span>
-          </div>
-          <div class="kpi-sub">Since Jan 1</div>
+      <div class="kpi-card k-blue">
+        <div class="kpi-top">
+          <div class="kpi-label">YTD Sales</div>
+          <div class="kpi-icon">&#x1F4C8;</div>
+        </div>
+        <div class="kpi-value" id="kpi-ytd-rev">&#x2014;</div>
+        <div class="kpi-footer">
+          <span class="kpi-sub">Since Jan 1</span>
           <span class="trend-badge" id="kpi-ytd-trend"></span>
         </div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-ico kpi-ico-green">&#x1F4E6;</div>
-        <div class="kpi-body">
-          <div class="kpi-lbl">Ready to Sell</div>
-          <div class="kpi-val kpi-val-green" id="kpi-inv-count">&#x2014;</div>
-          <div class="kpi-sub">In inventory</div>
+        <div class="sparkline">
+          <div class="spark-bar" style="height:28%"></div>
+          <div class="spark-bar" style="height:45%"></div>
+          <div class="spark-bar" style="height:60%"></div>
+          <div class="spark-bar" style="height:72%"></div>
+          <div class="spark-bar" style="height:85%"></div>
+          <div class="spark-bar cur" style="height:100%"></div>
         </div>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-ico kpi-ico-orange">&#x23F3;</div>
-        <div class="kpi-body">
-          <div class="kpi-lbl">Amount Owed</div>
-          <div class="kpi-val kpi-val-blue" id="kpi-owed">&#x2014;</div>
-          <div class="kpi-sub">Unpaid orders</div>
+      <div class="kpi-card k-green">
+        <div class="kpi-top">
+          <div class="kpi-label">Ready to Sell</div>
+          <div class="kpi-icon">&#x1F4E6;</div>
+        </div>
+        <div class="kpi-value" id="kpi-inv-count">&#x2014;</div>
+        <div class="kpi-footer">
+          <span class="kpi-sub">In inventory</span>
+        </div>
+        <div class="sparkline">
+          <div class="spark-bar" style="height:60%"></div>
+          <div class="spark-bar" style="height:40%"></div>
+          <div class="spark-bar" style="height:80%"></div>
+          <div class="spark-bar" style="height:30%"></div>
+          <div class="spark-bar" style="height:55%"></div>
+          <div class="spark-bar cur" style="height:100%"></div>
+        </div>
+      </div>
+      <div class="kpi-card k-orange">
+        <div class="kpi-top">
+          <div class="kpi-label">Amount Owed</div>
+          <div class="kpi-icon">&#x23F3;</div>
+        </div>
+        <div class="kpi-value" id="kpi-owed">&#x2014;</div>
+        <div class="kpi-footer">
+          <span class="kpi-sub">Unpaid orders</span>
+        </div>
+        <div class="sparkline">
+          <div class="spark-bar" style="height:45%"></div>
+          <div class="spark-bar" style="height:70%"></div>
+          <div class="spark-bar" style="height:38%"></div>
+          <div class="spark-bar" style="height:60%"></div>
+          <div class="spark-bar" style="height:85%"></div>
+          <div class="spark-bar cur" style="height:100%"></div>
         </div>
       </div>
     </div>
@@ -4562,16 +4667,19 @@ function goTo(page) {
   currentPage = page;
   window.scrollTo(0,0);
 
-  // Update header title
+  // Update header title + subtitle
   const titles = {
-    home: 'Workshop Dashboard',
-    orders: 'Orders',
-    materials: 'Materials',
-    scheduler: 'Scheduler',
-    analytics: 'Analytics'
+    home:      ['Dashboard',  '· Workshop Overview'],
+    orders:    ['Orders',     '· Active & Completed'],
+    materials: ['Materials',  '· Purchases & Products'],
+    scheduler: ['Scheduler',  '· Pickups & Availability'],
+    analytics: ['Analytics',  '· Revenue & Performance']
   };
+  const t = titles[page] || [page, ''];
   const titleEl = document.getElementById('main-page-title');
-  if (titleEl) titleEl.textContent = titles[page] || page;
+  const subEl   = document.getElementById('hdr-sub');
+  if (titleEl) titleEl.textContent = t[0];
+  if (subEl)   subEl.textContent   = t[1];
 
   // Update sidebar + bottom nav active state
   ['home','orders','materials','scheduler','analytics'].forEach(p => {
