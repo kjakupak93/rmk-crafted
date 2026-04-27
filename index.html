@@ -1863,6 +1863,131 @@ body {
   border-color: var(--border-bright) !important;
 }
 
+/* ===== ORDER MODAL REDESIGN ===== */
+#orderModal {
+  display: flex;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease;
+  background: rgba(4,10,18,0.82);
+  backdrop-filter: blur(6px);
+}
+#orderModal.open { opacity: 1; pointer-events: all; }
+#orderModal .modal {
+  background: #111e2d;
+  border: 1px solid rgba(255,255,255,0.11);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 620px;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  transform: translateY(16px) scale(0.98);
+  transition: transform .25s cubic-bezier(.34,1.42,.64,1);
+}
+#orderModal.open .modal { transform: translateY(0) scale(1); }
+.modal-header { display:flex; align-items:flex-start; justify-content:space-between; padding:20px 24px 0; flex-shrink:0; }
+.modal-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--ocean-light); line-height:1; }
+.modal-subtitle { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-dim); margin-top:4px; }
+.modal-close { width:32px; height:32px; border-radius:8px; background:var(--bg-elevated); border:1px solid rgba(255,255,255,0.06); color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; line-height:1; transition:all .15s; flex-shrink:0; }
+.modal-close:hover { background:rgba(184,58,45,0.15); border-color:rgba(184,58,45,0.3); color:#e06a60; }
+.modal-body { flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:20px; }
+.modal-body::-webkit-scrollbar { width:3px; }
+.modal-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:3px; }
+.modal-footer { padding:16px 24px; display:flex; gap:10px; align-items:center; justify-content:flex-end; flex-shrink:0; border-top:1px solid rgba(255,255,255,0.06); background:rgba(8,15,23,0.4); border-radius:0 0 16px 16px; }
+.modal-section { display:flex; flex-direction:column; gap:12px; }
+.modal-section .form-group { margin-bottom:0; }
+.modal-section-title { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:8px; }
+.modal-section-title::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
+.form-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:6px; }
+.lbl-optional { background:rgba(255,255,255,0.06); color:var(--text-dim); padding:1px 6px; border-radius:4px; font-size:9px; letter-spacing:.5px; text-transform:none; }
+.form-input { background:var(--bg-elevated); border:1px solid rgba(255,255,255,0.11); border-radius:8px; padding:10px 13px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color .15s,box-shadow .15s; width:100%; }
+.form-input::placeholder { color:var(--text-dim); }
+.form-input:focus { border-color:var(--ocean); box-shadow:0 0 0 3px rgba(61,122,158,0.15); }
+.form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236a9ab8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:34px; cursor:pointer; }
+#oItemsContainer .order-item-row { margin-bottom:0; }
+#oItemsContainer .item-controls { display:grid; grid-template-columns:1fr 1.8fr 56px 72px 32px; gap:8px; align-items:center; }
+#oItemsContainer .item-controls .form-control { background:var(--bg-elevated); border-color:rgba(255,255,255,0.11); }
+#oItemsContainer .item-controls .form-control:focus { border-color:var(--ocean); box-shadow:0 0 0 3px rgba(61,122,158,0.15); }
+#oItemsContainer .icon-btn { width:32px; height:32px; border-radius:6px; border:1px solid rgba(184,58,45,0.2); background:rgba(184,58,45,0.06); color:#e06a60; font-size:14px; }
+#oItemsContainer .icon-btn:hover { background:rgba(184,58,45,0.18); border-color:rgba(184,58,45,0.4); }
+.item-row-header { display:grid; grid-template-columns:1fr 1.8fr 56px 72px 32px; gap:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.item-col-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); }
+.add-item-btn { display:flex; align-items:center; justify-content:center; gap:7px; width:100%; padding:9px; border-radius:8px; border:1.5px dashed rgba(255,255,255,0.11); background:transparent; color:var(--text-dim); font-size:12px; font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer; transition:all .18s; margin-top:4px; }
+.add-item-btn:hover { border-color:var(--ocean); color:var(--ocean-light); background:rgba(61,122,158,0.06); }
+.total-row { display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-top:10px; }
+.total-label { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1px; color:var(--text-dim); }
+.total-value { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--sand); }
+.om-addon-picker { display:grid; grid-template-columns:1fr 100px 80px; gap:8px; align-items:end; }
+#orderAddonList .addon-row { background:var(--bg-elevated); border:1px solid rgba(255,255,255,0.06) !important; border-radius:8px; padding:8px 12px; border-bottom:none !important; margin-bottom:4px; }
+#orderAddonList .addon-row .form-control { background:transparent; border-color:rgba(255,255,255,0.1); width:80px; }
+#orderAddonList .addon-row .icon-btn { border:1px solid rgba(184,58,45,0.2); background:rgba(184,58,45,0.06); color:#e06a60; }
+#orderAddonList .addon-row .icon-btn:hover { background:rgba(184,58,45,0.18); border-color:rgba(184,58,45,0.4); }
+#orderModal .modal.is-new .modal-title { color:var(--sand); }
+#orderModal .modal.is-new #orderSaveBtn { background:linear-gradient(135deg,#2d7a52,#1d5a38); box-shadow:0 2px 8px rgba(45,122,82,0.3); }
+#orderModal .modal.is-new #orderSaveBtn:hover { box-shadow:0 4px 16px rgba(45,122,82,0.4); transform:translateY(-1px); }
+@media (max-width: 640px) {
+  .item-row-header { display:none; }
+  #oItemsContainer .item-controls { grid-template-columns:1fr 1.8fr; }
+  #saleModal #sItemsContainer .item-controls { grid-template-columns:1fr 1.8fr; }
+  #orderModal .modal { border-radius:12px; }
+  #saleModal .modal { border-radius:12px; }
+  #purchaseModal .modal { border-radius:12px; }
+  .modal-header { padding:16px 16px 0; }
+  .modal-body { padding:16px; gap:16px; }
+  .modal-footer { padding:12px 16px; }
+  .form-input { font-size:16px !important; }
+  .mat-qty-input { font-size:16px !important; }
+}
+
+/* ── SALE MODAL REDESIGN ── */
+#saleModal { display:flex; opacity:0; pointer-events:none; transition:opacity .22s ease; background:rgba(4,10,18,0.82); backdrop-filter:blur(6px); }
+#saleModal.open { opacity:1; pointer-events:all; }
+#saleModal .modal { background:#111e2d; border:1px solid rgba(255,255,255,0.11); border-radius:16px; width:100%; max-width:620px; max-height:calc(100vh - 32px); display:flex; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.04); transform:translateY(16px) scale(0.98); transition:transform .25s cubic-bezier(.34,1.42,.64,1); }
+#saleModal.open .modal { transform:translateY(0) scale(1); }
+#saleModal .modal-title { color:var(--ocean-light); }
+#saleModal .modal.is-new .modal-title { color:var(--sand); }
+#saleModal #sItemsContainer .order-item-row { margin-bottom:0; }
+#saleModal #sItemsContainer .item-controls { display:grid; grid-template-columns:1fr 1.8fr 56px 72px 32px; gap:8px; align-items:center; }
+#saleModal #sItemsContainer .item-controls .form-control { background:var(--bg-elevated); border-color:rgba(255,255,255,0.11); }
+#saleModal #sItemsContainer .item-controls .form-control:focus { border-color:var(--ocean); box-shadow:0 0 0 3px rgba(61,122,158,0.15); }
+#saleModal #sItemsContainer .icon-btn { width:32px; height:32px; border-radius:6px; border:1px solid rgba(184,58,45,0.2); background:rgba(184,58,45,0.06); color:#e06a60; font-size:14px; }
+#saleModal #sItemsContainer .icon-btn:hover { background:rgba(184,58,45,0.18); border-color:rgba(184,58,45,0.4); }
+.sale-addon-picker { display:grid; grid-template-columns:1fr 100px 80px; gap:8px; align-items:end; }
+.sale-addon-picker .form-control { background:var(--bg-elevated); border:1px solid rgba(255,255,255,0.11); border-radius:8px; padding:10px 13px; font-size:14px; color:var(--text); outline:none; transition:border-color .15s,box-shadow .15s; }
+.sale-addon-picker .form-control:focus { border-color:var(--ocean); box-shadow:0 0 0 3px rgba(61,122,158,0.15); }
+.sale-addon-picker .form-control::placeholder { color:var(--text-dim); }
+#sAddonList .addon-row { background:var(--bg-elevated); border:1px solid rgba(255,255,255,0.06) !important; border-radius:8px; padding:8px 12px; border-bottom:none !important; margin-bottom:4px; }
+#sAddonList .addon-row .form-control { background:transparent; border-color:rgba(255,255,255,0.1); width:80px; }
+#sAddonList .addon-row .icon-btn { border:1px solid rgba(184,58,45,0.2); background:rgba(184,58,45,0.06); color:#e06a60; }
+#sAddonList .addon-row .icon-btn:hover { background:rgba(184,58,45,0.18); border-color:rgba(184,58,45,0.4); }
+
+/* ── PURCHASE MODAL REDESIGN ── */
+#purchaseModal { display:flex; opacity:0; pointer-events:none; transition:opacity .22s ease; background:rgba(4,10,18,0.82); backdrop-filter:blur(6px); }
+#purchaseModal.open { opacity:1; pointer-events:all; }
+#purchaseModal .modal { background:#111e2d; border:1px solid rgba(255,255,255,0.11); border-radius:16px; width:100%; max-width:620px; max-height:calc(100vh - 32px); display:flex; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.04); transform:translateY(16px) scale(0.98); transition:transform .25s cubic-bezier(.34,1.42,.64,1); }
+#purchaseModal.open .modal { transform:translateY(0) scale(1); }
+#purchaseModal .modal-title { color:var(--ocean-light); }
+#purchaseModal .modal.is-new .modal-title { color:var(--sand); }
+.store-pick-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.sp-card { background:var(--bg-elevated); border:1.5px solid rgba(255,255,255,0.11); border-radius:8px; padding:14px 10px; text-align:center; cursor:pointer; transition:all .18s; display:flex; flex-direction:column; align-items:center; gap:5px; }
+.sp-card:hover { border-color:var(--ocean); background:rgba(61,122,158,0.08); }
+.sp-card.selected-hd { border-color:#e07020; background:rgba(224,112,32,0.1); }
+.sp-card.selected-lw { border-color:#1a6abf; background:rgba(26,106,191,0.1); }
+.sp-card.selected-ot { border-color:var(--ocean); background:rgba(61,122,158,0.1); }
+.sp-icon { font-size:22px; line-height:1; }
+.sp-name { font-size:12px; font-weight:600; color:var(--text); font-family:'DM Sans',sans-serif; }
+.sp-sub { font-size:9px; color:var(--text-dim); font-family:'DM Mono',monospace; }
+.mat-qty-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.mat-qty-card { background:var(--bg-elevated); border:1px solid rgba(255,255,255,0.11); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:6px; align-items:center; }
+.mat-qty-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-dim); text-align:center; }
+.mat-qty-input { background:#080f17; border:1px solid rgba(255,255,255,0.11); border-radius:6px; padding:6px 8px; font-family:'DM Mono',monospace; font-size:20px; font-weight:500; color:var(--text); text-align:center; width:100%; outline:none; transition:border-color .15s,box-shadow .15s; }
+.mat-qty-input:focus { border-color:var(--ocean); box-shadow:0 0 0 3px rgba(61,122,158,0.15); }
+.mat-qty-unit { font-size:9px; color:var(--text-dim); font-family:'DM Mono',monospace; }
+
 </style>
 </head>
 <body>
@@ -2518,39 +2643,114 @@ body {
 <!-- Order modal -->
 <div class="modal-overlay" id="orderModal">
   <div class="modal">
-    <h2 id="orderModalTitle">New Order</h2>
     <input type="hidden" id="editOrderId">
-    <div class="form-row">
-      <div class="form-group"><label>Customer Name</label><input class="form-control" type="text" id="oName" placeholder="Jane Smith"></div>
-      <div class="form-group"><label>Contact / FB Handle</label><input class="form-control" type="text" id="oContact" placeholder="@janesmith"></div>
-    </div>
-    <div class="form-group">
-      <label>Items <span style="font-size:11px;color:var(--text-muted);font-weight:400">(Size · Product · Qty · Price)</span></label>
-      <div id="oItemsContainer" class="order-items"></div>
-      <button type="button" class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-top:2px" onclick="addOrderItem()">+ Add Item</button>
-      <div class="order-items-total">Total: <strong id="oItemsTotal">$0</strong></div>
-    </div>
-    <div class="form-group">
-      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
-      <div style="display:flex;gap:6px;align-items:center">
-        <select class="form-control" id="oAddonSelect" style="flex:1" onchange="onAddonSelectChange('oAddonSelect','oAddonPrice','oItemsContainer')"><option value="">— Select add-on —</option></select>
-        <input type="number" class="form-control" id="oAddonPrice" min="0" step="0.01" placeholder="$" style="width:72px;font-family:'DM Mono',monospace;font-size:13px;text-align:right;flex-shrink:0">
-        <button type="button" class="btn-secondary" style="padding:6px 12px;white-space:nowrap;flex-shrink:0" onclick="addOrderAddon('orderAddonList','oAddonSelect','oAddonPrice','oItemsContainer')">+ Add</button>
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="orderModalTitle">New Order</div>
+        <div class="modal-subtitle" id="orderModalSubtitle">Fill in the details below</div>
       </div>
-      <div id="orderAddonList" style="margin-top:6px"></div>
+      <button class="modal-close" onclick="closeModal('orderModal')" title="Close">✕</button>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Payment</label><select class="form-control" id="oPayment" onchange="onPaymentChange(this.value)"><option value="unpaid">Not collected</option><option value="cash">Cash</option><option value="venmo">Venmo</option></select><span id="oVenmoFeeWrap" style="display:none;align-items:center;gap:4px;margin-top:6px;"><span style="font-size:0.85em;color:var(--text-muted)">+$</span><input class="form-control" type="number" id="oVenmoFee" min="0" step="0.01" style="width:70px" placeholder="0" onchange="onVenmoFeeChange(this.value)"><span style="font-size:0.85em;color:var(--text-muted)">fee</span></span></div>
-      <div class="form-group"><label>Status</label><select class="form-control" id="oStatus"><option value="pending">Pending</option><option value="building">Building</option><option value="ready">Ready for Pickup</option><option value="completed">Completed</option></select></div>
+    <div class="modal-body">
+
+      <!-- Customer -->
+      <div class="modal-section">
+        <div class="modal-section-title">Customer</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="oName">Customer Name</label>
+            <input class="form-input" type="text" id="oName" placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="oContact">Contact / FB Handle <span class="lbl-optional">optional</span></label>
+            <input class="form-input" type="text" id="oContact" placeholder="@handle">
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="modal-section">
+        <div class="modal-section-title">Items</div>
+        <div class="item-row-header">
+          <div class="item-col-label">Size</div>
+          <div class="item-col-label">Product</div>
+          <div class="item-col-label">Qty</div>
+          <div class="item-col-label">Price</div>
+          <div></div>
+        </div>
+        <div id="oItemsContainer" class="order-items"></div>
+        <button type="button" class="add-item-btn" onclick="addOrderItem()">＋ Add Item</button>
+        <div class="total-row">
+          <span class="total-label">Total</span>
+          <span class="total-value" id="oItemsTotal">$0</span>
+        </div>
+      </div>
+
+      <!-- Add-ons -->
+      <div class="modal-section">
+        <div class="modal-section-title">Add-ons <span style="text-transform:none;letter-spacing:0;font-size:9px">(optional)</span></div>
+        <div class="om-addon-picker">
+          <select class="form-input form-select" id="oAddonSelect" onchange="onAddonSelectChange('oAddonSelect','oAddonPrice','oItemsContainer')">
+            <option value="">— Select add-on —</option>
+          </select>
+          <input type="number" class="form-input" id="oAddonPrice" min="0" step="0.01" placeholder="$" style="text-align:right">
+          <button type="button" class="btn btn-secondary btn-sm" style="height:42px;white-space:nowrap" onclick="addOrderAddon('orderAddonList','oAddonSelect','oAddonPrice','oItemsContainer')">+ Add</button>
+        </div>
+        <div id="orderAddonList"></div>
+      </div>
+
+      <!-- Status & Payment -->
+      <div class="modal-section">
+        <div class="modal-section-title">Status & Payment</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="oPayment">Payment</label>
+            <select class="form-input form-select" id="oPayment" onchange="onPaymentChange(this.value)">
+              <option value="unpaid">Not collected</option>
+              <option value="cash">Cash</option>
+              <option value="venmo">Venmo</option>
+            </select>
+            <span id="oVenmoFeeWrap" style="display:none;align-items:center;gap:4px;margin-top:6px;">
+              <span style="font-size:0.85em;color:var(--text-dim)">+$</span>
+              <input class="form-input" type="number" id="oVenmoFee" min="0" step="0.01" style="width:70px" placeholder="0" onchange="onVenmoFeeChange(this.value)">
+              <span style="font-size:0.85em;color:var(--text-dim)">fee</span>
+            </span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="oStatus">Status</label>
+            <select class="form-input form-select" id="oStatus">
+              <option value="pending">Pending</option>
+              <option value="building">Building</option>
+              <option value="ready">Ready for Pickup</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pickup & Notes -->
+      <div class="modal-section">
+        <div class="modal-section-title">Pickup</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="oPickup">Pickup Date</label>
+            <input class="form-input" type="date" id="oPickup">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="oPickupTime">Pickup Time <span class="lbl-optional">optional</span></label>
+            <input class="form-input" type="time" id="oPickupTime">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="oNotes">Notes <span class="lbl-optional">optional</span></label>
+          <textarea class="form-input" id="oNotes" rows="3" placeholder="Custom requests, special instructions…" style="resize:vertical;min-height:72px;line-height:1.5"></textarea>
+        </div>
+      </div>
+
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Pickup Date</label><input class="form-control" type="date" id="oPickup"></div>
-      <div class="form-group"><label>Pickup Time</label><input class="form-control" type="time" id="oPickupTime"></div>
-    </div>
-    <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="oNotes" placeholder="Custom requests, etc."></div>
-    <div class="modal-actions">
-      <button class="modal-btn-cancel" onclick="closeModal('orderModal')">Cancel</button>
-      <button class="modal-btn-primary" id="orderSaveBtn" onclick="saveOrder()">Save Order</button>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('orderModal')">Cancel</button>
+      <button class="btn btn-primary" id="orderSaveBtn" onclick="saveOrder()" style="min-width:130px">Create Order</button>
     </div>
   </div>
 </div>
@@ -2584,35 +2784,93 @@ body {
 <!-- Sale modal -->
 <div class="modal-overlay" id="saleModal">
   <div class="modal">
-    <h2 id="saleModalTitle">Log a Sale</h2>
-    <div class="form-row">
-      <div class="form-group"><label>Buyer Name</label><input class="form-control" type="text" id="sName" placeholder="Jane Smith"></div>
-      <div class="form-group"><label>Date Sold</label><input class="form-control" type="date" id="sDate"></div>
-    </div>
-    <div class="form-group">
-      <label>Items <span style="font-size:11px;color:var(--text-muted);font-weight:400">(Size · Product · Qty · Price)</span></label>
-      <div id="sItemsContainer" class="order-items"></div>
-      <button type="button" class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-top:2px" onclick="addOrderItem('','Standard',1,'',null,'sItemsContainer')">+ Add Item</button>
-      <div class="order-items-total">Total: <strong id="sItemsTotal">$0</strong></div>
-    </div>
-    <div class="form-group">
-      <label>Add-ons <span style="font-size:11px;color:var(--text-muted);font-weight:400">(optional)</span></label>
-      <div style="display:flex;gap:6px;align-items:center">
-        <select class="form-control" id="sAddonSelect" style="flex:1" onchange="onAddonSelectChange('sAddonSelect','sAddonPrice','sItemsContainer')"><option value="">— Select add-on —</option></select>
-        <input type="number" class="form-control" id="sAddonPrice" min="0" step="0.01" placeholder="$" style="width:72px;font-family:'DM Mono',monospace;font-size:13px;text-align:right;flex-shrink:0">
-        <button type="button" class="btn-secondary" style="padding:6px 12px;white-space:nowrap;flex-shrink:0" onclick="addOrderAddon('sAddonList','sAddonSelect','sAddonPrice','sItemsContainer')">+ Add</button>
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="saleModalTitle">Log Sale</div>
+        <div class="modal-subtitle" id="saleModalSubtitle">Record a completed sale</div>
       </div>
-      <div id="sAddonList" style="margin-top:6px"></div>
+      <button class="modal-close" onclick="closeModal('saleModal')" title="Close">✕</button>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Sale Price ($)</label><input class="form-control" type="number" id="sPrice" placeholder="85"></div>
-      <div class="form-group"><label>Payment</label><select class="form-control" id="sPayment" onchange="document.getElementById('sVenmoFeeWrap').style.display=this.value==='venmo'?'block':'none'"><option value="cash">Cash</option><option value="venmo">Venmo</option></select></div>
+    <div class="modal-body">
+
+      <!-- Customer -->
+      <div class="modal-section">
+        <div class="modal-section-title">Customer</div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="sName">Buyer Name</label>
+            <input class="form-input" type="text" id="sName" placeholder="Full name">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="sDate">Date Sold</label>
+            <input class="form-input" type="date" id="sDate">
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="modal-section">
+        <div class="modal-section-title">Items</div>
+        <div class="item-row-header">
+          <div class="item-col-label">Size</div>
+          <div class="item-col-label">Product</div>
+          <div class="item-col-label">Qty</div>
+          <div class="item-col-label">Price</div>
+          <div></div>
+        </div>
+        <div id="sItemsContainer" class="order-items"></div>
+        <button type="button" class="add-item-btn" onclick="addOrderItem('','Standard',1,'',null,'sItemsContainer')">＋ Add Item</button>
+        <div class="total-row">
+          <span class="total-label">Total</span>
+          <span class="total-value" id="sItemsTotal">$0</span>
+        </div>
+      </div>
+
+      <!-- Add-ons -->
+      <div class="modal-section">
+        <div class="modal-section-title">Add-ons <span class="lbl-optional" style="text-transform:none;letter-spacing:0">optional</span></div>
+        <div class="sale-addon-picker">
+          <select class="form-control" id="sAddonSelect" onchange="onAddonSelectChange('sAddonSelect','sAddonPrice','sItemsContainer')"><option value="">— Select add-on —</option></select>
+          <input type="number" class="form-control" id="sAddonPrice" min="0" step="0.01" placeholder="$" style="text-align:right;font-family:'DM Mono',monospace">
+          <button type="button" class="btn btn-secondary btn-sm" style="height:42px;align-self:end;white-space:nowrap" onclick="addOrderAddon('sAddonList','sAddonSelect','sAddonPrice','sItemsContainer')">+ Add</button>
+        </div>
+        <div id="sAddonList"></div>
+      </div>
+
+      <!-- Payment -->
+      <div class="modal-section">
+        <div class="modal-section-title">Payment</div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="sPrice">Sale Price <span class="lbl-optional">override</span></label>
+            <input class="form-input" type="number" id="sPrice" min="0" placeholder="Defaults to total above" style="font-family:'DM Mono',monospace">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="sPayment">Payment Method</label>
+            <select class="form-input form-select" id="sPayment" onchange="document.getElementById('sVenmoFeeWrap').style.display=this.value==='venmo'?'block':'none'">
+              <option value="cash">Cash</option>
+              <option value="venmo">Venmo</option>
+            </select>
+          </div>
+        </div>
+        <div id="sVenmoFeeWrap" style="display:none">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="sVenmoFee">Venmo Fee <span class="lbl-optional">optional</span></label>
+            <input class="form-input" type="number" id="sVenmoFee" min="0" step="0.01" placeholder="0" style="font-family:'DM Mono',monospace">
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="modal-section">
+        <div class="modal-section-title">Notes <span class="lbl-optional" style="text-transform:none;letter-spacing:0">optional</span></div>
+        <textarea class="form-input" id="sNotes" rows="2" placeholder="Repeat buyer, custom request, etc." style="resize:vertical;min-height:60px;line-height:1.5"></textarea>
+      </div>
+
     </div>
-    <div class="form-group" id="sVenmoFeeWrap" style="display:none"><label>Venmo Fee ($)</label><input class="form-control" type="number" id="sVenmoFee" placeholder="0" min="0" step="0.01"></div>
-    <div class="form-group"><label>Notes</label><input class="form-control" type="text" id="sNotes" placeholder="Optional"></div>
-    <div class="modal-actions">
-      <button class="modal-btn-cancel" onclick="closeModal('saleModal')">Cancel</button>
-      <button class="modal-btn-primary" id="saleSaveBtn" onclick="saveSale()">Log Sale</button>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('saleModal')">Cancel</button>
+      <button class="btn btn-primary" id="saleSaveBtn" onclick="saveSale()">Log Sale</button>
     </div>
   </div>
 </div>
@@ -2620,32 +2878,115 @@ body {
 <!-- Purchase modal -->
 <div class="modal-overlay" id="purchaseModal">
   <div class="modal">
-    <h2 id="purchModalTitle">Log Purchase</h2>
-    <div class="form-row">
-      <div class="form-group"><label>Date</label><input class="form-control" type="date" id="pDate"></div>
-      <div class="form-group"><label>Store</label><input class="form-control" type="text" id="pStore" placeholder="e.g. Lowes, Home Depot, Amazon…"></div>
-    </div>
-    <div style="margin-bottom:6px">
-      <div style="display:flex;gap:6px;font-size:12px;color:var(--text-muted);font-weight:600;padding:0 2px;margin-bottom:4px">
-        <span style="flex:2">Material</span><span style="flex:1">Qty</span><span style="flex:1">$/ea</span><span style="width:28px"></span>
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="purchModalTitle">Log Purchase</div>
+        <div class="modal-subtitle" id="purchModalSubtitle">Record a supply run</div>
       </div>
-      <div id="pMaterialRows"></div>
-      <button type="button" onclick="addPurchaseMaterialRow()" style="background:none;border:none;color:var(--ocean);font-size:13px;cursor:pointer;padding:2px 0;font-family:inherit">+ Add material</button>
+      <button class="modal-close" onclick="editingPurchaseId=null;closeModal('purchaseModal')" title="Close">✕</button>
     </div>
-    <div class="form-row" style="margin-top:4px">
-      <div class="form-group"><label>Discount ($)</label><input class="form-control" type="number" id="pDiscount" placeholder="0.00" min="0" step="0.01" oninput="updatePurchEst()"></div>
-      <div class="form-group"><label>Notes</label><textarea class="form-control" id="pNotes" placeholder="Optional" rows="3" style="resize:vertical;font-family:inherit;font-size:14px"></textarea></div>
+    <div class="modal-body">
+
+      <!-- Store -->
+      <div class="modal-section">
+        <div class="modal-section-title">Store</div>
+        <div class="store-pick-grid">
+          <div class="sp-card" id="sp-hd" onclick="storePick('Home Depot')">
+            <div class="sp-icon">🟠</div>
+            <div class="sp-name">Home Depot</div>
+            <div class="sp-sub">THD</div>
+          </div>
+          <div class="sp-card" id="sp-lw" onclick="storePick('Lowes')">
+            <div class="sp-icon">🔵</div>
+            <div class="sp-name">Lowe's</div>
+            <div class="sp-sub">LOW</div>
+          </div>
+          <div class="sp-card" id="sp-ot" onclick="storePick('Other')">
+            <div class="sp-icon">🏪</div>
+            <div class="sp-name">Other</div>
+            <div class="sp-sub">Enter below</div>
+          </div>
+        </div>
+        <div id="pStoreCustomWrap" style="display:none;margin-top:8px">
+          <input class="form-input" id="pStoreCustom" type="text" placeholder="Store name">
+        </div>
+      </div>
+
+      <!-- Date -->
+      <div class="modal-section">
+        <div class="modal-section-title">Date</div>
+        <div style="max-width:220px">
+          <input class="form-input" type="date" id="pDate">
+        </div>
+      </div>
+
+      <!-- Materials -->
+      <div class="modal-section">
+        <div class="modal-section-title">Materials Purchased</div>
+        <div class="mat-qty-grid">
+          <div class="mat-qty-card">
+            <div class="mat-qty-label">Pickets</div>
+            <input class="mat-qty-input" id="pPickets" type="number" min="0" value="0" oninput="estimatePurchaseTotal()">
+            <div class="mat-qty-unit">boards</div>
+          </div>
+          <div class="mat-qty-card">
+            <div class="mat-qty-label">2×2s</div>
+            <input class="mat-qty-input" id="pTwobytwo" type="number" min="0" value="0" oninput="estimatePurchaseTotal()">
+            <div class="mat-qty-unit">boards</div>
+          </div>
+          <div class="mat-qty-card">
+            <div class="mat-qty-label">2×4s</div>
+            <input class="mat-qty-input" id="pTwobyfour" type="number" min="0" value="0" oninput="estimatePurchaseTotal()">
+            <div class="mat-qty-unit">boards</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.06);border-radius:8px">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-dim);flex:1">Estimated cost</span>
+          <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--text-dim)" id="pEstimate">—</span>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="modal-section">
+        <div class="modal-section-title">Actual Total Paid</div>
+        <div style="max-width:200px">
+          <input class="form-input" type="number" id="pTotal" min="0" step="0.01" placeholder="$0.00" style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500" oninput="updateDiscountDisplay()">
+        </div>
+      </div>
+
+      <!-- Discount -->
+      <div class="modal-section">
+        <div class="modal-section-title">Discount <span class="lbl-optional" style="text-transform:none;letter-spacing:0">optional</span></div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="pDiscountType">Type</label>
+            <select class="form-input form-select" id="pDiscountType" onchange="updateDiscountDisplay()">
+              <option value="">None</option>
+              <option value="amount">Dollar off ($)</option>
+              <option value="percent">Percent off (%)</option>
+            </select>
+          </div>
+          <div class="form-group" id="pDiscountValWrap" style="margin-bottom:0;opacity:0.4;pointer-events:none">
+            <label class="form-label" for="pDiscountVal" id="pDiscountValLabel">Amount</label>
+            <input class="form-input" type="number" id="pDiscountVal" min="0" step="0.01" placeholder="0" style="font-family:'DM Mono',monospace" oninput="updateDiscountDisplay()">
+          </div>
+        </div>
+        <div id="pDiscountSummary" style="display:none;align-items:center;gap:8px;padding:10px 14px;background:rgba(45,122,82,0.08);border:1px solid rgba(45,122,82,0.2);border-radius:8px">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-dim);flex:1">After discount</span>
+          <span style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--green-light)" id="pDiscountedTotal">—</span>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="modal-section">
+        <div class="modal-section-title">Notes <span class="lbl-optional" style="text-transform:none;letter-spacing:0">optional</span></div>
+        <textarea class="form-input" id="pNotes" rows="2" placeholder="Sale prices, specific items, etc." style="resize:vertical;min-height:60px;line-height:1.5"></textarea>
+      </div>
+
     </div>
-    <div style="background:var(--bg-elevated);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--navy);font-family:'DM Mono',monospace;margin-top:4px">
-      Subtotal: <strong id="purchSubtotal">$0.00</strong><span id="purchDiscountLine" style="display:none"> &minus; <span style="color:var(--green)" id="purchDiscountAmt"></span> discount</span> &rarr; <strong id="purchEst">$0.00</strong>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
-      <label style="white-space:nowrap;font-size:13px;font-weight:600;color:var(--text)">Total override ($)</label>
-      <input class="form-control" type="number" id="pTotal" placeholder="leave blank to auto-calc" min="0" step="0.01" style="max-width:180px">
-    </div>
-    <div class="modal-actions">
-      <button class="modal-btn-cancel" onclick="editingPurchaseId=null;closeModal('purchaseModal')">Cancel</button>
-      <button class="modal-btn-primary" id="purchSaveBtn" onclick="savePurchase()">Save</button>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="editingPurchaseId=null;closeModal('purchaseModal')">Cancel</button>
+      <button class="btn btn-primary" id="purchSaveBtn" onclick="savePurchase()">Log Purchase</button>
     </div>
   </div>
 </div>
@@ -4654,8 +4995,13 @@ function orderCardHTML(o) {
     : '';
   const statusCls = {pending:'s-pending',building:'s-building',ready:'s-ready',completed:'s-completed'}[o.status]||'s-pending';
   return `<div class="order-card ${statusCls}${overdueClass}">
-    <div class="card-title">${esc(o.name)}</div>
-    <div class="card-subtitle">${subtitleItems}${contactSuffix}</div>
+    <div class="card-top">
+      <div>
+        <div class="card-title">${esc(o.name)}</div>
+        <div class="card-subtitle">${subtitleItems}${contactSuffix}</div>
+      </div>
+      <span class="badge ${bc}">${bl}</span>
+    </div>
     ${o.customer_booked ? '<span class="customer-booked-badge">📅 Self-booked</span>' : ''}
     <div class="card-meta">
       <div class="meta-item">💰 <strong>$${o.price||0}</strong></div>
@@ -4666,7 +5012,6 @@ function orderCardHTML(o) {
     </div>
     <div class="card-icon-row">
       ${overdueBadge}
-      <span class="badge ${bc}">${bl}</span>
       ${o.status==='pending'?`<button class="advance-btn advance-btn-pending" onclick="advanceOrderStatus('${o.id}','pending')">→ Building</button>`:''}
       ${o.status==='building'?`<button class="advance-btn advance-btn-building" onclick="advanceOrderStatus('${o.id}','building')">→ Ready</button>`:''}
       <button class="icon-btn" title="Edit" onclick="editOrder('${o.id}')">✏️</button>
@@ -4677,9 +5022,12 @@ function orderCardHTML(o) {
   </div>`;
 }
 
+function _clearEl(id) { const el=document.getElementById(id); while(el.firstChild) el.removeChild(el.firstChild); }
 function openOrderModal(order, prefill) {
   currentEditOrder = null;
   document.getElementById('orderModalTitle').textContent='New Order';
+  document.getElementById('orderModalSubtitle').textContent='Fill in the details below';
+  document.getElementById('orderSaveBtn').textContent='Create Order';
   document.getElementById('editOrderId').value='';
   ['oName','oContact','oNotes'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('oPickup').value='';
@@ -4690,7 +5038,8 @@ function openOrderModal(order, prefill) {
   document.getElementById('oVenmoFeeWrap').style.display = 'none';
   document.getElementById('oVenmoFee').value = '';
   document.getElementById('oStatus').value='pending';
-  document.getElementById('oItemsContainer').innerHTML='';
+  _clearEl('oItemsContainer');
+  document.querySelector('#orderModal .modal').classList.add('is-new');
   if (prefill) {
     addOrderItem(prefill.size || '', 'Standard', 1, prefill.price || 0);
   } else {
@@ -4744,6 +5093,8 @@ async function editOrder(id) {
   if (!data) return;
   currentEditOrder = data;
   document.getElementById('orderModalTitle').textContent='Edit Order';
+  document.getElementById('orderModalSubtitle').textContent='Order #' + id;
+  document.getElementById('orderSaveBtn').textContent='Save Changes';
   document.getElementById('editOrderId').value=id;
   document.getElementById('oName').value=data.name||'';
   document.getElementById('oContact').value=data.contact||'';
@@ -4757,7 +5108,8 @@ async function editOrder(id) {
   document.getElementById('oPickup').value=data.pickup_date||'';
   document.getElementById('oPickupTime').value=data.pickup_time||'';
   document.getElementById('oNotes').value=data.notes||'';
-  document.getElementById('oItemsContainer').innerHTML='';
+  document.querySelector('#orderModal .modal').classList.remove('is-new');
+  _clearEl('oItemsContainer');
   const itemRows = getItemRows(data);
   const items = itemRows.length ? itemRows : [{size:data.size||'',style:data.style||'Standard',qty:1,price:data.price||0}];
   items.forEach(item => addOrderItem(item.size, item.style||'Standard', item.qty||1, item.price||0, item.options||null));
@@ -4855,7 +5207,7 @@ async function saveOrder() {
   }
   const sizeLabel = itemRows[0]?.size ? itemRows[0].size+'"' : '';
   await logActivity(id?'✏️':'📋', payload.name, id?`Order updated — ${sizeLabel}`:`New order — ${sizeLabel}`);
-  showToast(id?'Order updated!':'Order added!','success');
+  showToast(id?'Order saved':'Order created!','success');
   closeModal('orderModal'); loadOrders(); loadHomeStats(); loadRecentActivity();
   // Refresh scheduler calendar if it's open
   if (document.getElementById('page-scheduler') && document.getElementById('page-scheduler').classList.contains('active')) {
@@ -5408,13 +5760,16 @@ let editingPurchaseId = null;
 
 function openSaleModal() {
   editingSaleId = null;
-  document.getElementById('saleModalTitle').textContent = 'Log a Sale';
+  document.getElementById('saleModalTitle').textContent = 'Log Sale';
+  document.getElementById('saleModalSubtitle').textContent = 'Record a completed sale';
+  document.getElementById('saleSaveBtn').textContent = 'Log Sale';
+  document.querySelector('#saleModal .modal').classList.add('is-new');
   document.getElementById('sDate').value = new Date().toISOString().split('T')[0];
   ['sName','sNotes','sPrice'].forEach(f => document.getElementById(f).value = '');
   document.getElementById('sPayment').value = 'cash';
   document.getElementById('sVenmoFee').value = '';
   document.getElementById('sVenmoFeeWrap').style.display = 'none';
-  document.getElementById('sItemsContainer').innerHTML = '';
+  _clearEl('sItemsContainer');
   document.getElementById('sItemsTotal').textContent = '$0';
   addOrderItem('', 'Standard', 1, '', null, 'sItemsContainer');
   renderOrderAddons([], {}, 'sAddonList', 'sItemsContainer');
@@ -5426,6 +5781,9 @@ function editSale(id) {
   if (!s) return;
   editingSaleId = id;
   document.getElementById('saleModalTitle').textContent = 'Edit Sale';
+  document.getElementById('saleModalSubtitle').textContent = 'Sale · ' + (s.sale_date || '');
+  document.getElementById('saleSaveBtn').textContent = 'Save Changes';
+  document.querySelector('#saleModal .modal').classList.remove('is-new');
   document.getElementById('sName').value = s.name || '';
   document.getElementById('sDate').value = s.sale_date || '';
   document.getElementById('sPayment').value = s.payment || 'cash';
@@ -6470,28 +6828,110 @@ function renderPurchaseList() {
   </tr>`).join('');
 }
 
-function openPurchaseModal(item=null) {
-  editingPurchaseId=item?item.id:null;
-  document.getElementById('purchModalTitle').textContent=item?'Edit Purchase':'Log Purchase';
-  document.getElementById('purchSaveBtn').textContent=item?'Update':'Save';
-  clearPurchaseMaterialRows();
-  if (item) {
-    document.getElementById('pDate').value=item.purchase_date||'';
-    document.getElementById('pStore').value=item.store||'Lowes';
-    if (item.pickets>0) addPurchaseMaterialRow('pickets',item.pickets,item.picket_price!=null?item.picket_price:3.66);
-    if (item.twobytwo>0) addPurchaseMaterialRow('twobytwo',item.twobytwo,item.twobytwo_price!=null?item.twobytwo_price:3.23);
-    if (item.twobyfour>0) addPurchaseMaterialRow('twobyfour',item.twobyfour,item.twobyfour_price!=null?item.twobyfour_price:4.17);
-    if (!item.pickets&&!item.twobytwo&&!item.twobyfour) addPurchaseMaterialRow();
-    document.getElementById('pDiscount').value=item.discount||'';
-    document.getElementById('pNotes').value=item.notes||'';
-    document.getElementById('pTotal').value=item.total||'';
+let selectedPurchaseStore = '';
+
+function storePick(name) {
+  selectedPurchaseStore = name;
+  ['sp-hd','sp-lw','sp-ot'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('selected-hd','selected-lw','selected-ot');
+  });
+  const customWrap = document.getElementById('pStoreCustomWrap');
+  if (name === 'Home Depot') {
+    document.getElementById('sp-hd').classList.add('selected-hd');
+    customWrap.style.display = 'none';
+  } else if (name === 'Lowes') {
+    document.getElementById('sp-lw').classList.add('selected-lw');
+    customWrap.style.display = 'none';
   } else {
-    document.getElementById('pDate').value=new Date().toISOString().split('T')[0];
-    document.getElementById('pStore').value='';
-    addPurchaseMaterialRow();
-    ['pDiscount','pNotes','pTotal'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('sp-ot').classList.add('selected-ot');
+    customWrap.style.display = 'block';
+    setTimeout(() => document.getElementById('pStoreCustom').focus(), 60);
   }
-  updatePurchEst();
+}
+
+function estimatePurchaseTotal() {
+  const pickets   = parseInt(document.getElementById('pPickets').value)   || 0;
+  const twobytwo  = parseInt(document.getElementById('pTwobytwo').value)  || 0;
+  const twobyfour = parseInt(document.getElementById('pTwobyfour').value) || 0;
+  const est = pickets * PURCH_MAT_PRICES.pickets + twobytwo * PURCH_MAT_PRICES.twobytwo + twobyfour * PURCH_MAT_PRICES.twobyfour;
+  document.getElementById('pEstimate').textContent = est > 0 ? `~$${est.toFixed(2)}` : '—';
+}
+
+function updateDiscountDisplay() {
+  const type = document.getElementById('pDiscountType').value;
+  const wrap  = document.getElementById('pDiscountValWrap');
+  const label = document.getElementById('pDiscountValLabel');
+  const summary = document.getElementById('pDiscountSummary');
+  if (!type) {
+    wrap.style.opacity = '0.4';
+    wrap.style.pointerEvents = 'none';
+    summary.style.display = 'none';
+    return;
+  }
+  wrap.style.opacity = '1';
+  wrap.style.pointerEvents = 'all';
+  label.textContent = type === 'percent' ? 'Percent (%)' : 'Amount ($)';
+  const total = parseFloat(document.getElementById('pTotal').value) || 0;
+  const val   = parseFloat(document.getElementById('pDiscountVal').value) || 0;
+  let after = total;
+  if (type === 'amount')  after = Math.max(0, total - val);
+  if (type === 'percent') after = Math.max(0, total * (1 - val / 100));
+  if (total > 0 && val > 0) {
+    summary.style.display = 'flex';
+    document.getElementById('pDiscountedTotal').textContent = '$' + after.toFixed(2);
+  } else {
+    summary.style.display = 'none';
+  }
+}
+
+function openPurchaseModal(item=null) {
+  editingPurchaseId = item ? item.id : null;
+  const isEdit = !!item;
+  document.getElementById('purchModalTitle').textContent = isEdit ? 'Edit Purchase' : 'Log Purchase';
+  document.getElementById('purchModalSubtitle').textContent = isEdit ? 'Supply run · ' + (item.purchase_date || '') : 'Record a supply run';
+  document.getElementById('purchSaveBtn').textContent = isEdit ? 'Save Changes' : 'Log Purchase';
+  document.querySelector('#purchaseModal .modal').classList.toggle('is-new', !isEdit);
+
+  // Reset store picks
+  ['sp-hd','sp-lw','sp-ot'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('selected-hd','selected-lw','selected-ot');
+  });
+  document.getElementById('pStoreCustomWrap').style.display = 'none';
+  document.getElementById('pStoreCustom').value = '';
+  selectedPurchaseStore = '';
+
+  if (isEdit) {
+    const store = item.store || '';
+    if (store === 'Home Depot') { storePick('Home Depot'); }
+    else if (store === 'Lowes') { storePick('Lowes'); }
+    else if (store) {
+      storePick('Other');
+      document.getElementById('pStoreCustom').value = store;
+    }
+    document.getElementById('pDate').value = item.purchase_date || '';
+    document.getElementById('pPickets').value = item.pickets || 0;
+    document.getElementById('pTwobytwo').value = item.twobytwo || 0;
+    document.getElementById('pTwobyfour').value = item.twobyfour || 0;
+    document.getElementById('pTotal').value = item.total || '';
+    document.getElementById('pNotes').value = item.notes || '';
+  } else {
+    document.getElementById('pDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('pPickets').value = 0;
+    document.getElementById('pTwobytwo').value = 0;
+    document.getElementById('pTwobyfour').value = 0;
+    document.getElementById('pTotal').value = '';
+    document.getElementById('pNotes').value = '';
+  }
+
+  document.getElementById('pDiscountType').value = '';
+  document.getElementById('pDiscountVal').value = '';
+  document.getElementById('pDiscountValWrap').style.opacity = '0.4';
+  document.getElementById('pDiscountValWrap').style.pointerEvents = 'none';
+  document.getElementById('pDiscountSummary').style.display = 'none';
+
+  estimatePurchaseTotal();
   openModal('purchaseModal');
 }
 
@@ -6562,33 +7002,49 @@ function updatePurchEst() {
 
 async function savePurchase() {
   await _withSaving('purchSaveBtn', async () => {
-  let pickets=0,pp=3.66,t22=0,t22p=3.23,t24=0,t24p=4.17,otherTotal=0;
-  document.querySelectorAll('.purch-mat-row').forEach(function(row){
-    const sel=row.querySelector('select');
-    const inputs=row.querySelectorAll('input');
-    const qty=parseInt(inputs[0].value)||0;
-    const price=parseFloat(inputs[1].value)||0;
-    if (sel.value==='pickets'){pickets=qty;pp=price;}
-    else if (sel.value==='twobytwo'){t22=qty;t22p=price;}
-    else if (sel.value==='twobyfour'){t24=qty;t24p=price;}
-    else if (sel.value==='other'){otherTotal+=qty*price;}
-  });
-  const discount=parseFloat(document.getElementById('pDiscount').value)||0;
-  const calcTotal=Math.max(0,pickets*pp+t22*t22p+t24*t24p+otherTotal-discount);
-  const overrideTotal=parseFloat(document.getElementById('pTotal').value);
-  const total=!isNaN(overrideTotal)&&overrideTotal>0?overrideTotal:calcTotal;
-  if (!pickets&&!t22&&!t24&&!total) {showToast('Enter materials or a total amount','error');return;}
-  const payload={purchase_date:document.getElementById('pDate').value,store:document.getElementById('pStore').value,pickets,picket_price:pp,twobytwo:t22,twobytwo_price:t22p,twobyfour:t24,twobyfour_price:t24p,discount,total,notes:document.getElementById('pNotes').value};
+  const total = parseFloat(document.getElementById('pTotal').value);
+  if (!total || total <= 0) {
+    const el = document.getElementById('pTotal');
+    el.style.borderColor = '#b83a2d';
+    el.focus();
+    setTimeout(() => { el.style.borderColor = ''; }, 2000);
+    showToast('Actual total paid is required','error');
+    return;
+  }
+  const pickets   = parseInt(document.getElementById('pPickets').value)   || 0;
+  const twobytwo  = parseInt(document.getElementById('pTwobytwo').value)  || 0;
+  const twobyfour = parseInt(document.getElementById('pTwobyfour').value) || 0;
+  const store = selectedPurchaseStore === 'Other'
+    ? (document.getElementById('pStoreCustom').value || 'Other')
+    : selectedPurchaseStore;
+  const discountType = document.getElementById('pDiscountType').value;
+  const discountVal  = parseFloat(document.getElementById('pDiscountVal').value) || 0;
+  let discount = 0;
+  if (discountType === 'amount') discount = discountVal;
+  else if (discountType === 'percent') discount = Math.max(0, total * (discountVal / 100));
+  const payload = {
+    purchase_date: document.getElementById('pDate').value,
+    store,
+    pickets,
+    picket_price: PURCH_MAT_PRICES.pickets,
+    twobytwo,
+    twobytwo_price: PURCH_MAT_PRICES.twobytwo,
+    twobyfour,
+    twobyfour_price: PURCH_MAT_PRICES.twobyfour,
+    discount,
+    total,
+    notes: document.getElementById('pNotes').value
+  };
   if (editingPurchaseId) {
-    const {error}=await sb.from('purchases').update(payload).eq('id',editingPurchaseId);
-    if (error) {showToast('Error saving','error');return;}
+    const {error} = await sb.from('purchases').update(payload).eq('id', editingPurchaseId);
+    if (error) { showToast('Error saving','error'); return; }
     showToast('Purchase updated!','success');
-    editingPurchaseId=null;
+    editingPurchaseId = null;
     closeModal('purchaseModal'); loadPurchases();
   } else {
-    const {error}=await sb.from('purchases').insert(payload);
-    if (error) {showToast('Error saving','error');return;}
-    await logActivity('🛒', payload.store||'Supply run', `Materials purchase — $${total.toFixed(2)}`);
+    const {error} = await sb.from('purchases').insert(payload);
+    if (error) { showToast('Error saving','error'); return; }
+    await logActivity('🛒', store||'Supply run', `Materials purchase — $${total.toFixed(2)}`);
     showToast('Purchase logged!','success');
     closeModal('purchaseModal'); loadPurchases(); loadRecentActivity();
   }

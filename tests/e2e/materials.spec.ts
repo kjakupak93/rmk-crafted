@@ -35,9 +35,10 @@ async function addPurchase(page: Page, storeName: string): Promise<void> {
   await page.waitForSelector('#mtab-purchases.active');
   await page.click('button:has-text("+ Log Purchase")');
   await page.waitForSelector('#purchaseModal.open');
-  await page.fill('#pStore', storeName);
-  // First material row qty (new dropdown-based UI)
-  await page.locator('#pMaterialRows .purch-mat-row input[type="number"]').first().fill('5');
+  await page.click('#sp-ot'); // Other store card
+  await page.fill('#pStoreCustom', storeName);
+  await page.fill('#pPickets', '5');
+  await page.fill('#pTotal', '18');
   await page.click('#purchSaveBtn');
   await expect(page.locator('#purchaseBody tr').filter({ hasText: storeName })).toBeVisible({ timeout: 10000 });
 }
@@ -119,7 +120,9 @@ test('edit purchase updates the store name', async ({ page }) => {
   await page.waitForSelector('#purchaseModal.open');
   await expect(page.locator('#purchModalTitle')).toContainText('Edit', { timeout: 5000 });
 
-  await page.fill('#pStore', `${storeName} Updated`);
+  // Update store name via Other card + custom input
+  await page.click('#sp-ot');
+  await page.fill('#pStoreCustom', `${storeName} Updated`);
   await page.click('#purchSaveBtn');
 
   await expect(page.locator('#purchaseBody tr').filter({ hasText: `${storeName} Updated` })).toBeVisible({ timeout: 10000 });
