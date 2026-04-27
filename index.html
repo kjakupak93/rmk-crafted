@@ -571,6 +571,7 @@ body {
 .badge-cash { background: #e8f5e9; color: #388e3c; }
 .badge-venmo { background: #e3f2fd; color: #1565c0; }
 .badge-unpaid { background: #fce4ec; color: #c62828; }
+.badge-other { background: rgba(255,255,255,0.08); color: var(--text-muted); }
 
 /* Order cards */
 #activeOrdersList {
@@ -1621,6 +1622,7 @@ body {
 .badge-cash     { background: rgba(45,122,82,0.1)   !important; color: var(--green-light) !important; border: 1px solid rgba(45,122,82,0.2)   !important; }
 .badge-venmo    { background: rgba(61,122,158,0.1)  !important; color: var(--ocean-light) !important; border: 1px solid rgba(61,122,158,0.2)  !important; }
 .badge-unpaid   { background: rgba(184,58,45,0.12)  !important; color: #e06a60           !important; border: 1px solid rgba(184,58,45,0.2)   !important; }
+.badge-other    { background: rgba(255,255,255,0.06) !important; color: var(--text-muted)  !important; border: 1px solid rgba(255,255,255,0.1) !important; }
 .badge-pending::before  { background: var(--orange);     }
 .badge-building::before { background: var(--ocean-light);}
 .badge-ready::before    { background: var(--green-light);}
@@ -1982,7 +1984,7 @@ body {
 #oItemsContainer .icon-btn { width:32px; height:32px; border-radius:6px; border:1px solid rgba(184,58,45,0.2); background:rgba(184,58,45,0.06); color:#e06a60; font-size:14px; }
 #oItemsContainer .icon-btn:hover { background:rgba(184,58,45,0.18); border-color:rgba(184,58,45,0.4); }
 .item-row-header { display:grid; grid-template-columns:1fr 1.8fr 56px 72px 32px; gap:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.06); }
-.item-col-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); }
+.item-col-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-dim); }
 .add-item-btn { display:flex; align-items:center; justify-content:center; gap:7px; width:100%; padding:9px; border-radius:8px; border:1.5px dashed rgba(255,255,255,0.11); background:transparent; color:var(--text-dim); font-size:12px; font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer; transition:all .18s; margin-top:4px; }
 .add-item-btn:hover { border-color:var(--ocean); color:var(--ocean-light); background:rgba(61,122,158,0.06); }
 .total-row { display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-top:10px; }
@@ -2955,6 +2957,7 @@ body {
             <select class="form-input form-select" id="sPayment" onchange="document.getElementById('sVenmoFeeWrap').style.display=this.value==='venmo'?'block':'none'">
               <option value="cash">Cash</option>
               <option value="venmo">Venmo</option>
+              <option value="other">Other</option>
             </select>
           </div>
         </div>
@@ -5085,8 +5088,8 @@ function formatItemOptions(item) {
 function orderCardHTML(o) {
   const bc={pending:'badge-pending',building:'badge-building',ready:'badge-ready',completed:'badge-completed'}[o.status]||'';
   const bl={pending:'Pending',building:'Building',ready:'Ready for Pickup',completed:'Completed'}[o.status]||o.status;
-  const pc={cash:'badge-cash',venmo:'badge-venmo',unpaid:'badge-unpaid'}[o.payment]||'badge-unpaid';
-  const pl={cash:'Cash',venmo:'Venmo',unpaid:'Unpaid'}[o.payment]||'';
+  const pc={cash:'badge-cash',venmo:'badge-venmo',other:'badge-cash',unpaid:'badge-unpaid'}[o.payment]||'badge-unpaid';
+  const pl={cash:'Cash',venmo:'Venmo',other:'Other',unpaid:'Unpaid'}[o.payment]||'';
   const pickup=o.pickup_date?(()=>{const [,m,d]=o.pickup_date.split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1];return`📅 ${mn} ${+d}${o.pickup_time?' @ '+formatTime(o.pickup_time):''}`;})():'';
   const isOverdue = o.status!=='completed' && o.pickup_date && o.pickup_date < todayKey();
   const overdueClass = isOverdue ? ' s-overdue' : '';
