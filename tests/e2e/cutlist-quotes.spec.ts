@@ -101,7 +101,7 @@ test('convert quote pre-fills order modal and deletes quote on save', async ({ p
   await page.waitForSelector('#otab-quotes', { state: 'visible' });
 
   const quoteRow = page.locator('#otab-quotes tr').filter({ hasText: quoteName });
-  await quoteRow.locator('button:has-text("Convert")').click();
+  await quoteRow.locator('button[title="Convert to Order"]').click();
   await page.waitForSelector('#orderModal.open');
 
   const oName = await page.locator('#oName').inputValue();
@@ -132,7 +132,7 @@ test('delete quote removes it from Quotes tab', async ({ page }) => {
   const quoteRow = page.locator('#otab-quotes tr').filter({ hasText: quoteName });
   await expect(quoteRow).toBeVisible({ timeout: 10000 });
 
-  await quoteRow.locator('button:has-text("Delete")').click();
+  await quoteRow.locator('button[title="Delete"]').click();
   await page.waitForSelector('#confirmModal', { state: 'visible' });
   await page.click('#confirmOkBtn');
 
@@ -187,7 +187,7 @@ test('convert quote carries size from cut list name into order modal', async ({ 
   const quoteRow = page.locator('#otab-quotes tr').filter({ hasText: quoteName });
   await expect(quoteRow).toBeVisible({ timeout: 10000 });
 
-  await quoteRow.locator('button:has-text("Convert")').click();
+  await quoteRow.locator('button[title="Convert to Order"]').click();
   await page.waitForSelector('#orderModal.open');
 
   // Size field should be pre-filled from the cut list name

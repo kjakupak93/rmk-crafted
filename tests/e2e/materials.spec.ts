@@ -269,7 +269,7 @@ test('new add-on appears in order modal add-on dropdown', async ({ page }) => {
   await page.waitForSelector('#orderModal.open');
   // options = 1 blank "— Select add-on —" + (beforeCount + 1) addons
   await expect(page.locator('#oAddonSelect option')).toHaveCount(beforeCount + 2, { timeout: 5000 });
-  await page.click('button.modal-btn-cancel');
+  await page.click('#orderModal button.btn-secondary');
   // Add-on cleanup handled by afterAll resetSettings()
 });
 
@@ -332,7 +332,7 @@ test('option dropdown appears in order modal when product with options is select
     page.locator('#orderModal .item-options select[data-option-id="stain"]'),
   ).toBeVisible({ timeout: 5000 });
 
-  await page.click('button.modal-btn-cancel');
+  await page.click('#orderModal button.btn-secondary');
   // Add-on cleanup handled by afterAll restoreSettings()
 });
 

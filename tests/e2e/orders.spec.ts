@@ -333,7 +333,7 @@ test('product option is pre-selected when editing an order', async ({ page }) =>
   await page.waitForSelector('#orderModal.open');
   await expect(page.locator('#orderModal .item-options select[data-option-id="stain"]')).toBeVisible({ timeout: 5000 });
   await expect(page.locator('#orderModal .item-options select[data-option-id="stain"]')).toHaveValue('Dark Walnut');
-  await page.click('button.modal-btn-cancel');
+  await page.click('#orderModal button.btn-secondary');
 });
 
 test('product option flows to sales history after order completion', async ({ page }) => {

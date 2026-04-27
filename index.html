@@ -6061,23 +6061,24 @@ function renderQuotesTable() {
     const tdActions = document.createElement('td');
 
     const convertBtn = document.createElement('button');
-    convertBtn.className = 'btn btn-secondary';
-    convertBtn.style.cssText = 'font-size:0.8em;padding:4px 10px;margin-right:6px';
-    convertBtn.textContent = 'Convert';
+    convertBtn.className = 'icon-btn';
+    convertBtn.title = 'Convert to Order';
+    convertBtn.textContent = '⚡';
     convertBtn.addEventListener('click', () => convertQuoteToOrder(q.id));
     tdActions.appendChild(convertBtn);
 
     const editBtn = document.createElement('button');
-    editBtn.className = 'btn btn-secondary';
-    editBtn.style.cssText = 'font-size:0.8em;padding:4px 10px;margin-right:6px';
-    editBtn.textContent = 'Edit';
+    editBtn.className = 'icon-btn';
+    editBtn.title = 'Edit';
+    editBtn.textContent = '✏️';
     editBtn.addEventListener('click', () => openEditQuoteModal(q.id));
     tdActions.appendChild(editBtn);
 
     const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn btn-danger';
-    deleteBtn.style.cssText = 'font-size:0.8em;padding:4px 10px';
-    deleteBtn.textContent = 'Delete';
+    deleteBtn.className = 'icon-btn';
+    deleteBtn.title = 'Delete';
+    deleteBtn.style.color = 'var(--red)';
+    deleteBtn.textContent = '🗑️';
     deleteBtn.addEventListener('click', () => deleteQuote(q.id));
     tdActions.appendChild(deleteBtn);
 
